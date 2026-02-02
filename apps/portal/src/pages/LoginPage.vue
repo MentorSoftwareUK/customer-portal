@@ -61,6 +61,18 @@ const viewerBlurb = computed(() => {
   return 'We couldn’t confirm an active subscription for this email — you can still register for events.'
 })
 
+async function lookupWithTimeout(emailValue: string, timeoutMs: number): Promise<AuthLookupResponse | null> {
+  try {
+    const result = await Promise.race([
+      authLookup(emailValue),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+    ])
+    return result as AuthLookupResponse | null
+  } catch {
+    return null
+  }
+}
+
 async function switchToCode() {
   error.value = null
   info.value = null
@@ -104,13 +116,13 @@ async function onSubmit() {
 
       // Pre-fetch HubSpot context for UX (filters) but don't block auth if it fails.
       try {
-        response.value = await authLookup(email.value)
+        response.value = await lookupWithTimeout(email.value, 1500)
 
-        if (response.value.provisionType) {
+        if (response.value?.provisionType) {
           writeProvisionFilter(response.value.provisionType)
         }
 
-        if (response.value.productVersion) {
+        if (response.value?.productVersion) {
           writeProductVersionFilter(response.value.productVersion)
         }
       } catch {
