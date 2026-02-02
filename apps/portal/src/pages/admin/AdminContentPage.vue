@@ -42,10 +42,6 @@ function youtubeEmbedUrl(youtubeId: string) {
   return `https://www.youtube-nocookie.com/embed/${youtubeId}`
 }
 
-function videoThumb(video: VideoDto) {
-  return video.videoUrl ? 'https://dummyimage.com/640x360/14192d/ffffff&text=Video' : youtubeThumb(video.youtubeId)
-}
-
 function openLightbox(video: VideoDto) {
   activeVideo.value = video
   lightboxOpen.value = true

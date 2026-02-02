@@ -785,6 +785,8 @@ export type AdminSettings = {
     knowledgeBaseDefaultProvision: 'all' | 'supported-accommodation' | 'childrens-home' | 'over-18'
     documentsDefaultProvision: 'all' | 'supported-accommodation' | 'childrens-home' | 'over-18'
     videosDefaultProvision: 'all' | 'supported-accommodation' | 'childrens-home' | 'over-18'
+    knowledgeBaseAuthorName: string
+    knowledgeBaseAuthorTeam: string
   }
   system: {
     maintenanceModeEnabled: boolean

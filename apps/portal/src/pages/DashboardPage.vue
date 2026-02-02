@@ -22,8 +22,10 @@ const userName = computed(() => {
   const email = payload?.email as string | undefined
   if (!email) return ''
   // Extract first name from email (e.g., liam.kotecha@example.com -> Liam)
-  const namePart = email.split('@')[0]
+  const namePart = email.split('@')[0] ?? ''
+  if (!namePart) return ''
   const firstName = namePart.split('.')[0] || namePart.split('_')[0] || namePart
+  if (!firstName) return ''
   return firstName.charAt(0).toUpperCase() + firstName.slice(1)
 })
 
@@ -136,9 +138,9 @@ const lifecycleStages = [
     label: 'Live',
     description: 'Live with success support.',
   },
-] as const
+]
 
-const activeLifecycleStage = ref<(typeof lifecycleStages)[number]['id']>('training')
+const activeLifecycleStage = ref<'discovery' | 'demo' | 'contract' | 'training' | 'live'>('training')
 
 onMounted(async () => {
   await loadFeatureFlags()
