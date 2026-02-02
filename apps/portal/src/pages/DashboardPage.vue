@@ -48,7 +48,8 @@ const mostUrgentInvoice = computed(() => {
   return outstanding.length ? outstanding[0] : null
 })
 
-const parseMeetingDate = (label: string) => {
+const parseMeetingDate = (label?: string | null) => {
+  if (!label) return null
   const match = label.match(/\b(\d{1,2})\s+([A-Za-z]{3})\b/)
   if (!match) return null
   const day = Number(match[1])
@@ -73,7 +74,8 @@ const parseMeetingDate = (label: string) => {
   return new Date(now.getFullYear(), month, day)
 }
 
-const parseMeetingTime = (label: string) => {
+const parseMeetingTime = (label?: string | null) => {
+  if (!label) return null
   const match = label.match(/·\s*(\d{1,2}):(\d{2})/)
   if (!match) return null
   const hours = Number(match[1])

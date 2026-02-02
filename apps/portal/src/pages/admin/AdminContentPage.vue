@@ -34,10 +34,6 @@ const activeVideo = ref<VideoDto | null>(null)
 const addModalOpen = ref(false)
 let previousBodyOverflow: string | null = null
 
-function youtubeThumb(youtubeId: string) {
-  return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`
-}
-
 function youtubeEmbedUrl(youtubeId: string) {
   return `https://www.youtube-nocookie.com/embed/${youtubeId}`
 }
