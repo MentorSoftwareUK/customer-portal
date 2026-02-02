@@ -1,0 +1,60 @@
+/* App layout overrides to ensure desktop (sidebar+header) layout even when template Tailwind build lacks our lg: classes */
+
+/* Base grid for all viewports */
+html, body, #app { height: 100%; }
+
+#layout {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr;
+  height: 100vh; /* ensure full viewport height regardless of utility availability */
+  min-height: 0;
+}
+
+/* Hide sidebar by default (mobile-first) */
+#layout > aside {
+  display: none;
+}
+
+/* Ensure header is visible by default */
+#layout > header {
+  display: flex !important;
+}
+
+/* Desktop breakpoint behavior (approx Tailwind lg: ≥1024px) */
+@media (min-width: 1024px) {
+  #layout {
+    grid-template-columns: 257px 1fr;
+  }
+  #layout > aside {
+    display: flex !important;
+    grid-column: 1 / 2;
+    grid-row: 1 / 3; /* span header+main */
+  }
+  #layout > header {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+  }
+  #layout > main {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+  }
+}
+
+/* Avoid extra top margin from global styles */
+#layout > main {
+  margin-top: 0 !important;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Keep header compact */
+.app-header {
+  min-height: auto !important;
+}
+
+/* Slightly reduce base font size on medium screens to fit more content without wrapping */
+@media (max-width: 1280px) {
+  html { font-size: 15px; }
+}

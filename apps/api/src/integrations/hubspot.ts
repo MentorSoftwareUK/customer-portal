@@ -1,0 +1,767 @@
+import { env } from '../env'
+import { getHubSpotOAuthTokens, refreshHubSpotOAuthToken } from '../routes/hubspotOAuth'
+
+const HUBSPOT_BASE_URL = 'https://api.hubapi.com'
+
+type HubSpotSearchResponse = {
+  total: number
+  results: Array<{
+    id: string
+    properties: Record<string, string | null>
+  }>
+}
+
+type HubSpotObjectResponse = {
+  id: string
+  properties: Record<string, string | null>
+}
+
+type HubSpotPipeline = {
+  id: string
+  label: string
+  stages: Array<{ id: string; label: string }>
+}
+
+function requireHubSpotToken() {
+  const token = env.HUBSPOT_PRIVATE_APP_TOKEN
+  if (!token) {
+    console.error('[hubspot] Missing HUBSPOT_PRIVATE_APP_TOKEN in env')
+    const err = new Error('Missing HUBSPOT_PRIVATE_APP_TOKEN')
+    ;(err as any).code = 'HUBSPOT_NOT_CONFIGURED'
+    throw err
+  }
+  console.log('[hubspot] Using token prefix:', token.slice(0, 6))
+  return token
+}
+
+async function hubspotFetch(path: string, init?: RequestInit) {
+  // Check if this is a Knowledge Base API call
+  const isKbEndpoint = path.includes('/knowledge-base/') || path.includes('/cms/v3/knowledge-base')
+  
+  let token: string
+  
+  if (isKbEndpoint) {
+    // Use OAuth token for KB endpoints
+    const oauthTokens = await getHubSpotOAuthTokens()
+    
+    if (!oauthTokens) {
+      const err = new Error('HubSpot OAuth not connected. Please connect in admin settings.')
+      ;(err as any).code = 'HUBSPOT_OAUTH_NOT_CONNECTED'
+      throw err
+    }
+    
+    // Check if token is expired (with 5 minute buffer)
+    const expiresAt = new Date(oauthTokens.expiresAt)
+    const now = new Date()
+    const bufferMs = 5 * 60 * 1000 // 5 minutes
+    
+    if (now.getTime() > expiresAt.getTime() - bufferMs) {
+      console.log('[hubspot] OAuth token expired or expiring soon, refreshing...')
+      token = await refreshHubSpotOAuthToken()
+    } else {
+      token = oauthTokens.accessToken
+    }
+    
+    console.log('[hubspot] Using OAuth token for KB endpoint')
+  } else {
+    // Use private app token for other endpoints
+    const privateToken = env.HUBSPOT_PRIVATE_APP_TOKEN
+    if (!privateToken) {
+      console.error('[hubspot] Missing HUBSPOT_PRIVATE_APP_TOKEN in env')
+      const err = new Error('Missing HUBSPOT_PRIVATE_APP_TOKEN')
+      ;(err as any).code = 'HUBSPOT_NOT_CONFIGURED'
+      throw err
+    }
+    token = privateToken
+    console.log('[hubspot] Using private app token prefix:', token.slice(0, 6))
+  }
+
+  const controller = new AbortController()
+  const timeoutMs = env.HUBSPOT_TIMEOUT_MS ?? 1_200
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const finalHeaders = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    }
+    console.log('[hubspot] Request', path, { Authorization: finalHeaders.Authorization ? 'Bearer <redacted>' : 'missing' })
+    const res = await fetch(`${HUBSPOT_BASE_URL}${path}`, {
+      ...init,
+      signal: controller.signal,
+      headers: finalHeaders,
+    })
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      throw new Error(`HubSpot request failed (${res.status}): ${text}`)
+    }
+
+    return res
+  } catch (err) {
+    const aborted = err instanceof Error && (err.name === 'AbortError' || (err as any).code === 'ABORT_ERR')
+    if (aborted) {
+      const timeoutErr = new Error(`HubSpot request timed out after ${timeoutMs}ms`)
+      ;(timeoutErr as any).code = 'HUBSPOT_TIMEOUT'
+      throw timeoutErr
+    }
+    throw err
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+type HubSpotMeResponse = {
+  portalId?: number
+  timeZone?: string
+  hubId?: number
+  user?: string
+}
+
+export async function hubspotGetMe() {
+  const res = await hubspotFetch(`/integrations/v1/me`, { method: 'GET' })
+  return (await res.json()) as HubSpotMeResponse
+}
+
+export async function hubspotFindContactByEmail(params: {
+  email: string
+  properties?: string[]
+}) {
+  const res = await hubspotFetch(`/crm/v3/objects/contacts/search`, {
+    method: 'POST',
+    body: JSON.stringify({
+      filterGroups: [
+        {
+          filters: [
+            {
+              propertyName: 'email',
+              operator: 'EQ',
+              value: params.email,
+            },
+          ],
+        },
+      ],
+      properties: params.properties ?? ['email', 'firstname', 'lastname', 'phone'],
+      limit: 1,
+    }),
+  })
+
+  const data = (await res.json()) as HubSpotSearchResponse
+  return data.results[0] ?? null
+}
+
+export async function hubspotCreateContact(params: { properties: Record<string, string | null> }) {
+  const res = await hubspotFetch(`/crm/v3/objects/contacts`, {
+    method: 'POST',
+    body: JSON.stringify({ properties: params.properties }),
+  })
+
+  return (await res.json()) as HubSpotObjectResponse
+}
+
+export async function hubspotUpsertContactByEmail(params: {
+  email: string
+  properties: Record<string, string | null>
+}) {
+  const existing = await hubspotFindContactByEmail({ email: params.email, properties: ['email'] })
+
+  if (existing) {
+    const updated = await hubspotUpdateContact({ id: existing.id, properties: params.properties })
+    return { action: 'updated' as const, contact: updated }
+  }
+
+  const created = await hubspotCreateContact({
+    properties: {
+      email: params.email,
+      ...params.properties,
+    },
+  })
+
+  return { action: 'created' as const, contact: created }
+}
+
+// Brief constraint: never update company name for existing contacts.
+// When you add contact updates, ensure "company"/"companyname" are not sent.
+export function stripCompanyNameFields<T extends Record<string, unknown>>(properties: T) {
+  const { company, companyname, ...rest } = properties as Record<string, unknown>
+  return rest as Omit<T, 'company' | 'companyname'>
+}
+
+export async function hubspotGetContactById(params: { id: string; properties?: string[] }) {
+  const props = params.properties?.length ? `?properties=${encodeURIComponent(params.properties.join(','))}` : ''
+  const res = await hubspotFetch(`/crm/v3/objects/contacts/${encodeURIComponent(params.id)}${props}`, { method: 'GET' })
+  return (await res.json()) as { id: string; properties: Record<string, string | null> }
+}
+
+export async function hubspotUpdateContact(params: { id: string; properties: Record<string, string | null> }) {
+  const safe = stripCompanyNameFields(params.properties)
+  const res = await hubspotFetch(`/crm/v3/objects/contacts/${encodeURIComponent(params.id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ properties: safe }),
+  })
+  return (await res.json()) as { id: string; properties: Record<string, string | null> }
+}
+
+export async function hubspotSearchObjectByProperty(params: {
+  objectType: string
+  propertyName: string
+  value: string
+  properties?: string[]
+}) {
+  const res = await hubspotFetch(`/crm/v3/objects/${encodeURIComponent(params.objectType)}/search`, {
+    method: 'POST',
+    body: JSON.stringify({
+      filterGroups: [
+        {
+          filters: [
+            {
+              propertyName: params.propertyName,
+              operator: 'EQ',
+              value: params.value,
+            },
+          ],
+        },
+      ],
+      properties: params.properties ?? [params.propertyName],
+      limit: 1,
+    }),
+  })
+
+  const data = (await res.json()) as HubSpotSearchResponse
+  return data.results[0] ?? null
+}
+
+export async function hubspotSearchObjectsByProperty(params: {
+  objectType: string
+  propertyName: string
+  value: string
+  properties?: string[]
+  limit?: number
+}) {
+  const res = await hubspotFetch(`/crm/v3/objects/${encodeURIComponent(params.objectType)}/search`, {
+    method: 'POST',
+    body: JSON.stringify({
+      filterGroups: [
+        {
+          filters: [
+            {
+              propertyName: params.propertyName,
+              operator: 'EQ',
+              value: params.value,
+            },
+          ],
+        },
+      ],
+      properties: params.properties ?? [params.propertyName],
+      limit: params.limit ?? 10,
+    }),
+  })
+
+  const data = (await res.json()) as HubSpotSearchResponse
+  return data.results ?? []
+}
+
+export async function hubspotFindCompanyByDomain(params: { domain: string; properties?: string[] }) {
+  // HubSpot company "domain" is typically stored without protocol.
+  const domain = params.domain.trim().toLowerCase()
+  if (!domain) return null
+
+  return await hubspotSearchObjectByProperty({
+    objectType: 'companies',
+    propertyName: 'domain',
+    value: domain,
+    properties: params.properties ?? ['domain'],
+  })
+}
+
+export async function hubspotFindCompaniesByDomain(params: { domain: string; properties?: string[]; limit?: number }) {
+  const domain = params.domain.trim().toLowerCase()
+  if (!domain) return []
+
+  return await hubspotSearchObjectsByProperty({
+    objectType: 'companies',
+    propertyName: 'domain',
+    value: domain,
+    properties: params.properties ?? ['domain'],
+    limit: params.limit ?? 10,
+  })
+}
+
+export async function hubspotAssociateContactToCompany(params: { contactId: string; companyId: string }) {
+  const assocTypeId = await resolveAssociationTypeId('contacts', 'companies')
+  await hubspotAssociateV4({
+    fromObjectType: 'contacts',
+    fromObjectId: params.contactId,
+    toObjectType: 'companies',
+    toObjectId: params.companyId,
+    associationTypeId: assocTypeId,
+  })
+}
+
+const dealPipelineCache: { pipelines: HubSpotPipeline[] | null } = { pipelines: null }
+
+async function hubspotListDealPipelines(): Promise<HubSpotPipeline[]> {
+  if (dealPipelineCache.pipelines) return dealPipelineCache.pipelines
+  const res = await hubspotFetch(`/crm/v3/pipelines/deals`, { method: 'GET' })
+  const data = (await res.json()) as { results: HubSpotPipeline[] }
+  dealPipelineCache.pipelines = data.results ?? []
+  return dealPipelineCache.pipelines
+}
+
+async function resolveDealPipelineId(): Promise<string> {
+  if (env.HUBSPOT_EVENT_REGISTRATION_DEAL_PIPELINE_ID) return env.HUBSPOT_EVENT_REGISTRATION_DEAL_PIPELINE_ID
+
+  const label = (env.HUBSPOT_EVENT_REGISTRATION_DEAL_PIPELINE_LABEL ?? 'Event Registrations').trim()
+  const pipelines = await hubspotListDealPipelines()
+  const match = pipelines.find((p) => p.label.trim().toLowerCase() === label.toLowerCase())
+  if (!match) {
+    const available = pipelines.map((p) => p.label).slice(0, 10).join(', ')
+    throw new Error(`HubSpot deal pipeline not found: ${label}. Available (first 10): ${available}`)
+  }
+  return match.id
+}
+
+async function resolveDealStageId(pipelineId: string, stageLabelOrId: string): Promise<string> {
+  const pipelines = await hubspotListDealPipelines()
+  const pipeline = pipelines.find((p) => p.id === pipelineId)
+  if (!pipeline) throw new Error(`HubSpot deal pipeline id not found: ${pipelineId}`)
+
+  // If they provided an id, accept it.
+  const byId = pipeline.stages.find((s) => s.id === stageLabelOrId)
+  if (byId) return byId.id
+
+  const wanted = stageLabelOrId.trim().toLowerCase()
+  const byLabel = pipeline.stages.find((s) => s.label.trim().toLowerCase() === wanted)
+  if (!byLabel) {
+    const available = pipeline.stages.map((s) => s.label).join(', ')
+    throw new Error(`HubSpot deal stage not found in pipeline ${pipeline.label}: ${stageLabelOrId}. Available: ${available}`)
+  }
+  return byLabel.id
+}
+
+type HubSpotAssociationLabelResponse = {
+  results: Array<{ typeId: number; label: string; category: string }>
+}
+
+const assocTypeCache = new Map<string, number>()
+
+async function resolveAssociationTypeId(fromObjectType: string, toObjectType: string): Promise<number> {
+  const key = `${fromObjectType}->${toObjectType}`
+  const cached = assocTypeCache.get(key)
+  if (cached) return cached
+
+  const res = await hubspotFetch(
+    `/crm/v4/associations/${encodeURIComponent(fromObjectType)}/${encodeURIComponent(toObjectType)}/labels`,
+    { method: 'GET' },
+  )
+  const data = (await res.json()) as HubSpotAssociationLabelResponse
+  const first = data.results?.[0]
+  if (!first) throw new Error(`No association labels found for ${fromObjectType} -> ${toObjectType}`)
+  assocTypeCache.set(key, first.typeId)
+  return first.typeId
+}
+
+export async function hubspotCreateObject(params: { objectType: string; properties: Record<string, string | null> }) {
+  const res = await hubspotFetch(`/crm/v3/objects/${encodeURIComponent(params.objectType)}`, {
+    method: 'POST',
+    body: JSON.stringify({ properties: params.properties }),
+  })
+  return (await res.json()) as HubSpotObjectResponse
+}
+
+export async function hubspotUpdateObject(params: {
+  objectType: string
+  id: string
+  properties: Record<string, string | null>
+}) {
+  const res = await hubspotFetch(`/crm/v3/objects/${encodeURIComponent(params.objectType)}/${encodeURIComponent(params.id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ properties: params.properties }),
+  })
+  return (await res.json()) as HubSpotObjectResponse
+}
+
+function getRegistrationObjectType() {
+  return (env.HUBSPOT_EVENT_REGISTRATION_OBJECT_TYPE ?? '').trim() || null
+}
+
+function getRegistrationObjectUniqueProperty() {
+  return (env.HUBSPOT_EVENT_REGISTRATION_OBJECT_UNIQUE_PROPERTY ?? 'mentor_registration_id').trim()
+}
+
+export async function hubspotUpsertRegistrationObject(params: {
+  registrationId: string
+  hubspotContactId: string | null
+  status: 'registered' | 'payment_pending' | 'paid' | 'cancelled' | 'failed'
+  email: string
+  eventId: string
+  eventTitle: string | null
+  eventStartAt: string | null
+  attendeeType: 'customer' | 'non-customer'
+  registeredAt: string
+  paidAt?: string | null
+  platform?: string | null
+  joinUrl?: string | null
+}) {
+  const objectType = getRegistrationObjectType()
+  if (!objectType) return null
+
+  const uniqueProp = getRegistrationObjectUniqueProperty()
+  const existing = await hubspotSearchObjectByProperty({
+    objectType,
+    propertyName: uniqueProp,
+    value: params.registrationId,
+    properties: [uniqueProp],
+  })
+
+  const name = params.eventTitle
+    ? `${params.eventTitle} — ${params.email}`
+    : `Event Registration — ${params.email}`
+
+  const startAtMs = params.eventStartAt ? String(new Date(params.eventStartAt).getTime()) : null
+  const registeredAtMs = String(new Date(params.registeredAt).getTime())
+  const paidAtMs = params.paidAt ? String(new Date(params.paidAt).getTime()) : null
+
+  const coreProperties: Record<string, string | null> = {
+    [uniqueProp]: params.registrationId,
+    name,
+  }
+
+  const properties: Record<string, string | null> = {
+    ...coreProperties,
+    mentor_event_id: params.eventId,
+    mentor_event_title: params.eventTitle,
+    mentor_event_start_at: startAtMs,
+    mentor_attendee_type: params.attendeeType,
+    mentor_registration_status: params.status,
+    mentor_registered_at: registeredAtMs,
+    mentor_paid_at: paidAtMs,
+    mentor_contact_email: params.email,
+    mentor_event_platform: params.platform ?? null,
+    mentor_event_join_url: params.joinUrl ?? null,
+  }
+
+  let record: HubSpotObjectResponse
+  try {
+    record = existing
+      ? await hubspotUpdateObject({ objectType, id: existing.id, properties })
+      : await hubspotCreateObject({ objectType, properties })
+  } catch (e) {
+    record = existing
+      ? await hubspotUpdateObject({ objectType, id: existing.id, properties: coreProperties })
+      : await hubspotCreateObject({ objectType, properties: coreProperties })
+  }
+
+  if (params.hubspotContactId) {
+    try {
+      const assocTypeId = await resolveAssociationTypeId('contacts', objectType)
+      await hubspotAssociateV4({
+        fromObjectType: 'contacts',
+        fromObjectId: params.hubspotContactId,
+        toObjectType: objectType,
+        toObjectId: record.id,
+        associationTypeId: assocTypeId,
+      })
+    } catch {
+      // Best-effort association.
+    }
+  }
+
+  return record
+}
+
+export async function hubspotUpdateRegistrationObjectByRegistrationId(params: {
+  registrationId: string
+  properties: Record<string, string | null>
+}) {
+  const objectType = getRegistrationObjectType()
+  if (!objectType) return null
+  const uniqueProp = getRegistrationObjectUniqueProperty()
+
+  const existing = await hubspotSearchObjectByProperty({
+    objectType,
+    propertyName: uniqueProp,
+    value: params.registrationId,
+    properties: [uniqueProp],
+  })
+  if (!existing) return null
+
+  return await hubspotUpdateObject({ objectType, id: existing.id, properties: params.properties })
+}
+
+export async function hubspotAssociateV4(params: {
+  fromObjectType: string
+  fromObjectId: string
+  toObjectType: string
+  toObjectId: string
+  associationTypeId: number
+}) {
+  await hubspotFetch(
+    `/crm/v4/objects/${encodeURIComponent(params.fromObjectType)}/${encodeURIComponent(params.fromObjectId)}/associations/${encodeURIComponent(params.toObjectType)}/${encodeURIComponent(params.toObjectId)}/${params.associationTypeId}`,
+    { method: 'PUT' },
+  )
+}
+
+export async function hubspotUpsertRegistrationDeal(params: {
+  registrationId: string
+  hubspotContactId: string | null
+  status: 'registered' | 'payment_pending' | 'paid' | 'cancelled' | 'failed'
+  amountGbp: number
+  email: string
+  eventId: string
+  eventTitle: string | null
+  eventStartAt: string | null
+  attendeeType: 'customer' | 'non-customer'
+  registeredAt: string
+  paidAt?: string | null
+  stripeCheckoutSessionId?: string | null
+}) {
+  const uniqueProp = env.HUBSPOT_EVENT_REGISTRATION_DEAL_UNIQUE_PROPERTY ?? 'mentor_registration_id'
+  const pipelineId = await resolveDealPipelineId()
+
+  const stageLabel =
+    params.status === 'registered'
+      ? env.HUBSPOT_EVENT_REGISTRATION_STAGE_REGISTERED ?? 'Registered'
+      : params.status === 'payment_pending'
+        ? env.HUBSPOT_EVENT_REGISTRATION_STAGE_PAYMENT_PENDING ?? 'Payment Pending'
+        : params.status === 'paid'
+          ? env.HUBSPOT_EVENT_REGISTRATION_STAGE_PAID ?? 'Paid'
+          : params.status === 'cancelled'
+            ? env.HUBSPOT_EVENT_REGISTRATION_STAGE_CANCELLED ?? 'Cancelled'
+            : env.HUBSPOT_EVENT_REGISTRATION_STAGE_FAILED ?? 'Failed'
+
+  const dealstage = await resolveDealStageId(pipelineId, stageLabel)
+
+  const existing = await hubspotSearchObjectByProperty({
+    objectType: 'deals',
+    propertyName: uniqueProp,
+    value: params.registrationId,
+    properties: [uniqueProp],
+  })
+
+  const dealname = params.eventTitle
+    ? `${params.eventTitle} — ${params.email}`
+    : `Event Registration — ${params.email}`
+
+  const coreProperties: Record<string, string | null> = {
+    [uniqueProp]: params.registrationId,
+    dealname,
+    pipeline: pipelineId,
+    dealstage,
+    amount: String(params.amountGbp ?? 0),
+  }
+
+  const properties: Record<string, string | null> = {
+    ...coreProperties,
+    mentor_event_id: params.eventId,
+    mentor_event_title: params.eventTitle,
+    mentor_event_start_at: params.eventStartAt,
+    mentor_attendee_type: params.attendeeType,
+    mentor_registration_status: params.status,
+    mentor_registered_at: params.registeredAt,
+    mentor_paid_at: params.paidAt ?? null,
+    mentor_stripe_checkout_session_id: params.stripeCheckoutSessionId ?? null,
+    mentor_contact_email: params.email,
+  }
+
+  let deal: HubSpotObjectResponse
+  try {
+    deal = existing
+      ? await hubspotUpdateObject({ objectType: 'deals', id: existing.id, properties })
+      : await hubspotCreateObject({ objectType: 'deals', properties })
+  } catch (e) {
+    // If the portal hasn't created the optional `mentor_*` deal properties yet,
+    // HubSpot will reject unknown property names. Retry with core fields only.
+    deal = existing
+      ? await hubspotUpdateObject({ objectType: 'deals', id: existing.id, properties: coreProperties })
+      : await hubspotCreateObject({ objectType: 'deals', properties: coreProperties })
+  }
+
+  if (params.hubspotContactId) {
+    try {
+      const assocTypeId = await resolveAssociationTypeId('deals', 'contacts')
+      await hubspotAssociateV4({
+        fromObjectType: 'deals',
+        fromObjectId: deal.id,
+        toObjectType: 'contacts',
+        toObjectId: params.hubspotContactId,
+        associationTypeId: assocTypeId,
+      })
+    } catch {
+      // Best-effort: deal record still exists for reporting.
+    }
+  }
+
+  return deal
+}
+
+type AssociationV4Response = {
+  results: Array<{ toObjectId: number }>
+  paging?: { next?: { after: string } }
+}
+
+export async function hubspotGetPrimaryCompanyIdForContact(contactId: string): Promise<string | null> {
+  const res = await hubspotFetch(
+    `/crm/v4/objects/contacts/${encodeURIComponent(contactId)}/associations/companies?limit=1`,
+    { method: 'GET' },
+  )
+  const data = (await res.json()) as AssociationV4Response
+  const first = data.results?.[0]?.toObjectId
+  return typeof first === 'number' ? String(first) : null
+}
+
+export async function hubspotListContactIdsForCompany(companyId: string): Promise<string[]> {
+  const ids: string[] = []
+  let after: string | undefined
+
+  // Default HubSpot page size max is typically 500 for v4 associations.
+  for (let i = 0; i < 20; i++) {
+    const qs = new URLSearchParams()
+    qs.set('limit', '500')
+    if (after) qs.set('after', after)
+
+    const res = await hubspotFetch(
+      `/crm/v4/objects/companies/${encodeURIComponent(companyId)}/associations/contacts?${qs.toString()}`,
+      { method: 'GET' },
+    )
+    const data = (await res.json()) as AssociationV4Response
+    for (const r of data.results ?? []) {
+      if (typeof r.toObjectId === 'number') ids.push(String(r.toObjectId))
+    }
+
+    const nextAfter = data.paging?.next?.after
+    if (!nextAfter) break
+    after = nextAfter
+  }
+
+  return ids
+}
+
+type BatchReadResponse = {
+  results: Array<{ id: string; properties: Record<string, string | null> }>
+}
+
+type HubSpotPaging = { next?: { after: string } }
+
+type HubSpotKbArticle = {
+  id: string
+  title?: string
+  name?: string
+  category?: { name?: string } | string | null
+  categoryName?: string | null
+  tags?: string[] | string | null
+  tagNames?: string[] | string | null
+  readingTime?: number | null
+  estimatedReadingTime?: number | null
+  updatedAt?: string | null
+  publishDate?: string | null
+  createdAt?: string | null
+}
+
+export async function hubspotListKnowledgeBaseArticles(params?: { language?: string; limit?: number }) {
+  const results: HubSpotKbArticle[] = []
+  let after: string | undefined
+  const limit = params?.limit ?? 100
+
+  for (let i = 0; i < 10; i += 1) {
+    const qs = new URLSearchParams()
+    qs.set('limit', String(limit))
+    qs.set('archived', 'false')
+    if (params?.language) qs.set('language', params.language)
+    if (after) qs.set('after', after)
+
+    const res = await hubspotFetch(`/cms/v3/knowledge-base/articles?${qs.toString()}`, { method: 'GET' })
+    const data = (await res.json()) as { results?: HubSpotKbArticle[]; paging?: HubSpotPaging }
+    results.push(...(data.results ?? []))
+
+    const nextAfter = data.paging?.next?.after
+    if (!nextAfter) break
+    after = nextAfter
+  }
+
+  return results
+}
+
+type HubSpotHubDbRow = {
+  id: string
+  values: Record<string, unknown>
+  createdAt?: string | null
+  updatedAt?: string | null
+}
+
+export async function hubspotListHubDbRows(params: { tableId: string; limit?: number }) {
+  const results: HubSpotHubDbRow[] = []
+  let after: string | undefined
+  const limit = params.limit ?? 100
+
+  for (let i = 0; i < 10; i += 1) {
+    const qs = new URLSearchParams()
+    qs.set('limit', String(limit))
+    if (after) qs.set('after', after)
+
+    const res = await hubspotFetch(`/cms/v3/hubdb/tables/${encodeURIComponent(params.tableId)}/rows?${qs.toString()}`, {
+      method: 'GET',
+    })
+    const data = (await res.json()) as { results?: HubSpotHubDbRow[]; paging?: HubSpotPaging }
+    results.push(...(data.results ?? []))
+
+    const nextAfter = data.paging?.next?.after
+    if (!nextAfter) break
+    after = nextAfter
+  }
+
+  return results
+}
+
+export async function hubspotBatchReadContacts(params: { ids: string[]; properties: string[] }) {
+  if (params.ids.length === 0) return []
+  const res = await hubspotFetch(`/crm/v3/objects/contacts/batch/read`, {
+    method: 'POST',
+    body: JSON.stringify({
+      properties: params.properties,
+      inputs: params.ids.map((id) => ({ id })),
+    }),
+  })
+  const data = (await res.json()) as BatchReadResponse
+  return data.results ?? []
+}
+
+export async function hubspotBatchUpdateContacts(params: { updates: Array<{ id: string; properties: Record<string, string | null> }> }) {
+  if (params.updates.length === 0) return { updated: 0 }
+
+  const inputs = params.updates.map((u) => ({ id: u.id, properties: stripCompanyNameFields(u.properties) }))
+
+  await hubspotFetch(`/crm/v3/objects/contacts/batch/update`, {
+    method: 'POST',
+    body: JSON.stringify({ inputs }),
+  })
+
+  return { updated: inputs.length }
+}
+
+export async function hubspotGetCompanyById(params: { id: string; properties?: string[] }) {
+  const props = params.properties?.length ? `?properties=${encodeURIComponent(params.properties.join(','))}` : ''
+  const res = await hubspotFetch(`/crm/v3/objects/companies/${encodeURIComponent(params.id)}${props}`, { method: 'GET' })
+  return (await res.json()) as { id: string; properties: Record<string, string | null> }
+}
+
+export async function hubspotUpdateCompany(params: { id: string; properties: Record<string, string | null> }) {
+  const res = await hubspotFetch(`/crm/v3/objects/companies/${encodeURIComponent(params.id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ properties: params.properties }),
+  })
+  return (await res.json()) as { id: string; properties: Record<string, string | null> }
+}
+
+export function canEditCompanyFromJobTitle(jobTitle: string | null | undefined) {
+  const jt = (jobTitle ?? '').trim().toLowerCase()
+  if (!jt) return false
+
+  const keywords = env.HUBSPOT_COMPANY_EDIT_JOB_TITLE_KEYWORDS
+    .split(',')
+    .map((k) => k.trim().toLowerCase())
+    .filter(Boolean)
+
+  return keywords.some((k) => jt.includes(k))
+}

@@ -1,0 +1,425 @@
+# Mentor Customer Portal & Events System - Project Brief
+
+## Project Overview
+Development of a custom customer portal and events management system for Mentor SaaS platform, integrating with existing WordPress public website, HubSpot CRM, and QuickBooks accounting system.
+
+## Technical Stack
+- **Frontend:** Vue.js with Tailwind CSS
+- **Backend:** Node.js
+- **Database:** MongoDB
+- **Components: ** Flowbite
+- **Hosting:** AWS or existing WHM VPS CentOS server
+- **Payment Gateway:** Stripe
+- **Integrations:** HubSpot API, QuickBooks API, FileMaker/Better Forms
+
+## Architecture Overviewcd
+- **Public Website:** WordPress (existing) - event listings and details pages for SEO
+- **Customer Portal:** Subdomain with custom Node/Vue application
+- **Integration Layer:** REST APIs and WordPress shortcodes to bridge public site and portal
+
+---
+
+## Core System Components
+
+### 1. Events Management System
+
+#### Event Types
+- Webinars
+- Lunch and Learns
+- Podcasts
+- Other custom event types
+
+#### Event Features
+**Audience Segmentation:**
+- Customer only (Mentor SaaS subscribers)
+- Non-customer only (with paid option)
+- Both customers and non-customers
+- Ability to charge non-customers via Stripe while customers attend free
+
+**Public WordPress Pages:**
+- Event listing page with search and filtering
+- Individual event detail pages
+- SEO-optimized event content
+- Registration CTAs that redirect to portal subdomain
+
+**Event Registration Flow:**
+- Registration form on portal subdomain
+- Collect: Name, Email, Company, Phone, any custom fields
+- Payment integration for non-customers (Stripe) when event requires payment
+- Email verification/confirmation
+- Automatic contact creation/update in HubSpot (do NOT update company name for existing contacts)
+
+**Event Communication:**
+- Confirmation email with event details and meeting link (Teams, Riverside, or configurable platform)
+- Reminder emails with configurable timing (default: 2 days before event)
+- Thank you email (default: 24 hours post-event) with:
+  - Event recording (once edited)
+  - Presentation slides
+  - Any additional documents
+- All email timing should be configurable via admin settings (not hardcoded)
+
+**Integration Requirements:**
+- Push event registration data to HubSpot for marketing/sales tracking
+- Track attendance and engagement metrics
+- Store meeting platform links (Teams, Riverside, etc.)
+
+---
+
+### 2. Authentication & User Management
+
+#### Authentication Flow
+**For Potential/New Users:**
+1. User enters email on portal login page
+2. System checks HubSpot for contact with "live customer" status
+3. **If live customer found:**
+   - Pre-fill registration form with details from HubSpot
+   - Prompt user to set password
+   - Option for passwordless login via email passcode/magic link
+4. **If not live customer:**
+   - Standard registration form
+   - Optional: Google or Microsoft OAuth for quick registration
+   - Create new contact in HubSpot automatically
+
+**Authentication Methods:**
+- Email/password
+- Passwordless login (email-based passcode or magic link)
+- Google OAuth (for non-customers)
+- Microsoft OAuth (for non-customers)
+
+**User Status Definitions:**
+- **Mentor Customer:** Active subscriber to Mentor SaaS (status from HubSpot)
+- **Non-Customer:** Registered user who has inquired, attended events, or engaged but not subscribed
+
+---
+
+### 3. Customer Portal Dashboard
+
+#### Personalized Dashboard
+Dashboard content adapts based on user's **provision type** (retrieved from HubSpot):
+- Supported Accommodation
+- Children's Home
+- 18+ Services
+
+#### Dashboard Sections
+
+**1. Event Management**
+- Upcoming registered events with date/time/platform links
+- Past events attended
+- Event recordings and materials
+- Quick registration for new events
+
+**2. Scheduled Meetings**
+- Upcoming meetings with:
+  - Training team
+  - Customer Success team
+  - Support team
+- Meeting details and join links
+- Ability to view and potentially book new meetings (if integrated with HubSpot meetings/calendar)
+
+**3. Support Tickets**
+- View all support tickets from HubSpot Service Hub
+- Filter by status (open, pending, closed)
+- Create new support tickets
+- View ticket history and responses
+
+**4. Knowledge Base**
+- Provision-type specific articles and resources
+- Search and filter functionality
+- Categories and tags for easy navigation
+- Content pulled from or synced with HubSpot Knowledge Base (if available)
+
+**5. Video Library**
+- Provision-type specific training videos
+- On-demand webinar recordings
+- Product tutorials
+- Organized by category/topic
+
+**6. Document Library**
+- Provision-type specific documents
+- Useful resources and guides
+- Downloadable PDFs, templates, etc.
+- Version control for updated documents
+
+**7. Invoices**
+- View and download invoices from QuickBooks
+- Filter by date range
+- Payment status
+- Invoice history
+
+**8. Profile Management**
+- Update contact information
+- Change password
+- Communication preferences
+- Provision type display (read-only, managed in HubSpot)
+
+---
+
+### 4. WordPress Integration
+
+#### Required WordPress Components
+
+**Public Event Pages (SEO-focused):**
+- Event listing page with search, filter, and category options
+- Individual event detail pages with full descriptions
+- Registration CTAs that redirect to portal subdomain
+- Display events for both customers and non-customers (with appropriate labels)
+
+**Integration Method:**
+- REST API endpoints from Node backend
+- WordPress shortcodes to display event content
+- Seamless redirect to portal for registration/login
+
+**Event Display Options:**
+- Upcoming events
+- Past events (for archives/SEO)
+- Filter by event type, date, audience
+- Search functionality
+
+---
+
+### 5. Content Management & Gating
+
+#### Provision-Type Specific Content
+All gated content (videos, documents, knowledge base articles) must be tagged with applicable provision types:
+- Supported Accommodation
+- Children's Home
+- 18+
+- All (available to all customers)
+
+#### Content Sources
+- Primary data source: HubSpot CMS/Knowledge Base
+- Video hosting: AWS S3, Azure Blob Storage, or existing solution
+- Document storage: AWS S3, Azure Blob Storage, or existing solution
+
+---
+
+### 6. Integration Requirements
+
+#### HubSpot Integration
+**Data to Pull:**
+- Contact information (name, email, company, phone)
+- Customer status (live customer vs non-customer)
+- Provision type(s)
+- Support ticket history
+- Meeting/calendar appointments
+- Custom fields as needed
+
+**Data to Push:**
+- Event registrations
+- New contact creation (non-customers)
+- Contact updates (excluding company name - CRITICAL)
+- Support ticket creation
+- User activity/engagement metrics
+
+**API Endpoints Needed:**
+- Contacts API
+- Companies API (read-only)
+- Tickets API (Service Hub)
+- Meetings API (if applicable)
+- Custom objects API (if needed for events)
+
+#### Stripe Integration
+- Process payments for non-customer event registrations
+- Secure payment form integration
+- Payment confirmation and receipts
+- Store transaction records
+- Link payments to HubSpot contacts
+
+#### QuickBooks Integration
+- Pull invoice data for customer accounts
+- Display invoice details
+- Provide download links for invoice PDFs
+- Filter and search invoices by date/status
+
+#### FileMaker/Better Forms (Mentor SaaS)
+- Reference for user validation
+- Not primary authentication source
+- May need to sync certain user data
+
+---
+
+### 7. Admin Panel Features
+
+#### Event Management
+- Create, edit, delete events
+- Set event type (webinar, lunch & learn, podcast, etc.)
+- Define audience (customer, non-customer, both)
+- Set pricing for non-customers
+- Configure meeting platform links
+- Upload event materials (slides, recordings, documents)
+- View registration lists and attendee data
+- Send manual communications to registrants
+
+#### Email Configuration
+- Configure reminder timing (days/hours before event)
+- Configure thank you email timing (hours after event)
+- Email template management
+- Test email sending
+
+#### Content Management
+- Upload and organize videos
+- Upload and manage documents
+- Create/edit knowledge base articles
+- Tag content with provision types
+- Set content visibility rules
+
+#### User Management
+- View all registered users
+- Search and filter users
+- View user provision types
+- Manually adjust user access (if needed)
+- View user activity logs
+
+#### System Settings
+- Configure email timing defaults
+- Set up OAuth credentials
+- Manage API keys (HubSpot, Stripe, QuickBooks)
+- Configure meeting platform integrations
+- Brand settings and customization
+
+---
+
+### 8. Design & Branding
+
+#### Brand Guidelines
+- Follow Mentor brand guidelines (to be provided)
+- Consistent color scheme, typography, and UI patterns
+- Professional, clean, modern interface
+- Mobile-responsive design
+- Accessible (WCAG 2.1 AA compliance preferred)
+
+#### User Experience Priorities
+- Intuitive navigation
+- Fast load times
+- Clear CTAs
+- Seamless transitions between WordPress and portal
+- Minimal friction in authentication and registration flows
+
+---
+
+### 9. Security & Compliance
+
+#### Security Requirements
+- HTTPS/SSL for all pages
+- Secure password storage (hashing and salting)
+- JWT or session-based authentication
+- API key security for third-party integrations
+- CSRF and XSS protection
+- Rate limiting on authentication endpoints
+- Secure file upload validation
+
+#### Data Privacy
+- GDPR compliance considerations (if applicable)
+- User data encryption at rest
+- Secure API communications
+- Cookie consent management
+- Privacy policy integration
+- Right to data deletion
+
+---
+
+### 10. Reporting & Analytics
+
+#### Key Metrics to Track
+- Event registrations and attendance
+- User engagement with content (videos, documents, knowledge base)
+- Support ticket volume and response times
+- Login frequency and user activity
+- Payment transactions and revenue (from events)
+- Most popular events and content
+
+#### Reporting Features
+- Dashboard analytics for admin
+- Export data to CSV
+- Integration with HubSpot reporting
+- Custom date range filtering
+
+---
+
+## Project Phases (Suggested)
+
+### Phase 1: Foundation
+- Set up Node/Vue application infrastructure
+- Implement authentication system
+- HubSpot integration for user data
+- Basic dashboard framework
+
+### Phase 2: Events System
+- Event creation and management
+- WordPress event pages and shortcodes
+- Registration flow
+- Stripe payment integration
+- Email automation
+
+### Phase 3: Portal Features
+- Support ticket integration
+- Knowledge base
+- Video library
+- Document library
+- Meetings display
+
+### Phase 4: Invoicing & Polish
+- QuickBooks integration
+- Admin panel completion
+- Mobile responsiveness
+- Testing and bug fixes
+- Brand guidelines implementation
+
+### Phase 5: Launch & Optimization
+- User acceptance testing
+- Documentation
+- Training for admin users
+- Go-live
+- Post-launch monitoring and optimization
+
+---
+
+## Success Criteria
+
+- Seamless user authentication with minimal friction
+- Event registrations flowing accurately into HubSpot
+- Payment processing working reliably via Stripe
+- Provision-specific content displaying correctly
+- Support tickets syncing with HubSpot
+- Invoices displaying from QuickBooks
+- Mobile-responsive design across all devices
+- Fast page load times (< 3 seconds)
+- Admin panel enabling non-technical team members to manage events and content
+- SEO-optimized event pages driving organic traffic
+
+---
+
+## Out of Scope (for Initial Build)
+
+- Mobile native applications (iOS/Android)
+- Complex booking/scheduling system (beyond displaying existing meetings)
+- Full CRM functionality (HubSpot remains source of truth)
+- Email marketing campaigns (handled in HubSpot)
+- Custom reporting dashboard (basic analytics only)
+- Multi-language support
+- Advanced personalization beyond provision types
+
+---
+
+## Dependencies & Prerequisites
+
+- HubSpot API access and credentials
+- Stripe account and API keys
+- QuickBooks API access and credentials
+- AWS or VPS hosting access
+- Mentor brand guidelines documentation
+- WordPress admin access for shortcode implementation
+- Sample event content for testing
+- Test users from each provision type
+
+---
+
+## Notes for Development Team
+
+1. **HubSpot Company Name:** Never update company name when syncing user data - this is critical to avoid data conflicts
+2. **Email Timing:** All event email timing must be configurable via admin settings, not hardcoded
+3. **Provision Types:** System must support three types: Supported Accommodation, Children's Home, 18+
+4. **Non-Customer Definition:** Non-customers are those who engage but don't subscribe to Mentor SaaS - event registration does not make them customers
+5. **OAuth for Non-Customers:** Google/Microsoft login should be available but not required
+6. **SEO Priority:** Event pages on WordPress must be SEO-optimized with proper meta tags, structured data, and content
+7. **Meeting Platforms:** System should be flexible to support Teams, Riverside, or other platforms via configurable links

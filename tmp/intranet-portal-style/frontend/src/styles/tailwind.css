@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional: any design tokens/extensions can be defined here later */
+
+@layer base {
+	/* Apply Nunito to body text by default */
+	html, body {
+		@apply font-sans;
+	}
+	h1, h2, h3, h4, h5, h6 {
+		@apply font-heading;
+	}
+}
+
+@layer components {
+	/* Unified input/select/textarea field styling (light/dark) */
+	.hg-field {
+		@apply w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 shadow-sm focus:outline-none focus:ring-1 focus:ring-black/5 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:ring-white/10;
+	}
+
+	/* Optional error state */
+	.hg-field--error {
+		@apply border-red-400 focus:ring-red-400/30 dark:border-red-500/60 dark:focus:ring-red-300/20;
+	}
+}

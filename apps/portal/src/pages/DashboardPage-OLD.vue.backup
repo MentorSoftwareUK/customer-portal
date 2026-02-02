@@ -1,0 +1,502 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { listInvoices, type InvoiceDto } from '../lib/api'
+import { useFeatureFlags } from '../lib/featureFlags'
+import { provisionFilterLabel, readProvisionFilter, type ProvisionFilter } from '../lib/provision'
+
+const provision = ref<ProvisionFilter>(readProvisionFilter())
+const provisionLabel = computed(() => provisionFilterLabel(provision.value))
+
+const invoices = ref<InvoiceDto[]>([])
+const invoicesLoaded = ref(false)
+const { featureFlags, loadFeatureFlags } = useFeatureFlags()
+
+const overdueInvoices = computed(() => invoices.value.filter((i) => i.status === 'Overdue'))
+const outstandingInvoices = computed(() => invoices.value.filter((i) => i.status !== 'Paid'))
+
+const mostUrgentInvoice = computed(() => {
+  const overdue = overdueInvoices.value
+  if (overdue.length) return overdue[0]
+  const outstanding = outstandingInvoices.value
+  return outstanding.length ? outstanding[0] : null
+})
+
+const showInvoiceAlert = ref(true)
+
+onMounted(async () => {
+  await loadFeatureFlags()
+  if (!featureFlags.value.invoicesEnabled) {
+    invoices.value = []
+    invoicesLoaded.value = true
+    return
+  }
+  try {
+    const data = await listInvoices()
+    invoices.value = data.invoices
+  } catch {
+    invoices.value = []
+  } finally {
+    invoicesLoaded.value = true
+  }
+})
+</script>
+
+<template>
+  <div class="space-y-6">
+      <div
+        v-if="featureFlags.invoicesEnabled && invoicesLoaded && showInvoiceAlert && overdueInvoices.length"
+        id="alert-overdue"
+        class="flex sm:items-center p-4 text-sm rounded-base border border-rose-200 bg-rose-100 text-rose-950 border-l-4 border-l-rose-600"
+        role="alert"
+      >
+        <svg class="w-4 h-4 shrink-0 mt-0.5 md:mt-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+        </svg>
+        <span class="sr-only">Alert</span>
+        <div class="ms-2 text-sm">
+          <span class="font-medium">Action required:</span> you have {{ overdueInvoices.length }} overdue invoice{{ overdueInvoices.length === 1 ? '' : 's' }}.
+          <RouterLink to="/app/invoices" class="font-semibold underline decoration-rose-500 hover:no-underline">View invoices</RouterLink>.
+        </div>
+        <button
+          type="button"
+          class="ms-auto -mx-1.5 -my-1.5 rounded focus:ring-2 focus:ring-rose-200 p-1.5 hover:bg-rose-200 inline-flex items-center justify-center h-8 w-8 shrink-0"
+          aria-label="Close"
+          @click="showInvoiceAlert = false"
+        >
+          <span class="sr-only">Close</span>
+          <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/>
+          </svg>
+        </button>
+      </div>
+
+      <div
+        v-else-if="featureFlags.invoicesEnabled && invoicesLoaded && showInvoiceAlert && outstandingInvoices.length"
+        id="alert-outstanding"
+        class="flex sm:items-center p-4 text-sm text-fg-warning rounded-base bg-warning-soft"
+        role="alert"
+      >
+        <svg class="w-4 h-4 shrink-0 mt-0.5 md:mt-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+        </svg>
+        <span class="sr-only">Alert</span>
+        <div class="ms-2 text-sm">
+          <span class="font-medium">Payment outstanding:</span> you have {{ outstandingInvoices.length }} unpaid invoice{{ outstandingInvoices.length === 1 ? '' : 's' }}.
+          <RouterLink to="/app/invoices" class="font-medium underline hover:no-underline">View invoices</RouterLink>.
+        </div>
+        <button
+          type="button"
+          class="ms-auto -mx-1.5 -my-1.5 rounded focus:ring-2 focus:ring-warning-medium p-1.5 hover:bg-warning-medium inline-flex items-center justify-center h-8 w-8 shrink-0"
+          aria-label="Close"
+          @click="showInvoiceAlert = false"
+        >
+          <span class="sr-only">Close</span>
+          <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="ui-surface p-6">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 class="text-xl font-semibold text-white">Hi, welcome back</h2>
+            <p class="mt-1 text-sm text-white/60">
+              Your dashboard adapts to your provision type (currently: {{ provisionLabel }}).
+            </p>
+            <p class="mt-3 text-sm text-white/70">
+              You have <span class="font-semibold">2</span> upcoming events and <span class="font-semibold">1</span> meeting this week.
+              There are <span class="font-semibold">2</span> items that need your attention.
+            </p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2">
+            <RouterLink
+              to="/app/events"
+              class="ui-btn-primary"
+            >
+              View schedule
+            </RouterLink>
+            <RouterLink
+              to="/app/tickets"
+              class="ui-btn-secondary"
+              v-if="featureFlags.ticketsEnabled"
+            >
+              Review tickets
+            </RouterLink>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div v-if="featureFlags.ticketsEnabled" class="ui-surface p-4">
+          <div class="ui-surface-title">Open tickets</div>
+          <div class="mt-1 text-2xl font-semibold text-white">2</div>
+          <RouterLink v-if="featureFlags.ticketsEnabled" to="/app/tickets" class="mt-2 ui-btn-secondary ui-btn-xs">View</RouterLink>
+        </div>
+        <div v-if="featureFlags.invoicesEnabled" class="ui-surface p-4">
+          <div class="ui-surface-title">
+            {{ overdueInvoices.length ? 'Overdue invoices' : 'Invoices outstanding' }}
+          </div>
+          <div class="mt-1 text-2xl font-semibold" :class="overdueInvoices.length ? 'text-rose-300' : 'text-white'">
+            <span v-if="!invoicesLoaded" role="status" class="inline-flex align-middle">
+              <span class="inline-block h-7 w-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></span>
+              <span class="sr-only">Loading...</span>
+            </span>
+            <span v-else>{{ outstandingInvoices.length }}</span>
+          </div>
+          <RouterLink to="/app/invoices" class="mt-2 ui-btn-secondary ui-btn-xs">View</RouterLink>
+        </div>
+        <div class="ui-surface p-4">
+          <div class="ui-surface-title">Upcoming events</div>
+          <div class="mt-1 text-2xl font-semibold text-white">2</div>
+          <RouterLink to="/app/events" class="mt-2 ui-btn-secondary ui-btn-xs">Browse</RouterLink>
+        </div>
+        <div class="ui-surface p-4">
+          <div class="ui-surface-title">New resources</div>
+          <div class="mt-1 text-2xl font-semibold text-white">3</div>
+          <RouterLink to="/app/documents" class="mt-2 ui-btn-secondary ui-btn-xs">Open</RouterLink>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div class="lg:col-span-2 space-y-4">
+          <div v-if="featureFlags.ticketsEnabled || featureFlags.invoicesEnabled" class="ui-surface w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h5 class="text-lg font-semibold leading-none text-white">Needs your attention</h5>
+              <RouterLink v-if="featureFlags.ticketsEnabled" to="/app/tickets" class="ui-btn-secondary ui-btn-xs">View all</RouterLink>
+            </div>
+            <div class="flow-root">
+              <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                <template v-if="!invoicesLoaded">
+                  <li class="py-4 sm:py-4">
+                    <div role="status" class="flex items-center gap-2 animate-pulse">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2 space-y-2">
+                        <div class="h-3 w-48 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="h-3 w-64 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="h-6 w-16 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </li>
+                  <li class="pt-4 pb-0">
+                    <div role="status" class="flex items-center gap-2 animate-pulse">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2 space-y-2">
+                        <div class="h-3 w-40 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="h-3 w-56 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="h-6 w-14 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </li>
+                </template>
+                <template v-else>
+                  <li v-if="featureFlags.ticketsEnabled" class="py-4 sm:py-4">
+                    <div class="flex items-center gap-2">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H7l-5 3V5z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2">
+                        <p class="text-sm font-medium text-white truncate">Ticket awaiting your reply</p>
+                        <p class="text-sm text-white/60 truncate">TKT-104 · Customer asked for an update</p>
+                      </div>
+                      <RouterLink to="/app/tickets" class="ui-btn-secondary ui-btn-xs">Reply</RouterLink>
+                    </div>
+                  </li>
+                  <li v-if="featureFlags.invoicesEnabled && mostUrgentInvoice" class="pt-4 pb-0">
+                    <div class="flex items-center gap-2">
+                      <div class="shrink-0">
+                        <div
+                          class="w-8 h-8 rounded-full flex items-center justify-center"
+                          :class="mostUrgentInvoice.status === 'Overdue' ? 'bg-rose-400/15' : 'bg-amber-400/15'"
+                        >
+                          <svg
+                            class="w-4 h-4"
+                            :class="mostUrgentInvoice.status === 'Overdue' ? 'text-rose-300' : 'text-amber-300'"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0013.414 6L10 2.586A2 2 0 008.586 2H4zm6 1.5V7a1 1 0 001 1h3.5L10 3.5z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2">
+                        <p class="text-sm font-medium text-white truncate">
+                          {{ mostUrgentInvoice.status === 'Overdue' ? 'Overdue invoice' : 'Invoice outstanding' }}
+                        </p>
+                        <p class="text-sm text-white/60 truncate">
+                          {{ mostUrgentInvoice.number }} · Status: {{ mostUrgentInvoice.status === 'Unpaid' ? 'Outstanding' : mostUrgentInvoice.status }}
+                        </p>
+                      </div>
+                      <RouterLink to="/app/invoices" class="ui-btn-secondary ui-btn-xs">View</RouterLink>
+                    </div>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ui-surface w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h5 class="text-lg font-semibold leading-none text-white">Upcoming registered events</h5>
+              <RouterLink to="/app/events" class="ui-btn-secondary ui-btn-xs">View all</RouterLink>
+            </div>
+            <div class="flow-root">
+              <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                <li class="py-4 sm:py-4">
+                  <div class="flex items-center gap-2">
+                    <div class="shrink-0">
+                      <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path
+                            fill-rule="evenodd"
+                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1z"
+                            clip-rule="evenodd"
+                          />
+                          <path d="M18 10H2v6a2 2 0 002 2h12a2 2 0 002-2v-6z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0 ms-2">
+                      <p class="text-sm font-medium text-white truncate">Getting started</p>
+                      <p class="text-sm text-white/60 truncate">Thu 18 Jan · 12:00 · Teams</p>
+                    </div>
+                    <RouterLink to="/app/events/1" class="ui-btn-secondary ui-btn-xs">View</RouterLink>
+                  </div>
+                </li>
+                <li class="pt-4 pb-0">
+                  <div class="flex items-center gap-2">
+                    <div class="shrink-0">
+                      <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path
+                            fill-rule="evenodd"
+                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1z"
+                            clip-rule="evenodd"
+                          />
+                          <path d="M18 10H2v6a2 2 0 002 2h12a2 2 0 002-2v-6z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0 ms-2">
+                      <p class="text-sm font-medium text-white truncate">Reporting basics</p>
+                      <p class="text-sm text-white/60 truncate">Mon 29 Jan · 10:00 · Riverside</p>
+                    </div>
+                    <RouterLink to="/app/events/2" class="ui-btn-secondary ui-btn-xs">View</RouterLink>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="ui-surface w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h5 class="text-lg font-semibold leading-none text-white">Scheduled meetings</h5>
+              <RouterLink to="/app/meetings" class="ui-btn-secondary ui-btn-xs">View all</RouterLink>
+            </div>
+            <div class="flow-root">
+              <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                <template v-if="!invoicesLoaded">
+                  <li class="py-4 sm:py-4">
+                    <div role="status" class="flex items-center gap-2 animate-pulse">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2 space-y-2">
+                        <div class="h-3 w-40 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="h-3 w-64 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="h-6 w-16 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </li>
+                  <li class="pt-4 pb-0">
+                    <div role="status" class="flex items-center gap-2 animate-pulse">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2 space-y-2">
+                        <div class="h-3 w-44 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="h-3 w-60 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="h-6 w-16 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </li>
+                </template>
+                <template v-else>
+                  <li class="py-4 sm:py-4">
+                    <div class="flex items-center gap-2">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path
+                              fill-rule="evenodd"
+                              d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm2 1h12v8H4V6z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2">
+                        <p class="text-sm font-medium text-white truncate">Training team</p>
+                        <p class="text-sm text-white/60 truncate">Wed 17 Jan · 09:30 · Join link available</p>
+                      </div>
+                      <RouterLink to="/app/meetings" class="ui-btn-secondary ui-btn-xs">Details</RouterLink>
+                    </div>
+                  </li>
+                  <li class="pt-4 pb-0">
+                    <div class="flex items-center gap-2">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path
+                              fill-rule="evenodd"
+                              d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm2 1h12v8H4V6z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2">
+                        <p class="text-sm font-medium text-white truncate">Customer Success</p>
+                        <p class="text-sm text-white/60 truncate">Tue 23 Jan · 15:00 · Join link available</p>
+                      </div>
+                      <RouterLink to="/app/meetings" class="ui-btn-secondary ui-btn-xs">Details</RouterLink>
+                    </div>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ui-surface w-full p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h5 class="text-lg font-semibold leading-none text-white">Resources</h5>
+              <RouterLink to="/app/documents" class="ui-btn-secondary ui-btn-xs">View all</RouterLink>
+            </div>
+            <div class="flow-root">
+              <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                <template v-if="!invoicesLoaded">
+                  <li class="py-4 sm:py-4">
+                    <div role="status" class="flex items-center gap-2 animate-pulse">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2 space-y-2">
+                        <div class="h-3 w-44 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="h-3 w-64 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="h-6 w-14 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </li>
+                  <li class="py-4 sm:py-4">
+                    <div role="status" class="flex items-center gap-2 animate-pulse">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2 space-y-2">
+                        <div class="h-3 w-36 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="h-3 w-56 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="h-6 w-14 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </li>
+                  <li class="pt-4 pb-0">
+                    <div role="status" class="flex items-center gap-2 animate-pulse">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2 space-y-2">
+                        <div class="h-3 w-40 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="h-3 w-52 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      </div>
+                      <div class="h-6 w-14 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </li>
+                </template>
+                <template v-else>
+                  <li class="py-4 sm:py-4">
+                    <div class="flex items-center gap-2">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path
+                              fill-rule="evenodd"
+                              d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7.414A2 2 0 0015.414 6L14 4.586A2 2 0 0012.586 4H4zm2 5a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 000 2h5a1 1 0 100-2H6z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2">
+                        <p class="text-sm font-medium text-white truncate">Knowledge Base update</p>
+                        <p class="text-sm text-white/60 truncate">New article: Reporting checklist</p>
+                      </div>
+                      <RouterLink to="/app/knowledge-base" class="ui-btn-secondary ui-btn-xs">Open</RouterLink>
+                    </div>
+                  </li>
+                  <li class="py-4 sm:py-4">
+                    <div class="flex items-center gap-2">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path d="M4 4a2 2 0 012-2h5a2 2 0 012 2v2h1a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2">
+                        <p class="text-sm font-medium text-white truncate">New video</p>
+                        <p class="text-sm text-white/60 truncate">Uploading evidence walkthrough</p>
+                      </div>
+                      <RouterLink to="/app/videos" class="ui-btn-secondary ui-btn-xs">Open</RouterLink>
+                    </div>
+                  </li>
+                  <li class="pt-4 pb-0">
+                    <div class="flex items-center gap-2">
+                      <div class="shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path
+                              fill-rule="evenodd"
+                              d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0013.414 6L10 2.586A2 2 0 008.586 2H4zm6 1.5V7a1 1 0 001 1h3.5L10 3.5z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="flex-1 min-w-0 ms-2">
+                        <p class="text-sm font-medium text-white truncate">Document updated</p>
+                        <p class="text-sm text-white/60 truncate">Care plan template v2</p>
+                      </div>
+                      <RouterLink to="/app/documents" class="ui-btn-secondary ui-btn-xs">Open</RouterLink>
+                    </div>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+</template>

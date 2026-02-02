@@ -1,0 +1,24 @@
+/* Global skeleton shimmer */
+@keyframes hg-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.hg-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(148, 163, 184, 0.25); /* slate-400/25 */
+}
+.hg-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: hg-shimmer 1.6s linear infinite;
+  mix-blend-mode: overlay;
+}
+
+:root.dark .hg-skeleton {
+  background-color: rgba(100, 116, 139, 0.25); /* slate-500/25 */
+}

@@ -1,0 +1,322 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { adminListEvents, type EventDto } from '../../lib/api'
+
+const events = ref<EventDto[]>([])
+const loading = ref(true)
+const loadError = ref<string | null>(null)
+const openMenuId = ref<string | null>(null)
+
+const router = useRouter()
+
+const statusFilter = ref<'all' | 'upcoming' | 'completed' | 'cancelled' | 'draft' | 'published'>('all')
+
+const filteredEvents = computed(() => {
+  if (statusFilter.value === 'all') return events.value
+  return events.value.filter((event) => (event.status ?? 'upcoming') === statusFilter.value)
+})
+
+const total = computed(() => filteredEvents.value.length)
+
+function formatPrice(value: number | null) {
+  if (value == null) return '—'
+  return `£${value}`
+}
+
+function formatAudience(event: EventDto) {
+  if (event.eligibility === 'both') return 'Both'
+  if (event.eligibility === 'customer') return 'Customer'
+  return 'Non-customer'
+}
+
+function statusBadge(status?: string) {
+  const value = (status ?? 'upcoming').toLowerCase()
+  if (value === 'completed') return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
+  if (value === 'cancelled') return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+  if (value === 'draft') return 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+  if (value === 'published') return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200'
+  return 'bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200'
+}
+
+onMounted(async () => {
+  loading.value = true
+  loadError.value = null
+  try {
+    events.value = await adminListEvents()
+  } catch (e) {
+    loadError.value = e instanceof Error ? e.message : 'Failed to load events'
+  } finally {
+    loading.value = false
+  }
+})
+
+function toggleMenu(id: string) {
+  openMenuId.value = openMenuId.value === id ? null : id
+}
+
+function closeMenu() {
+  openMenuId.value = null
+}
+
+function goToEvent(id: string) {
+  router.push(`/admin/events/${id}`)
+}
+</script>
+
+<template>
+  <div class="space-y-6" @click="closeMenu">
+      <div class="ui-surface relative shadow-md sm:rounded-lg overflow-hidden">
+        <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
+          <div class="w-full md:w-1/2">
+            <form class="flex items-center">
+              <label for="simple-search" class="sr-only">Search</label>
+              <div class="relative w-full">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fill-rule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="simple-search"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  placeholder="Search"
+                >
+              </div>
+            </form>
+          </div>
+
+          <div class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
+            <button type="button" class="ui-btn-primary">
+              <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path
+                  clip-rule="evenodd"
+                  fill-rule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                />
+              </svg>
+              Create event
+            </button>
+
+            <div class="flex items-center space-x-3 w-full md:w-auto">
+              <div class="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/70">
+                <button
+                  type="button"
+                  class="rounded px-2 py-1"
+                  :class="statusFilter === 'all' ? 'bg-white/15 text-white' : 'hover:bg-white/10'"
+                  @click="statusFilter = 'all'"
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  class="rounded px-2 py-1"
+                  :class="statusFilter === 'upcoming' ? 'bg-white/15 text-white' : 'hover:bg-white/10'"
+                  @click="statusFilter = 'upcoming'"
+                >
+                  Upcoming
+                </button>
+                <button
+                  type="button"
+                  class="rounded px-2 py-1"
+                  :class="statusFilter === 'completed' ? 'bg-white/15 text-white' : 'hover:bg-white/10'"
+                  @click="statusFilter = 'completed'"
+                >
+                  Completed
+                </button>
+                <button
+                  type="button"
+                  class="rounded px-2 py-1"
+                  :class="statusFilter === 'cancelled' ? 'bg-white/15 text-white' : 'hover:bg-white/10'"
+                  @click="statusFilter = 'cancelled'"
+                >
+                  Cancelled
+                </button>
+              </div>
+              <button
+                id="actionsDropdownButton"
+                data-dropdown-toggle="actionsDropdown"
+                class="ui-btn-secondary w-full md:w-auto"
+                type="button"
+              >
+                <svg class="-ml-1 mr-1.5 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path
+                    clip-rule="evenodd"
+                    fill-rule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  />
+                </svg>
+                Actions
+              </button>
+              <div id="actionsDropdown" class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
+                <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="actionsDropdownButton">
+                  <li>
+                    <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Mass Edit</a>
+                  </li>
+                </ul>
+                <div class="py-1">
+                  <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete all</a>
+                </div>
+              </div>
+
+              <button
+                id="filterDropdownButton"
+                data-dropdown-toggle="filterDropdown"
+                class="ui-btn-secondary w-full md:w-auto"
+                type="button"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 w-4 mr-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fill-rule="evenodd"
+                    d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 008 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Filter
+                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path
+                    clip-rule="evenodd"
+                    fill-rule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  />
+                </svg>
+              </button>
+              <div id="filterDropdown" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
+                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose status</h6>
+                <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
+                  <li
+                    class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-600 dark:bg-gray-800"
+                    role="switch"
+                    aria-checked="false"
+                  >
+                    <span class="text-gray-900 dark:text-gray-100">Published</span>
+                    <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 transition dark:bg-gray-600">
+                      <span class="inline-block h-5 w-5 translate-x-1 rounded-full bg-white shadow transition" />
+                    </span>
+                  </li>
+                  <li
+                    class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-600 dark:bg-gray-800"
+                    role="switch"
+                    aria-checked="false"
+                  >
+                    <span class="text-gray-900 dark:text-gray-100">Draft</span>
+                    <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 transition dark:bg-gray-600">
+                      <span class="inline-block h-5 w-5 translate-x-1 rounded-full bg-white shadow transition" />
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="ui-table">
+            <thead>
+              <tr>
+                <th scope="col" class="px-4 py-3">Title</th>
+                <th scope="col" class="px-4 py-3">Date</th>
+                <th scope="col" class="px-4 py-3">Type</th>
+                <th scope="col" class="px-4 py-3">Audience</th>
+                <th scope="col" class="px-4 py-3">Price (non-customer)</th>
+                <th scope="col" class="px-4 py-3">Status</th>
+                <th scope="col" class="px-4 py-3">Registered</th>
+                <th scope="col" class="px-4 py-3">Attendees</th>
+                <th scope="col" class="px-4 py-3">Did not attend</th>
+                <th scope="col" class="px-4 py-3"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="loading" class="border-b dark:border-gray-700">
+                <td colspan="10" class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">Loading events…</td>
+              </tr>
+              <tr v-else-if="loadError" class="border-b dark:border-gray-700">
+                <td colspan="10" class="px-4 py-4 text-sm text-red-500">{{ loadError }}</td>
+              </tr>
+              <tr v-else-if="filteredEvents.length === 0" class="border-b dark:border-gray-700">
+                <td colspan="10" class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">No events found.</td>
+              </tr>
+              <tr
+                v-else
+                v-for="event in filteredEvents"
+                :key="event.id"
+                class="border-b dark:border-gray-700 cursor-pointer hover:bg-white/5"
+                @click="goToEvent(event.id)"
+              >
+                <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                  {{ event.title }}
+                </th>
+                <td class="px-4 py-3">{{ event.dateLabel }}</td>
+                <td class="px-4 py-3">{{ event.type }}</td>
+                <td class="px-4 py-3">{{ formatAudience(event) }}</td>
+                <td class="px-4 py-3">{{ formatPrice(event.priceForNonCustomers) }}</td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" :class="statusBadge(event.status)">
+                    {{ event.status ?? 'upcoming' }}
+                  </span>
+                </td>
+                <td class="px-4 py-3">{{ event.registeredCount ?? 0 }}</td>
+                <td class="px-4 py-3">{{ event.attendeesCount ?? 0 }}</td>
+                <td class="px-4 py-3">{{ event.noShowCount ?? 0 }}</td>
+                <td class="px-4 py-3 flex items-center justify-end">
+                  <button
+                    :id="`admin-event-${event.id}-dropdown-button`"
+                    class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
+                    type="button"
+                    @click.stop="toggleMenu(event.id)"
+                  >
+                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+                    </svg>
+                  </button>
+                  <div
+                    v-if="openMenuId === event.id"
+                    :id="`admin-event-${event.id}-dropdown`"
+                    class="z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
+                    @click.stop
+                  >
+                    <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" :aria-labelledby="`admin-event-${event.id}-dropdown-button`">
+                      <li>
+                        <button
+                          type="button"
+                          class="block w-full text-left py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                          @click="goToEvent(event.id); closeMenu()"
+                        >
+                          View details
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          class="block w-full text-left py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                          @click="goToEvent(event.id); closeMenu()"
+                        >
+                          Edit details
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4" aria-label="Table navigation">
+          <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+            Showing
+            <span class="font-semibold text-gray-900 dark:text-white">{{ total === 0 ? 0 : 1 }}</span>
+            -
+            <span class="font-semibold text-gray-900 dark:text-white">{{ total }}</span>
+            of
+            <span class="font-semibold text-gray-900 dark:text-white">{{ total }}</span>
+          </span>
+        </nav>
+      </div>
+  </div>
+</template>

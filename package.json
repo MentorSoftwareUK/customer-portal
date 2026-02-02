@@ -1,0 +1,23 @@
+{
+  "name": "mentor-cp",
+  "version": "1.0.0",
+  "scripts": {
+    "dev:api": "npm run dev -w api",
+    "dev:portal": "npm run dev -w portal",
+    "dev": "concurrently -n api,portal -c blue,green 'npm run dev:api' 'npm run dev:portal'",
+    "hubspot:video-thumbnails": "node scripts/hubspot-video-thumbnails.mjs",
+    "typecheck": "npm run typecheck -w api && npm run typecheck -w portal"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
