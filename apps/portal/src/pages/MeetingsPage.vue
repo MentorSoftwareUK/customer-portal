@@ -26,7 +26,9 @@ const parseMeetingDate = (label?: string | null) => {
   const match = label.match(/\b(\d{1,2})\s+([A-Za-z]{3})\b/)
   if (!match) return null
   const day = Number(match[1])
-  const monthName = match[2].toLowerCase()
+  const monthToken = match[2]
+  if (!monthToken) return null
+  const monthName = monthToken.toLowerCase()
   const months: Record<string, number> = {
     jan: 0,
     feb: 1,
