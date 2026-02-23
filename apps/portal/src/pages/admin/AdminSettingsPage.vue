@@ -33,11 +33,17 @@ const hubspotConnectedBanner = ref(false)
 
 const lastSavedSnapshot = ref<string>('')
 
+const dirty = ref(false)
+watch(
+  () => settings.value,
+  (val) => {
+    if (!val) return
+    dirty.value = JSON.stringify(val) !== lastSavedSnapshot.value
+  },
+  { deep: true },
+)
+const hasUnsavedChanges = computed(() => dirty.value)
 const canSave = computed(() => !loading.value && !saving.value && !!settings.value && hasUnsavedChanges.value)
-const hasUnsavedChanges = computed(() => {
-  if (!settings.value) return false
-  return JSON.stringify(settings.value) !== lastSavedSnapshot.value
-})
 
 async function load() {
   loading.value = true
@@ -135,6 +141,7 @@ async function save() {
     })
     settings.value = res.settings
     lastSavedSnapshot.value = JSON.stringify(res.settings)
+    dirty.value = false
     await loadFeatureFlags(true)
     saved.value = true
     setTimeout(() => (saved.value = false), 1500)
@@ -272,8 +279,8 @@ function toggleFeature(key: keyof AdminSettings['features']) {
             </button>
           </div>
           <div class="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80">
-            <span v-if="saved" class="font-semibold text-emerald-200">Saved</span>
-            <span v-else-if="hasUnsavedChanges" class="text-white/60">Unsaved changes</span>
+            <span v-if="saved" class="font-semibold text-emerald-200">&#x2713; Saved</span>
+            <span v-else-if="hasUnsavedChanges" class="font-semibold text-amber-300 flex items-center gap-1.5"><span class="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>Unsaved changes</span>
             <span v-else class="text-white/50">All changes saved</span>
             <button
               class="rounded-md bg-white/15 px-3 py-1 text-xs font-semibold text-white hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
