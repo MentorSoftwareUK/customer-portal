@@ -41,7 +41,6 @@ async function hubspotFetch(path: string, init?: RequestInit) {
   let token: string
   
   if (isKbEndpoint) {
-    // Use OAuth token for KB endpoints
     const oauthTokens = await getHubSpotOAuthTokens()
     
     if (!oauthTokens) {
@@ -61,8 +60,6 @@ async function hubspotFetch(path: string, init?: RequestInit) {
     } else {
       token = oauthTokens.accessToken
     }
-    
-    console.log('[hubspot] Using OAuth token for KB endpoint')
   } else {
     // Use private app token for other endpoints
     const privateToken = env.HUBSPOT_PRIVATE_APP_TOKEN
@@ -73,7 +70,6 @@ async function hubspotFetch(path: string, init?: RequestInit) {
       throw err
     }
     token = privateToken
-    console.log('[hubspot] Using private app token prefix:', token.slice(0, 6))
   }
 
   const controller = new AbortController()
@@ -86,7 +82,7 @@ async function hubspotFetch(path: string, init?: RequestInit) {
       'Content-Type': 'application/json',
       ...(init?.headers ?? {}),
     }
-    console.log('[hubspot] Request', path, { Authorization: finalHeaders.Authorization ? 'Bearer <redacted>' : 'missing' })
+    console.log('[hubspot] Request', path)
     const res = await fetch(`${HUBSPOT_BASE_URL}${path}`, {
       ...init,
       signal: controller.signal,

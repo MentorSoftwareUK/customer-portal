@@ -105,7 +105,7 @@ const EnvSchema = z.object({
   HUBSPOT_PROVISION_TYPE_PROPERTY: optionalString(),
 
   // HubSpot HTTP timeout (ms) to keep login fast when HubSpot is slow.
-  HUBSPOT_TIMEOUT_MS: z.preprocess(emptyStringToUndefined, z.coerce.number().int().positive()).default(1_200),
+  HUBSPOT_TIMEOUT_MS: z.preprocess(emptyStringToUndefined, z.coerce.number().int().positive()).default(5_000),
 
   // HubSpot mapping: product version gating (e.g. v2 vs v3)
   // Example:

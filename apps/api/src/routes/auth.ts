@@ -146,29 +146,20 @@ async function buildAuthPayload(email: string): Promise<AuthTokenPayload> {
   }
 
   // Enrich token with HubSpot-derived context when available.
-    try {
+  // Wrap the entire enrichment in a hard timeout so login never blocks for too long.
+  const ENRICH_TIMEOUT_MS = Math.max(env.HUBSPOT_TIMEOUT_MS * 2, 5_000) // at most 2× per-request timeout or 5s
+
+  async function enrichFromHubSpot(): Promise<AuthTokenPayload> {
       const extraProps = [
         env.HUBSPOT_LIVE_CUSTOMER_PROPERTY,
         env.HUBSPOT_PROVISION_TYPE_PROPERTY,
         env.HUBSPOT_PRODUCT_VERSION_PROPERTY,
       ].filter((v): v is string => Boolean(v))
 
-      const contactPromise = hubspotFindContactByEmail({
+      const contact = await hubspotFindContactByEmail({
         email,
         properties: ['email', 'firstname', 'lastname', 'jobtitle', 'hs_buying_role', ...extraProps],
       })
-
-      const contact = await Promise.race([
-        contactPromise,
-        new Promise<null>((_resolve, reject) => {
-          const timeout = setTimeout(() => {
-            clearTimeout(timeout)
-            const err = new Error('HubSpot lookup timed out')
-            ;(err as any).code = 'HUBSPOT_TIMEOUT'
-            reject(err)
-          }, env.HUBSPOT_TIMEOUT_MS)
-        }),
-      ])
 
     let isLiveCustomer = inferLiveCustomer({ properties: contact?.properties ?? null })
     if (isLiveCustomer === null && contact?.id) {
@@ -188,7 +179,6 @@ async function buildAuthPayload(email: string): Promise<AuthTokenPayload> {
     }
 
     // If we couldn't find a contact, try to infer customer status from the company's domain.
-    // This supports portals where the "customer status" lives on the Company record.
     if (!contact && isLiveCustomer === null) {
       const domain = inferEmailDomain(email)
       if (domain) {
@@ -198,7 +188,6 @@ async function buildAuthPayload(email: string): Promise<AuthTokenPayload> {
             properties: [env.HUBSPOT_LIVE_CUSTOMER_PROPERTY].filter((v): v is string => Boolean(v)),
           })
 
-          // Prefer any company that matches our "true" values.
           let selected = companies[0] ?? null
           for (const c of companies) {
             const v = inferLiveCustomer({ properties: c?.properties ?? null })
@@ -211,8 +200,6 @@ async function buildAuthPayload(email: string): Promise<AuthTokenPayload> {
           const fromCompany = selected ? inferLiveCustomer({ properties: selected.properties ?? null }) : null
           if (fromCompany !== null) isLiveCustomer = fromCompany
 
-          // If the company is live and the contact doesn't exist yet, create it now so the
-          // user can use the portal immediately (email verification has already happened).
           if (fromCompany === true && selected?.id) {
             const created = await hubspotUpsertContactByEmail({ email, properties: {} })
             try {
@@ -221,7 +208,6 @@ async function buildAuthPayload(email: string): Promise<AuthTokenPayload> {
               // Best-effort association.
             }
 
-            // Refresh contact so token includes a contact id.
             const refreshed = await hubspotFindContactByEmail({
               email,
               properties: ['email', 'firstname', 'lastname', 'jobtitle', 'hs_buying_role', ...extraProps],
@@ -266,11 +252,24 @@ async function buildAuthPayload(email: string): Promise<AuthTokenPayload> {
       canEditCompany: canEditCompanyFromJobTitle(jobTitle),
       isAdmin,
     }
-    } catch (err) {
-      const missingToken = err instanceof Error && (err as any).code === 'HUBSPOT_NOT_CONFIGURED'
-      const timedOut = err instanceof Error && (err as any).code === 'HUBSPOT_TIMEOUT'
+  }
 
-    // HubSpot not configured: allow login anyway.
+  try {
+    return await Promise.race([
+      enrichFromHubSpot(),
+      new Promise<never>((_resolve, reject) => {
+        setTimeout(() => {
+          const err = new Error(`HubSpot enrichment timed out after ${ENRICH_TIMEOUT_MS}ms`)
+          ;(err as any).code = 'HUBSPOT_TIMEOUT'
+          reject(err)
+        }, ENRICH_TIMEOUT_MS)
+      }),
+    ])
+    } catch (err) {
+      const timedOut = err instanceof Error && (err as any).code === 'HUBSPOT_TIMEOUT'
+      if (timedOut) console.warn('[auth] HubSpot enrichment timed out; proceeding with minimal payload')
+
+    // HubSpot error or timeout: allow login anyway with minimal payload.
       return {
         email,
         viewerType: 'non-customer',
