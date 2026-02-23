@@ -114,9 +114,15 @@ async function onSubmit() {
     if (step.value === 'email') {
       response.value = null
 
-      // Pre-fetch HubSpot context for UX (filters) but don't block auth if it fails.
+      // Fire lookup + start in parallel to eliminate serial round-trip delay.
+      // Lookup provides UX context (customer badge, provision filter).
+      // Start issues the code + fires the email.
+      const lookupPromise = lookupWithTimeout(email.value, 3000).catch(() => null)
+      const startPromise = authStart(email.value)
+
+      // Await lookup first (for UX decisions), but it's already running in parallel with start.
       try {
-        response.value = await lookupWithTimeout(email.value, 1500)
+        response.value = await lookupPromise
 
         if (response.value?.provisionType) {
           writeProvisionFilter(response.value.provisionType)
@@ -149,15 +155,11 @@ async function onSubmit() {
         return
       }
 
-      const started = await authStart(email.value)
-      if (started.warning) {
-        info.value = started.warning
-      } else {
-        info.value = 'We’ve sent you a sign-in code.'
-      }
+      const started = await startPromise
       if (started.devCode) {
         devCodeHint.value = started.devCode
       }
+      info.value = 'We\u2019ve sent you a sign-in code.'
       step.value = 'code'
       return
     }

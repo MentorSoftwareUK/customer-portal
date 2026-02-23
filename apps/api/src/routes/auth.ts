@@ -126,8 +126,41 @@ function isAdminEmail(email: string) {
   return allowlist.includes(email.toLowerCase())
 }
 
+// In-memory enrichment cache to avoid re-querying HubSpot during verify.
+// Key: normalized email, value: { payload, ts }.
+const enrichmentCache = new Map<string, { payload: AuthTokenPayload; ts: number }>()
+const ENRICHMENT_CACHE_TTL_MS = 60_000 // 1 minute — covers lookup → start → verify hop
+
+function cacheEnrichment(email: string, payload: AuthTokenPayload) {
+  enrichmentCache.set(email.toLowerCase(), { payload, ts: Date.now() })
+  // Lazy eviction: clear stale entries when cache grows.
+  if (enrichmentCache.size > 200) {
+    const now = Date.now()
+    for (const [k, v] of enrichmentCache) {
+      if (now - v.ts > ENRICHMENT_CACHE_TTL_MS) enrichmentCache.delete(k)
+    }
+  }
+}
+
+function getCachedEnrichment(email: string): AuthTokenPayload | null {
+  const entry = enrichmentCache.get(email.toLowerCase())
+  if (!entry) return null
+  if (Date.now() - entry.ts > ENRICHMENT_CACHE_TTL_MS) {
+    enrichmentCache.delete(email.toLowerCase())
+    return null
+  }
+  return entry.payload
+}
+
 async function buildAuthPayload(email: string): Promise<AuthTokenPayload> {
   const isAdmin = isAdminEmail(email)
+
+  // Return cached enrichment if available (populated by /lookup).
+  const cached = getCachedEnrichment(email)
+  if (cached) {
+    // Admin status may have changed, so patch it.
+    return { ...cached, isAdmin }
+  }
 
   // If HubSpot isn't configured, allow login with a minimal payload.
   if (!env.HUBSPOT_PRIVATE_APP_TOKEN) {
@@ -255,7 +288,7 @@ async function buildAuthPayload(email: string): Promise<AuthTokenPayload> {
   }
 
   try {
-    return await Promise.race([
+    const payload = await Promise.race([
       enrichFromHubSpot(),
       new Promise<never>((_resolve, reject) => {
         setTimeout(() => {
@@ -265,6 +298,8 @@ async function buildAuthPayload(email: string): Promise<AuthTokenPayload> {
         }, ENRICH_TIMEOUT_MS)
       }),
     ])
+    cacheEnrichment(email, payload)
+    return payload
     } catch (err) {
       const timedOut = err instanceof Error && (err as any).code === 'HUBSPOT_TIMEOUT'
       if (timedOut) console.warn('[auth] HubSpot enrichment timed out; proceeding with minimal payload')
@@ -321,24 +356,21 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     const email = parsed.data.email
     const { code } = await createAuthCode(email)
 
-    let warning: string | undefined
     let devCode: string | undefined
 
     // Dev ergonomics: when SMTP isn't configured, return the code so local/dev testing isn't blocked.
     if (env.NODE_ENV !== 'production' && !isSmtpConfigured()) {
       devCode = code
       app.log.info({ email, code }, 'Login code (dev)')
-      return reply.status(200).send({ ok: true, email, warning, devCode })
+      return reply.status(200).send({ ok: true, email, devCode })
     }
 
-    try {
-      await sendLoginCodeEmail({ to: email, code })
-    } catch (e) {
-      warning = e instanceof Error ? e.message : 'Failed to send email'
-      if (env.NODE_ENV !== 'production') devCode = code
-    }
+    // Fire-and-forget: send the email in the background so the user sees the code input immediately.
+    sendLoginCodeEmail({ to: email, code }).catch((e) => {
+      app.log.error({ email, err: e instanceof Error ? e.message : e }, 'Failed to send login code email')
+    })
 
-    return reply.status(200).send({ ok: true, email, warning, devCode })
+    return reply.status(200).send({ ok: true, email })
   })
 
   // Step 2: verify the code and mint an access token.
@@ -537,6 +569,25 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         }
       }
 
+      const provisionType = inferProvisionType({ properties: contact?.properties ?? null })
+      const productVersion = inferProductVersion({ properties: contact?.properties ?? null })
+      const jobTitle = contact?.properties?.jobtitle ?? null
+      const buyingRole = contact?.properties?.hs_buying_role ?? null
+
+      // Pre-cache enrichment so /verify doesn't re-query HubSpot.
+      cacheEnrichment(email, {
+        email,
+        viewerType: isLiveCustomer === true ? 'customer' : 'non-customer',
+        hubspotContactId: contact?.id ?? null,
+        isLiveCustomer,
+        provisionType,
+        productVersion,
+        jobTitle,
+        buyingRole,
+        canEditCompany: canEditCompanyFromJobTitle(jobTitle),
+        isAdmin: isAdminEmail(email),
+      })
+
       return {
         email,
         auth: {
@@ -548,8 +599,8 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
           properties: contact?.properties ?? null,
         },
         isLiveCustomer,
-        provisionType: inferProvisionType({ properties: contact?.properties ?? null }),
-        productVersion: inferProductVersion({ properties: contact?.properties ?? null }),
+        provisionType,
+        productVersion,
       }
     } catch (err) {
       // If HubSpot isn't configured or fails, return a safe response without blocking.
