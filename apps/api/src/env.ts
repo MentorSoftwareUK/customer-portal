@@ -141,7 +141,14 @@ const EnvSchema = z.object({
   // Email (optional). If not configured, auth codes are logged (dev only) and returned in the response (dev only).
   SMTP_HOST: optionalString(),
   SMTP_PORT: optionalPositiveInt(),
-  SMTP_SECURE: z.coerce.boolean().optional(),
+  SMTP_SECURE: z.preprocess(
+    (val) => {
+      if (val === undefined || val === null || val === '') return undefined
+      if (typeof val === 'string') return val.toLowerCase() === 'true' || val === '1'
+      return Boolean(val)
+    },
+    z.boolean().optional(),
+  ),
   SMTP_USER: optionalString(),
   SMTP_PASS: optionalString(),
   SMTP_FROM: optionalString(),
