@@ -20,7 +20,9 @@ export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
   // Both are safe: /authorize only redirects to HubSpot's consent screen (requires HubSpot admin),
   // and /callback stores tokens only if HubSpot returns a valid authorization code.
   app.addHook('preHandler', async (req, reply) => {
-    if (req.url.startsWith('/callback') || req.url.startsWith('/authorize')) return
+    // req.routeOptions.url is the route pattern (e.g. '/authorize'), not the full URL
+    const route = (req.routeOptions as any)?.url ?? req.url
+    if (route === '/callback' || route === '/authorize') return
     const ok = await requireAdmin(req, reply)
     if (!ok) return reply
   })
