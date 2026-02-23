@@ -68,9 +68,12 @@ async function apiFetch(input: string, init?: RequestInit) {
       const isAdminEndpoint = path.startsWith('/admin')
       const isAdminAuthEndpoint = path.startsWith('/admin-auth')
       if (isAdminEndpoint || isAdminAuthEndpoint) return getAdminAccessToken()
-      return getUserAccessToken()
+      // For non-admin endpoints, prefer the user token but fall back to the
+      // admin token so admin pages that call shared endpoints (e.g. /videos,
+      // /features) still authenticate successfully.
+      return getUserAccessToken() || getAdminAccessToken()
     } catch {
-      return getUserAccessToken()
+      return getUserAccessToken() || getAdminAccessToken()
     }
   })()
 
@@ -98,8 +101,13 @@ async function apiFetch(input: string, init?: RequestInit) {
       path === '/admin-auth/login'
 
     if (res.status === 401 && !isAuthEndpoint) {
-      const isAdminArea = path.startsWith('/admin') || path.startsWith('/admin-auth')
-      handleUnauthorized(isAdminArea ? 'admin' : 'user')
+      // Determine context from the current page, not just the API path.
+      // An admin page may call non-admin endpoints (e.g. /videos); a 401 on
+      // those should not redirect an admin away from the admin area.
+      const isInAdminArea =
+        typeof window !== 'undefined' &&
+        (window.location.pathname.startsWith('/admin') || path.startsWith('/admin') || path.startsWith('/admin-auth'))
+      handleUnauthorized(isInAdminArea ? 'admin' : 'user')
     }
   } catch {
     // ignore

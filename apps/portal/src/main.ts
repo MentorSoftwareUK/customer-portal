@@ -35,15 +35,10 @@ router.beforeEach(async (to) => {
 	}
 
 	if (to.path === '/login') {
-		clearAdminAccessToken()
 		const token = getUserAccessToken()
 		if (token && isTokenExpired(token)) {
 			clearUserAccessToken()
 			return true
-		}
-		const adminToken = getAdminAccessToken()
-		if (adminToken && isTokenExpired(adminToken)) {
-			clearAdminAccessToken()
 		}
 		if (token) return { path: '/app/dashboard' }
 		return true
