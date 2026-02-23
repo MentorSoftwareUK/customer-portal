@@ -14,9 +14,13 @@ const HUBSPOT_TOKEN_INFO_URL = 'https://api.hubapi.com/oauth/v1/access-tokens'
  * - /callback: Receives authorization code and exchanges for tokens
  */
 export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
-  // Protect all routes except /callback (which is a browser redirect from HubSpot).
+  // Protect all routes except /authorize and /callback.
+  // /authorize is a browser navigation (window.location.href) so no Authorization header is sent.
+  // /callback is a browser redirect from HubSpot with no auth token.
+  // Both are safe: /authorize only redirects to HubSpot's consent screen (requires HubSpot admin),
+  // and /callback stores tokens only if HubSpot returns a valid authorization code.
   app.addHook('preHandler', async (req, reply) => {
-    if (req.url.startsWith('/callback')) return
+    if (req.url.startsWith('/callback') || req.url.startsWith('/authorize')) return
     const ok = await requireAdmin(req, reply)
     if (!ok) return reply
   })
