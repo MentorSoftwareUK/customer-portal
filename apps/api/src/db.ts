@@ -3,7 +3,8 @@ import { env } from './env'
 
 let client: MongoClient | null = null
 let db: Db | null = null
-let connectionFailed = false
+let failedAt = 0
+const RETRY_INTERVAL_MS = 30_000 // retry after 30 s
 
 export function isMongoConfigured() {
   return Boolean(env.MONGODB_URI && env.MONGODB_URI.trim() && !env.MONGODB_URI.startsWith('memory:'))
@@ -12,7 +13,8 @@ export function isMongoConfigured() {
 export async function getDb(): Promise<Db | null> {
   if (!isMongoConfigured()) return null
   if (db) return db
-  if (connectionFailed) return null
+  // If a recent attempt failed, skip retrying until the cooldown expires.
+  if (failedAt && Date.now() - failedAt < RETRY_INTERVAL_MS) return null
 
   try {
     client = new MongoClient(env.MONGODB_URI as string, {
@@ -21,13 +23,13 @@ export async function getDb(): Promise<Db | null> {
     })
     await client.connect()
     db = client.db(env.MONGODB_DB)
+    failedAt = 0
     return db
   } catch (err) {
-    // If Mongo is misconfigured or unreachable, fall back to in-memory demo data.
-    console.error('[mongo] connection failed; falling back to demo data', err)
+    console.error('[mongo] connection failed; will retry in 30 s', err)
     client = null
     db = null
-    connectionFailed = true
+    failedAt = Date.now()
     return null
   }
 }
