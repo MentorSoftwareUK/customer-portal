@@ -14,33 +14,6 @@ export type InvoiceDto = {
   pdfUrl: string | null
 }
 
-const demoInvoices: InvoiceDto[] = [
-  {
-    id: 'inv_10021',
-    number: 'INV-10021',
-    date: '2026-01-01',
-    status: 'Paid',
-    amountGbp: 120,
-    pdfUrl: null,
-  },
-  {
-    id: 'inv_10012',
-    number: 'INV-10012',
-    date: '2025-11-15',
-    status: 'Overdue',
-    amountGbp: 120,
-    pdfUrl: null,
-  },
-  {
-    id: 'inv_10008',
-    number: 'INV-10008',
-    date: '2025-12-01',
-    status: 'Unpaid',
-    amountGbp: 120,
-    pdfUrl: null,
-  },
-]
-
 export const invoicesRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', async (req, reply) => {
     const ok = await requireAuth(req, reply)
@@ -58,10 +31,10 @@ export const invoicesRoutes: FastifyPluginAsync = async (app) => {
     const quickbooksConfigured = Boolean(env.QUICKBOOKS_CLIENT_ID && env.QUICKBOOKS_CLIENT_SECRET)
 
     return {
-      invoices: demoInvoices,
+      invoices: [] as InvoiceDto[],
       warning: quickbooksConfigured
         ? undefined
-        : 'QuickBooks is not configured (missing QUICKBOOKS_CLIENT_ID/QUICKBOOKS_CLIENT_SECRET). Returning demo invoices.',
+        : 'QuickBooks is not configured. No invoices available.',
     }
   })
 }

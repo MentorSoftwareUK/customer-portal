@@ -20,26 +20,7 @@ export type KnowledgeBaseArticleDto = {
   snippet?: string
 }
 
-const demoArticles: KnowledgeBaseArticleDto[] = [
-  { id: 'kb-1', title: 'How to onboard a new user', category: 'Getting started', readMins: 5, provision: 'all', productVersion: 'all' },
-  {
-    id: 'kb-2',
-    title: 'Generating monthly reports (v3)',
-    category: 'Reporting',
-    readMins: 7,
-    provision: 'supported-accommodation',
-    productVersion: 'v3',
-  },
-  {
-    id: 'kb-3',
-    title: 'Troubleshooting login issues (v2)',
-    category: 'Support',
-    readMins: 4,
-    provision: 'all',
-    productVersion: 'v2',
-  },
-  { id: 'kb-4', title: 'Managing permissions (v3)', category: 'Getting started', readMins: 6, provision: 'childrens-home', productVersion: 'v3' },
-]
+/* Demo articles array removed — empty arrays are returned when HubSpot is not configured. */
 
 const QuerySchema = z.object({
   productVersion: z.enum(['all', 'v2', 'v3']).optional(),
@@ -281,14 +262,9 @@ export const knowledgeBaseRoutes: FastifyPluginAsync = async (app) => {
     const productVersion = parsedQuery.success ? parsedQuery.data.productVersion : undefined
 
     if (!hubspotConfigured) {
-      const articles =
-        productVersion && productVersion !== 'all'
-          ? demoArticles.filter((a) => a.productVersion === 'all' || a.productVersion === productVersion)
-          : demoArticles
-
       return {
-        articles,
-        warning: 'HubSpot is not configured (missing HUBSPOT_PRIVATE_APP_TOKEN). Returning demo knowledge base articles.',
+        articles: [] as KnowledgeBaseArticleDto[],
+        warning: 'HubSpot is not configured (missing HUBSPOT_PRIVATE_APP_TOKEN).',
       }
     }
 
@@ -362,14 +338,9 @@ export const knowledgeBaseRoutes: FastifyPluginAsync = async (app) => {
           ...(env.NODE_ENV === 'development' ? { debug: errMessage } : {}),
         }
       }
-      const articles =
-        productVersion && productVersion !== 'all'
-          ? demoArticles.filter((a) => a.productVersion === 'all' || a.productVersion === productVersion)
-          : demoArticles
-
       return {
-        articles,
-        warning: 'Failed to load HubSpot knowledge base. Returning demo articles.',
+        articles: [] as KnowledgeBaseArticleDto[],
+        warning: 'Failed to load HubSpot knowledge base.',
       }
     }
   })

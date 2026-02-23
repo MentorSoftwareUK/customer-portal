@@ -188,7 +188,7 @@ function defaults(): AdminSettings {
     general: {
       portalName: 'Mentor Portal',
       brandPrimaryColor: '#14192d',
-      supportEmail: 'support@example.com',
+      supportEmail: '',
       supportUrl: 'https://mentor.co.uk/support',
       statusPageUrl: '',
     },
@@ -212,8 +212,8 @@ function defaults(): AdminSettings {
     },
     communications: {
       emailFromName: 'Mentor',
-      emailFromAddress: env.SMTP_FROM ?? 'no-reply@example.com',
-      replyToAddress: env.SMTP_FROM ?? 'no-reply@example.com',
+      emailFromAddress: env.SMTP_FROM ?? '',
+      replyToAddress: env.SMTP_FROM ?? '',
       supportCc: '',
       supportBcc: '',
     },

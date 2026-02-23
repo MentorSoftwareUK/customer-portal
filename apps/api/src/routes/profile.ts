@@ -52,8 +52,8 @@ function buildFallbackProfile(auth: AuthContext) {
 	const fallbackJobTitle = auth.jobTitle ?? ''
 	const personal = {
 		email: auth.email,
-		firstName: 'Demo',
-		lastName: 'User',
+		firstName: '',
+		lastName: '',
 		phone: '',
 		jobTitle: fallbackJobTitle,
 	}

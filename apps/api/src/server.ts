@@ -23,7 +23,6 @@ import { profileRoutes } from './routes/profile'
 import { featuresRoutes } from './routes/features'
 import { hubspotOAuthRoutes } from './routes/hubspotOAuth'
 import { activityRoutes } from './routes/activity'
-import { seedDemoEventsIfEmpty } from './store/events'
 import { startEmailWorker } from './jobs/emailWorker'
 import { ensureSeedAdmin } from './store/adminUsers'
 
@@ -41,10 +40,7 @@ export async function buildServer() {
     stopWorker?.()
   })
 
-  // Safe no-op when Mongo isn't configured.
-  if (env.DEMO_EVENTS_ENABLED) {
-    await seedDemoEventsIfEmpty()
-  }
+  // Seed admin if needed.
   await ensureSeedAdmin(app.log)
 
   await app.register(cors, {

@@ -2,14 +2,14 @@ import { ref } from 'vue'
 import { getFeatureFlags, type FeatureFlags } from './api'
 
 const featureFlags = ref<FeatureFlags>({
-  invoicesEnabled: true,
-  ticketsEnabled: true,
-  knowledgeBaseEnabled: true,
-  documentsEnabled: true,
-  videosEnabled: true,
-  meetingsEnabled: true,
-  paymentsEnabled: true,
-  eventRegistrationsEnabled: true,
+  invoicesEnabled: false,
+  ticketsEnabled: false,
+  knowledgeBaseEnabled: false,
+  documentsEnabled: false,
+  videosEnabled: false,
+  meetingsEnabled: false,
+  paymentsEnabled: false,
+  eventRegistrationsEnabled: false,
 })
 const featureFlagsLoaded = ref(false)
 let inflight: Promise<void> | null = null
@@ -28,14 +28,14 @@ export async function loadFeatureFlags(force = false) {
       featureFlags.value = res.features
     } catch {
       featureFlags.value = {
-        invoicesEnabled: true,
-        ticketsEnabled: true,
-        knowledgeBaseEnabled: true,
-        documentsEnabled: true,
-        videosEnabled: true,
-        meetingsEnabled: true,
-        paymentsEnabled: true,
-        eventRegistrationsEnabled: true,
+        invoicesEnabled: false,
+        ticketsEnabled: false,
+        knowledgeBaseEnabled: false,
+        documentsEnabled: false,
+        videosEnabled: false,
+        meetingsEnabled: false,
+        paymentsEnabled: false,
+        eventRegistrationsEnabled: false,
       }
     } finally {
       featureFlagsLoaded.value = true

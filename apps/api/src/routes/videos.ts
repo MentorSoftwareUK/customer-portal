@@ -20,92 +20,7 @@ export type VideoDto = {
   thumbnailUrl?: string
 }
 
-const demoRecentVideos: VideoDto[] = [
-  {
-    youtubeId: 'dQw4w9WgXcQ',
-    title: 'Portal walkthrough: getting started',
-    category: 'Training',
-    authorName: 'Mentor Training',
-    timeAgo: '2 hours ago',
-    provision: 'all',
-    productVersion: 'v3',
-    keywords: ['feature'],
-    videoUrl: 'https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Plans.mp4',
-  },
-  {
-    youtubeId: '9bZkp7q19f0',
-    title: 'Webinar: Reporting basics',
-    category: 'Webinar',
-    authorName: 'Mentor Customer Success',
-    timeAgo: '6 hours ago',
-    provision: 'supported-accommodation',
-    productVersion: 'all',
-    keywords: ['webinar'],
-  },
-  {
-    youtubeId: '3JZ_D3ELwOQ',
-    title: 'Support tickets: raise and track issues',
-    category: 'Support',
-    authorName: 'Mentor Support',
-    timeAgo: 'Yesterday',
-    provision: 'childrens-home',
-    productVersion: 'v3',
-    keywords: ['support'],
-  },
-  {
-    youtubeId: 'L_jWHffIx5E',
-    title: 'Knowledge base: finding the right article fast',
-    category: 'Knowledge Base',
-    authorName: 'Mentor Training',
-    timeAgo: '2 days ago',
-    provision: 'all',
-    productVersion: 'all',
-    keywords: ['kb'],
-  },
-]
-
-const demoPopularVideos: VideoDto[] = [
-  {
-    youtubeId: 'kJQP7kiw5Fk',
-    title: 'Provision types: tailoring your setup',
-    category: 'Training',
-    authorName: 'Mentor Training',
-    timeAgo: '7 hours ago',
-    provision: 'all',
-    productVersion: 'all',
-    keywords: ['provision'],
-  },
-  {
-    youtubeId: 'hTWKbfoikeg',
-    title: 'Meetings: what to expect and how to prepare',
-    category: 'Customer Success',
-    authorName: 'Mentor Customer Success',
-    timeAgo: 'Yesterday',
-    provision: 'over-18',
-    productVersion: 'v2',
-    keywords: ['meetings'],
-  },
-  {
-    youtubeId: 'fJ9rUzIMcZQ',
-    title: 'Invoices: downloading and understanding your bill',
-    category: 'Invoices',
-    authorName: 'Mentor Finance',
-    timeAgo: '2 days ago',
-    provision: 'supported-accommodation',
-    productVersion: 'v2',
-    keywords: ['invoices'],
-  },
-  {
-    youtubeId: 'uelHwf8o7_U',
-    title: 'Document library: templates and version updates',
-    category: 'Documents',
-    authorName: 'Mentor Training',
-    timeAgo: 'Last week',
-    provision: 'childrens-home',
-    productVersion: 'v3',
-    keywords: ['documents'],
-  },
-]
+/* Demo video arrays removed — empty arrays are returned when HubSpot is not configured. */
 
 const QuerySchema = z.object({
   productVersion: z.enum(['all', 'v2', 'v3']).optional(),
@@ -216,15 +131,12 @@ export const videosRoutes: FastifyPluginAsync = async (app) => {
     }
 
     if (!hubspotConfigured || !hubdbTableId) {
-      const recentVideos = demoRecentVideos.filter(filterForProductVersion).filter(filterForKeyword)
-      const popularVideos = demoPopularVideos.filter(filterForProductVersion).filter(filterForKeyword)
-
       return {
-        recentVideos,
-        popularVideos,
+        recentVideos: [] as VideoDto[],
+        popularVideos: [] as VideoDto[],
         warning: hubspotConfigured
-          ? 'HubSpot videos table is not configured (missing HUBSPOT_VIDEOS_HUBDB_TABLE_ID). Returning demo videos.'
-          : 'HubSpot is not configured (missing HUBSPOT_PRIVATE_APP_TOKEN). Returning demo videos.',
+          ? 'HubSpot videos table is not configured (missing HUBSPOT_VIDEOS_HUBDB_TABLE_ID).'
+          : 'HubSpot is not configured (missing HUBSPOT_PRIVATE_APP_TOKEN).',
       }
     }
 
@@ -284,13 +196,10 @@ export const videosRoutes: FastifyPluginAsync = async (app) => {
         popularVideos,
       }
     } catch (e) {
-      const recentVideos = demoRecentVideos.filter(filterForProductVersion).filter(filterForKeyword)
-      const popularVideos = demoPopularVideos.filter(filterForProductVersion).filter(filterForKeyword)
-
       return {
-        recentVideos,
-        popularVideos,
-        warning: 'Failed to load HubSpot videos. Returning demo videos.',
+        recentVideos: [] as VideoDto[],
+        popularVideos: [] as VideoDto[],
+        warning: 'Failed to load HubSpot videos.',
       }
     }
   })

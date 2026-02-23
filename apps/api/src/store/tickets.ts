@@ -22,44 +22,7 @@ export type TicketDetailDto = TicketDto & {
 
 type TicketRecord = TicketDetailDto
 
-const demoTickets: TicketRecord[] = [
-  {
-    id: 'T-1021',
-    subject: 'Cannot access invoices',
-    status: 'Open',
-    lastUpdatedLabel: 'Today',
-    category: 'Billing',
-    priority: 'Normal',
-    messages: [
-      { id: 'm1', direction: 'customer', body: 'When I open Invoices I get an error. Can you help?', timeLabel: 'Today' },
-      { id: 'm2', direction: 'support', body: 'Thanks — can you confirm which browser you are using?', timeLabel: 'Today' },
-    ],
-  },
-  {
-    id: 'T-1012',
-    subject: 'Event link missing',
-    status: 'Pending',
-    lastUpdatedLabel: '2 days ago',
-    category: 'Events',
-    priority: 'Low',
-    messages: [
-      { id: 'm1', direction: 'customer', body: 'I registered for the webinar but can\'t see the join link.', timeLabel: '2 days ago' },
-      { id: 'm2', direction: 'support', body: 'We\'re checking this now and will update you shortly.', timeLabel: '2 days ago' },
-    ],
-  },
-  {
-    id: 'T-1004',
-    subject: 'Reset password',
-    status: 'Closed',
-    lastUpdatedLabel: 'Last week',
-    category: 'Access',
-    priority: 'Normal',
-    messages: [
-      { id: 'm1', direction: 'customer', body: 'I\'m locked out and need to reset my password.', timeLabel: 'Last week' },
-      { id: 'm2', direction: 'support', body: 'Reset email sent — please try again and let us know if it persists.', timeLabel: 'Last week' },
-    ],
-  },
-]
+const tickets: TicketRecord[] = []
 
 function generateTicketId() {
   const rand = Math.floor(1000 + Math.random() * 9000)
@@ -71,11 +34,11 @@ function generateMessageId() {
 }
 
 export function listTicketsStore(): TicketDto[] {
-  return demoTickets.map(({ messages: _m, category: _c, priority: _p, ...listItem }) => listItem)
+  return tickets.map(({ messages: _m, category: _c, priority: _p, ...listItem }) => listItem)
 }
 
 export function getTicketStore(ticketId: string): TicketDetailDto | null {
-  return demoTickets.find((t) => t.id === ticketId) ?? null
+  return tickets.find((t) => t.id === ticketId) ?? null
 }
 
 export function createTicketStore(params: {
@@ -101,7 +64,7 @@ export function createTicketStore(params: {
     ],
   }
 
-  demoTickets.unshift(ticket)
+  tickets.unshift(ticket)
   return (({ messages: _m, category: _c, priority: _p, ...listItem }) => listItem)(ticket)
 }
 
@@ -123,10 +86,10 @@ export function replyToTicketStore(ticketId: string, message: string): TicketDet
 
 export function getTicketMetricsStore() {
   const metrics = {
-    total: demoTickets.length,
-    open: demoTickets.filter((t) => t.status === 'Open').length,
-    pending: demoTickets.filter((t) => t.status === 'Pending').length,
-    closed: demoTickets.filter((t) => t.status === 'Closed').length,
+    total: tickets.length,
+    open: tickets.filter((t) => t.status === 'Open').length,
+    pending: tickets.filter((t) => t.status === 'Pending').length,
+    closed: tickets.filter((t) => t.status === 'Closed').length,
   }
 
   return metrics

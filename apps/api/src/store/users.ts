@@ -41,27 +41,7 @@ function normalizeEmail(email: string | null | undefined) {
 }
 
 function ensureInMemorySeed() {
-  if (inMemory.size > 0) return
-  const demo: PortalUser = {
-    id: newUserId(),
-    email: 'jane.doe@example.com',
-    firstName: 'Jane',
-    lastName: 'Doe',
-    companyId: 'demo-co',
-    companyName: 'Demo Co',
-    status: 'active',
-    accessStatus: 'active',
-    blockedUntil: null,
-    blockedReason: null,
-    hubspotContactId: null,
-    emailHistory: [],
-    notesCount: 0,
-    ticketsCount: 2,
-    lastSeenAt: null,
-    createdAt: nowIso(),
-    updatedAt: nowIso(),
-  }
-  inMemory.set(demo.id, demo)
+  // No-op: users are created dynamically on first login.
 }
 
 export async function listUsers(params: { search?: string; status?: 'active' | 'inactive'; limit?: number; offset?: number }) {

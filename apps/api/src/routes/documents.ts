@@ -17,35 +17,7 @@ export type DocumentDto = {
   url?: string
 }
 
-const demoDocuments: DocumentDto[] = [
-  {
-    id: 'doc-1',
-    title: 'Getting started checklist',
-    category: 'Guides',
-    version: 'v1.3',
-    downloadLabel: 'PDF',
-    provision: 'all',
-    productVersion: 'v3',
-  },
-  {
-    id: 'doc-2',
-    title: 'Monthly review template',
-    category: 'Templates',
-    version: 'v2.0',
-    downloadLabel: 'DOCX',
-    provision: 'supported-accommodation',
-    productVersion: 'all',
-  },
-  {
-    id: 'doc-3',
-    title: 'Data retention policy',
-    category: 'Policies',
-    version: 'v1.0',
-    downloadLabel: 'PDF',
-    provision: 'childrens-home',
-    productVersion: 'v2',
-  },
-]
+/* Demo documents array removed — empty arrays are returned when HubSpot is not configured. */
 
 const QuerySchema = z.object({
   productVersion: z.enum(['all', 'v2', 'v3']).optional(),
@@ -194,14 +166,9 @@ export const documentsRoutes: FastifyPluginAsync = async (app) => {
     const keywordFilter = parsedQuery.success ? parsedQuery.data.keywords : undefined
 
     if (!hubspotConfigured) {
-      const documents =
-        productVersion && productVersion !== 'all'
-          ? demoDocuments.filter((d) => d.productVersion === 'all' || d.productVersion === productVersion)
-          : demoDocuments
-
       return {
-        documents,
-        warning: 'HubSpot is not configured (missing HUBSPOT_PRIVATE_APP_TOKEN). Returning demo documents.',
+        documents: [] as DocumentDto[],
+        warning: 'HubSpot is not configured (missing HUBSPOT_PRIVATE_APP_TOKEN).',
       }
     }
 
@@ -312,14 +279,9 @@ export const documentsRoutes: FastifyPluginAsync = async (app) => {
           : undefined,
       }
     } catch (e) {
-      const documents =
-        productVersion && productVersion !== 'all'
-          ? demoDocuments.filter((d) => d.productVersion === 'all' || d.productVersion === productVersion)
-          : demoDocuments
-
       return {
-        documents,
-        warning: 'Failed to load HubSpot documents. Returning demo documents.',
+        documents: [] as DocumentDto[],
+        warning: 'Failed to load HubSpot documents.',
       }
     }
   })

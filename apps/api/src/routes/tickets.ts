@@ -34,7 +34,7 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
       tickets: listTicketsStore(),
       warning: hubspotConfigured
         ? undefined
-        : 'HubSpot is not configured (missing HUBSPOT_PRIVATE_APP_TOKEN). Returning demo tickets.',
+        : 'HubSpot is not configured. No tickets available.',
     }
   })
 
@@ -49,12 +49,12 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
     return {
       ticket,
       warning: hubspotConfigured
-        ? 'HubSpot ticket details are not wired yet. Returning demo ticket details.'
-        : 'HubSpot is not configured (missing HUBSPOT_PRIVATE_APP_TOKEN). Returning demo ticket details.',
+        ? 'HubSpot ticket details are not wired yet.'
+        : 'HubSpot is not configured.',
     }
   })
 
-  // Phase 1: accept and store a demo ticket.
+  // Phase 1: accept and store a ticket in-memory.
   // Later: create a real ticket in HubSpot Service Hub.
   app.post('/', async (req, reply) => {
     const parsed = CreateTicketBodySchema.safeParse(req.body)
@@ -76,8 +76,8 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
     return {
       ticket,
       warning: hubspotConfigured
-        ? 'HubSpot ticket creation is not wired yet. Stored a demo ticket only.'
-        : 'HubSpot is not configured (missing HUBSPOT_PRIVATE_APP_TOKEN). Stored a demo ticket only.',
+        ? 'HubSpot ticket creation is not wired yet.'
+        : 'HubSpot is not configured.',
     }
   })
 
@@ -104,8 +104,8 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
     return {
       ticket,
       warning: hubspotConfigured
-        ? 'HubSpot ticket replies are not wired yet. Stored a demo reply only.'
-        : 'HubSpot is not configured (missing HUBSPOT_PRIVATE_APP_TOKEN). Stored a demo reply only.',
+        ? 'HubSpot ticket replies are not wired yet.'
+        : 'HubSpot is not configured.',
     }
   })
 }
