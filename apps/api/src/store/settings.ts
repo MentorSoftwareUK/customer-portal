@@ -305,7 +305,14 @@ export async function getFeatureFlags(): Promise<FeatureFlags> {
   return settings.features
 }
 
+// Cache admin settings for 30 s to avoid repeated DB reads on every request.
+let settingsCache: { value: AdminSettings; expiresAt: number } | null = null
+const SETTINGS_CACHE_TTL_MS = 30_000
+
 export async function getAdminSettings(): Promise<AdminSettings> {
+  const now = Date.now()
+  if (settingsCache && settingsCache.expiresAt > now) return settingsCache.value
+
   const db = await getDb()
   const d = defaults()
 
@@ -316,9 +323,9 @@ export async function getAdminSettings(): Promise<AdminSettings> {
 
   const col = db.collection<SettingsDoc>(COLLECTION)
   const doc = await col.findOne({ _id: SETTINGS_ID }, { projection: { _id: 0 } })
-  if (!doc) return d
-
-  return mergeSettings(d, doc)
+  const result = doc ? mergeSettings(d, doc) : d
+  settingsCache = { value: result, expiresAt: now + SETTINGS_CACHE_TTL_MS }
+  return result
 }
 
 export async function updateAdminSettings(patch: AdminSettingsPatch): Promise<AdminSettings> {
@@ -328,10 +335,12 @@ export async function updateAdminSettings(patch: AdminSettingsPatch): Promise<Ad
 
   if (!db) {
     inMemorySettings = next
+    settingsCache = null  // invalidate cache
     return next
   }
 
   const col = db.collection<SettingsDoc>(COLLECTION)
   await col.updateOne({ _id: SETTINGS_ID }, { $set: { ...next } }, { upsert: true })
+  settingsCache = null  // invalidate cache
   return next
 }

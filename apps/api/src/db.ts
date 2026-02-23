@@ -31,3 +31,28 @@ export async function getDb(): Promise<Db | null> {
     return null
   }
 }
+
+/**
+ * Create indexes that speed up common queries.
+ * Safe to call repeatedly — MongoDB ignores if the index already exists.
+ */
+export async function ensureIndexes(): Promise<void> {
+  const database = await getDb()
+  if (!database) return
+
+  try {
+    await Promise.all([
+      database.collection('portal_users').createIndex({ email: 1 }, { unique: true, sparse: true }),
+      database.collection('portal_users').createIndex({ status: 1 }),
+      database.collection('events').createIndex({ startAt: 1 }),
+      database.collection('events').createIndex({ status: 1 }),
+      database.collection('registrations').createIndex({ eventId: 1 }),
+      database.collection('registrations').createIndex({ email: 1 }),
+      database.collection('auth_codes').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
+      database.collection('audit_log').createIndex({ createdAt: -1 }),
+      database.collection('email_jobs').createIndex({ status: 1, scheduledFor: 1 }),
+    ])
+  } catch (err) {
+    console.error('[mongo] failed to create indexes', err)
+  }
+}

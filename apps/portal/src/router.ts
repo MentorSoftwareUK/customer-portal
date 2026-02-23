@@ -4,30 +4,30 @@ import type { RouteRecordRaw } from 'vue-router'
 import AppShell from './ui/AppShell.vue'
 import AdminShell from './ui/AdminShell.vue'
 
-import LoginPage from './pages/LoginPage.vue'
-import DashboardPage from './pages/DashboardPage.vue'
-import EventsListPage from './pages/EventsListPage.vue'
-import EventDetailPage from './pages/EventDetailPage.vue'
-import EventRegisterPage from './pages/EventRegisterPage.vue'
-import MeetingsPage from './pages/MeetingsPage.vue'
-import TicketsPage from './pages/TicketsPage.vue'
-import TicketDetailPage from './pages/TicketDetailPage.vue'
-import KnowledgeBasePage from './pages/KnowledgeBasePage.vue'
-import KnowledgeBaseArticlePage from './pages/KnowledgeBaseArticlePage.vue'
-import VideoLibraryPage from './pages/VideoLibraryPage.vue'
-import DocumentLibraryPage from './pages/DocumentLibraryPage.vue'
-import InvoicesPage from './pages/InvoicesPage.vue'
-import ProfilePage from './pages/ProfilePage.vue'
-import OnboardingPage from './pages/OnboardingPage.vue'
+const LoginPage = () => import('./pages/LoginPage.vue')
+const DashboardPage = () => import('./pages/DashboardPage.vue')
+const EventsListPage = () => import('./pages/EventsListPage.vue')
+const EventDetailPage = () => import('./pages/EventDetailPage.vue')
+const EventRegisterPage = () => import('./pages/EventRegisterPage.vue')
+const MeetingsPage = () => import('./pages/MeetingsPage.vue')
+const TicketsPage = () => import('./pages/TicketsPage.vue')
+const TicketDetailPage = () => import('./pages/TicketDetailPage.vue')
+const KnowledgeBasePage = () => import('./pages/KnowledgeBasePage.vue')
+const KnowledgeBaseArticlePage = () => import('./pages/KnowledgeBaseArticlePage.vue')
+const VideoLibraryPage = () => import('./pages/VideoLibraryPage.vue')
+const DocumentLibraryPage = () => import('./pages/DocumentLibraryPage.vue')
+const InvoicesPage = () => import('./pages/InvoicesPage.vue')
+const ProfilePage = () => import('./pages/ProfilePage.vue')
+const OnboardingPage = () => import('./pages/OnboardingPage.vue')
 
-import AdminEventsPage from './pages/admin/AdminEventsPage.vue'
-import AdminEventDetailPage from './pages/admin/AdminEventDetailPage.vue'
-import AdminReportsPage from './pages/admin/AdminReportsPage.vue'
-import AdminEmailPage from './pages/admin/AdminEmailPage.vue'
-import AdminContentPage from './pages/admin/AdminContentPage.vue'
-import AdminUsersPage from './pages/admin/AdminUsersPage.vue'
-import AdminSettingsPage from './pages/admin/AdminSettingsPage.vue'
-import AdminLoginPage from './pages/admin/AdminLoginPage.vue'
+const AdminEventsPage = () => import('./pages/admin/AdminEventsPage.vue')
+const AdminEventDetailPage = () => import('./pages/admin/AdminEventDetailPage.vue')
+const AdminReportsPage = () => import('./pages/admin/AdminReportsPage.vue')
+const AdminEmailPage = () => import('./pages/admin/AdminEmailPage.vue')
+const AdminContentPage = () => import('./pages/admin/AdminContentPage.vue')
+const AdminUsersPage = () => import('./pages/admin/AdminUsersPage.vue')
+const AdminSettingsPage = () => import('./pages/admin/AdminSettingsPage.vue')
+const AdminLoginPage = () => import('./pages/admin/AdminLoginPage.vue')
 
 export const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/login' },

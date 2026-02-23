@@ -2,6 +2,10 @@ import type { FastifyReply, FastifyRequest } from 'fastify'
 import { getBearerToken, verifyAccessToken } from './jwt'
 import { ensureUserByEmail, updateUserLastSeenByEmail, updateUser } from '../store/users'
 
+// Throttle lastSeenAt writes to once per 60 s per email to avoid DB churn.
+const lastSeenCache = new Map<string, number>()
+const LAST_SEEN_INTERVAL_MS = 60_000
+
 export async function requireAuth(req: FastifyRequest, reply: FastifyReply): Promise<boolean> {
   const token = getBearerToken(req)
   if (!token) {
@@ -29,7 +33,12 @@ export async function requireAuth(req: FastifyRequest, reply: FastifyReply): Pro
             await updateUser(user.id, { accessStatus: 'active', blockedUntil: null, blockedReason: null })
           }
         }
-        await updateUserLastSeenByEmail(payload.email)
+        const now = Date.now()
+        const lastWritten = lastSeenCache.get(payload.email) ?? 0
+        if (now - lastWritten > LAST_SEEN_INTERVAL_MS) {
+          lastSeenCache.set(payload.email, now)
+          await updateUserLastSeenByEmail(payload.email)
+        }
       }
     }
     return true

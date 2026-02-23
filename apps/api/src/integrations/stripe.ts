@@ -8,12 +8,16 @@ export function requireStripeSecretKey() {
   return env.STRIPE_SECRET_KEY
 }
 
+let cachedClient: Stripe | null = null
+
 export function getStripeClient() {
+  if (cachedClient) return cachedClient
   const key = requireStripeSecretKey()
-  return new Stripe(key, {
+  cachedClient = new Stripe(key, {
     apiVersion: '2024-04-10',
     typescript: true,
   })
+  return cachedClient
 }
 
 export async function createCheckoutSession(params: {

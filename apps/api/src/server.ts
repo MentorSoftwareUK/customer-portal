@@ -1,8 +1,9 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import compress from '@fastify/compress'
 import rateLimit from '@fastify/rate-limit'
 import { env } from './env'
-import { getDb, isMongoConfigured } from './db'
+import { getDb, isMongoConfigured, ensureIndexes } from './db'
 import { authRoutes } from './routes/auth'
 import { adminAuthRoutes } from './routes/adminAuth'
 import { adminRoutes } from './routes/admin'
@@ -42,6 +43,7 @@ export async function buildServer() {
 
   // Seed admin if needed.
   await ensureSeedAdmin(app.log)
+  await ensureIndexes()
 
   const allowedOrigins = env.PORTAL_BASE_URL
     ? [env.PORTAL_BASE_URL.replace(/\/$/, '')]
@@ -52,6 +54,8 @@ export async function buildServer() {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   })
+
+  await app.register(compress, { global: true })
 
   await app.register(rateLimit, {
     max: 100,
