@@ -509,65 +509,87 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       ].filter(
         (v): v is string => Boolean(v),
       )
-      const contactPromise = hubspotFindContactByEmail({
-        email,
-        properties: ['email', 'firstname', 'lastname', 'phone', ...extraProps],
-      })
 
-      const contact = await Promise.race([
-        contactPromise,
-        new Promise<null>((_resolve, reject) => {
-          const timeout = setTimeout(() => {
-            clearTimeout(timeout)
-            const err = new Error('HubSpot lookup timed out')
-            ;(err as any).code = 'HUBSPOT_TIMEOUT'
-            reject(err)
-          }, env.HUBSPOT_TIMEOUT_MS)
-        }),
-      ])
+      // Single hard timeout (5s) covering ALL HubSpot calls combined.
+      // Recommended: set HUBSPOT_TIMEOUT_MS=3000 in env for snappy lookups.
+      const LOOKUP_HARD_TIMEOUT_MS = 5_000
 
-      let isLiveCustomer = inferLiveCustomer({ properties: contact?.properties ?? null })
-      if (isLiveCustomer === null && contact?.id) {
-        try {
-          const companyId = await hubspotGetPrimaryCompanyIdForContact(contact.id)
-          if (companyId) {
-            const company = await hubspotGetCompanyById({
-              id: companyId,
-              properties: [env.HUBSPOT_LIVE_CUSTOMER_PROPERTY].filter((v): v is string => Boolean(v)),
-            })
-            const fromCompany = inferLiveCustomer({ properties: company?.properties ?? null })
-            if (fromCompany !== null) isLiveCustomer = fromCompany
-          }
-        } catch {
-          // ignore
-        }
-      }
+      async function hubspotLookupAll() {
+        const t0 = Date.now()
 
-      if (!contact && isLiveCustomer === null) {
-        const domain = inferEmailDomain(email)
-        if (domain) {
+        let tCall = Date.now()
+        const contact = await hubspotFindContactByEmail({
+          email,
+          properties: ['email', 'firstname', 'lastname', 'phone', ...extraProps],
+        })
+        console.log('[lookup] contact search:', Date.now() - tCall, 'ms')
+
+        let isLiveCustomer = inferLiveCustomer({ properties: contact?.properties ?? null })
+
+        if (isLiveCustomer === null && contact?.id) {
           try {
-            const companies = await hubspotFindCompaniesByDomain({
-              domain,
-              properties: [env.HUBSPOT_LIVE_CUSTOMER_PROPERTY].filter((v): v is string => Boolean(v)),
-            })
+            tCall = Date.now()
+            const companyId = await hubspotGetPrimaryCompanyIdForContact(contact.id)
+            console.log('[lookup] primary company id:', Date.now() - tCall, 'ms')
 
-            let selected = companies[0] ?? null
-            for (const c of companies) {
-              const v = inferLiveCustomer({ properties: c?.properties ?? null })
-              if (v === true) {
-                selected = c
-                break
-              }
+            if (companyId) {
+              tCall = Date.now()
+              const company = await hubspotGetCompanyById({
+                id: companyId,
+                properties: [env.HUBSPOT_LIVE_CUSTOMER_PROPERTY].filter((v): v is string => Boolean(v)),
+              })
+              console.log('[lookup] company details:', Date.now() - tCall, 'ms')
+
+              const fromCompany = inferLiveCustomer({ properties: company?.properties ?? null })
+              if (fromCompany !== null) isLiveCustomer = fromCompany
             }
-
-            const fromCompany = selected ? inferLiveCustomer({ properties: selected.properties ?? null }) : null
-            if (fromCompany !== null) isLiveCustomer = fromCompany
           } catch {
             // ignore
           }
         }
+
+        if (!contact && isLiveCustomer === null) {
+          const domain = inferEmailDomain(email)
+          if (domain) {
+            try {
+              tCall = Date.now()
+              const companies = await hubspotFindCompaniesByDomain({
+                domain,
+                properties: [env.HUBSPOT_LIVE_CUSTOMER_PROPERTY].filter((v): v is string => Boolean(v)),
+              })
+              console.log('[lookup] domain companies:', Date.now() - tCall, 'ms')
+
+              let selected = companies[0] ?? null
+              for (const c of companies) {
+                const v = inferLiveCustomer({ properties: c?.properties ?? null })
+                if (v === true) {
+                  selected = c
+                  break
+                }
+              }
+
+              const fromCompany = selected ? inferLiveCustomer({ properties: selected.properties ?? null }) : null
+              if (fromCompany !== null) isLiveCustomer = fromCompany
+            } catch {
+              // ignore
+            }
+          }
+        }
+
+        console.log('[lookup] total hubspot:', Date.now() - t0, 'ms')
+        return { contact, isLiveCustomer }
       }
+
+      const { contact, isLiveCustomer } = await Promise.race([
+        hubspotLookupAll(),
+        new Promise<never>((_resolve, reject) => {
+          setTimeout(() => {
+            const err = new Error(`HubSpot lookup timed out after ${LOOKUP_HARD_TIMEOUT_MS}ms`)
+            ;(err as any).code = 'HUBSPOT_TIMEOUT'
+            reject(err)
+          }, LOOKUP_HARD_TIMEOUT_MS)
+        }),
+      ])
 
       const provisionType = inferProvisionType({ properties: contact?.properties ?? null })
       const productVersion = inferProductVersion({ properties: contact?.properties ?? null })
