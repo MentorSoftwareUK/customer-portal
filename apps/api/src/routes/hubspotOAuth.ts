@@ -14,22 +14,14 @@ const HUBSPOT_TOKEN_INFO_URL = 'https://api.hubapi.com/oauth/v1/access-tokens'
  * - /callback: Receives authorization code and exchanges for tokens
  */
 export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
-  // Protect all routes except /authorize and /callback.
-  // /authorize is a browser navigation (window.location.href) so no Authorization header is sent.
-  // /callback is a browser redirect from HubSpot with no auth token.
-  // Both are safe: /authorize only redirects to HubSpot's consent screen (requires HubSpot admin),
-  // and /callback stores tokens only if HubSpot returns a valid authorization code.
-  app.addHook('preHandler', async (req, reply) => {
-    // req.routeOptions.url is the route pattern (e.g. '/authorize'), not the full URL
-    const route = (req.routeOptions as any)?.url ?? req.url
-    if (route === '/callback' || route === '/authorize') return
-    const ok = await requireAdmin(req, reply)
-    if (!ok) return reply
-  })
+  // /authorize and /callback are browser navigations (no Authorization header).
+  // /authorize only redirects to HubSpot's consent screen.
+  // /callback stores tokens only if HubSpot returns a valid authorization code.
+  // Admin auth is applied per-route to /status, /disconnect, and /debug below.
 
   /**
    * GET /api/hubspot/oauth/authorize
-   * Initiates OAuth flow by redirecting to HubSpot
+   * Initiates OAuth flow by redirecting to HubSpot (no auth required — browser navigation)
    */
   app.get('/authorize', async (request, reply) => {
     const clientId = env.HUBSPOT_OAUTH_CLIENT_ID
@@ -150,7 +142,7 @@ export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
    * DELETE /api/hubspot/oauth/disconnect
    * Removes stored OAuth tokens
    */
-  app.delete('/disconnect', async (request, reply) => {
+  app.delete('/disconnect', { preHandler: async (req, reply) => { const ok = await requireAdmin(req, reply); if (!ok) return reply } }, async (request, reply) => {
     try {
       await clearHubSpotOAuthTokens()
       return reply.send({ success: true })
@@ -167,7 +159,7 @@ export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
    * GET /api/hubspot/oauth/status
    * Check if OAuth tokens are configured
    */
-  app.get('/status', async (request, reply) => {
+  app.get('/status', { preHandler: async (req, reply) => { const ok = await requireAdmin(req, reply); if (!ok) return reply } }, async (request, reply) => {
     try {
       const tokens = await getHubSpotOAuthTokens()
       return reply.send({
@@ -179,7 +171,7 @@ export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
     }
   })
 
-  app.get('/debug', async (request, reply) => {
+  app.get('/debug', { preHandler: async (req, reply) => { const ok = await requireAdmin(req, reply); if (!ok) return reply } }, async (request, reply) => {
     if (env.NODE_ENV !== 'development') {
       return reply.status(404).send({ error: 'NOT_FOUND' })
     }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { initDropdowns } from 'flowbite'
 
 // @ts-ignore Vue SFC default export is provided by vite/volar
 import QuickFindModal from '../components/QuickFindModal.vue'
@@ -82,6 +83,7 @@ function logout() {
 
 onMounted(() => {
   window.addEventListener('keydown', onGlobalKeydown)
+  nextTick(() => initDropdowns())
 })
 
 onUnmounted(() => {
