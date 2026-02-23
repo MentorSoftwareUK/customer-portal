@@ -14,8 +14,9 @@ const HUBSPOT_TOKEN_INFO_URL = 'https://api.hubapi.com/oauth/v1/access-tokens'
  * - /callback: Receives authorization code and exchanges for tokens
  */
 export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
-  // All HubSpot OAuth routes require admin auth.
+  // Protect all routes except /callback (which is a browser redirect from HubSpot).
   app.addHook('preHandler', async (req, reply) => {
+    if (req.url.startsWith('/callback')) return
     const ok = await requireAdmin(req, reply)
     if (!ok) return reply
   })
@@ -192,16 +193,23 @@ export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
   })
 }
 
-// Token storage in MongoDB settings collection
+// Token storage in MongoDB settings collection, with in-memory fallback.
 type HubSpotOAuthTokens = {
   accessToken: string
   refreshToken: string
   expiresAt: Date
 }
 
+let inMemoryTokens: HubSpotOAuthTokens | null = null
+
 async function storeHubSpotOAuthTokens(tokens: HubSpotOAuthTokens) {
   const db = await getDb()
-  if (!db) throw new Error('Database not configured')
+  if (!db) {
+    // In-memory fallback — tokens will survive until the process restarts.
+    inMemoryTokens = tokens
+    console.warn('[hubspot-oauth] MongoDB not configured; tokens stored in memory only.')
+    return
+  }
   await db.collection('settings').updateOne(
     { _id: 'hubspot_oauth' } as any,
     {
@@ -218,7 +226,7 @@ async function storeHubSpotOAuthTokens(tokens: HubSpotOAuthTokens) {
 
 export async function getHubSpotOAuthTokens(): Promise<HubSpotOAuthTokens | null> {
   const db = await getDb()
-  if (!db) return null
+  if (!db) return inMemoryTokens
   const doc = await db.collection('settings').findOne({ _id: 'hubspot_oauth' } as any)
   
   if (!doc || !doc.accessToken || !doc.refreshToken) {
@@ -284,6 +292,9 @@ export async function refreshHubSpotOAuthToken(): Promise<string> {
 
 async function clearHubSpotOAuthTokens() {
   const db = await getDb()
-  if (!db) throw new Error('Database not configured')
+  if (!db) {
+    inMemoryTokens = null
+    return
+  }
   await db.collection('settings').deleteOne({ _id: 'hubspot_oauth' } as any)
 }
