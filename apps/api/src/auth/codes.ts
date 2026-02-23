@@ -1,4 +1,4 @@
-import { randomInt, createHash } from 'node:crypto'
+import { randomInt, createHash, timingSafeEqual } from 'node:crypto'
 import { env } from '../env'
 import { getDb } from '../db'
 
@@ -95,7 +95,9 @@ export async function verifyAndConsumeAuthCode(params: { email: string; code: st
 
   const expected = record.codeHash
   const actual = hashCode(email, code)
-  if (expected !== actual) return { ok: false as const, error: 'invalid' as const }
+  const a = Buffer.from(expected, 'hex')
+  const b = Buffer.from(actual, 'hex')
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return { ok: false as const, error: 'invalid' as const }
 
   await consumeAuthCode(email)
   return { ok: true as const }

@@ -122,7 +122,7 @@ function parseAllowlist(raw: string | undefined) {
 
 function isAdminEmail(email: string) {
   const allowlist = parseAllowlist(env.ADMIN_EMAIL_ALLOWLIST)
-  if (allowlist.length === 0 && email.toLowerCase() === 'liam@mentorsoftware.co.uk') return true
+  if (allowlist.length === 0) return false
   return allowlist.includes(email.toLowerCase())
 }
 
@@ -287,6 +287,16 @@ async function buildAuthPayload(email: string): Promise<AuthTokenPayload> {
 }
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
+  // Stricter rate limit on auth endpoints to slow brute-force.
+  const authRateLimit = {
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: '1 minute',
+      },
+    },
+  }
+
   app.get('/me', async (req, reply) => {
     const token = getBearerToken(req)
     if (!token) {

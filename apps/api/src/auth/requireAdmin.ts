@@ -21,6 +21,4 @@ export async function requireAdmin(req: FastifyRequest, reply: FastifyReply): Pr
 
   await reply.status(403).send({ error: 'forbidden' })
   return false
-
-  return true
 }

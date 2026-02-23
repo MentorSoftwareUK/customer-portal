@@ -68,7 +68,7 @@ const EnvSchema = z.object({
   // Portal URL used for payment redirect URLs (dev default)
   PORTAL_BASE_URL: z.string().trim().min(1).default('http://localhost:5173'),
 
-  // Database (MongoDB). If not set, API falls back to demo/in-memory data.
+  // Database (MongoDB). If not set, API returns empty data.
   MONGODB_URI: z.string().trim().min(1).optional(),
   MONGODB_DB: z.string().trim().min(1).default('mentor_cp'),
 
@@ -76,10 +76,7 @@ const EnvSchema = z.object({
   EVENT_REMINDER_LEAD_TIME_HOURS: z.coerce.number().int().nonnegative().default(48),
   EVENT_THANK_YOU_DELAY_HOURS: z.coerce.number().int().nonnegative().default(24),
 
-  // Demo data toggles
-  DEMO_EVENTS_ENABLED: z.coerce.boolean().default(true),
-
-  // Integrations (placeholders; wire up later)
+  // Integrations
   HUBSPOT_PRIVATE_APP_TOKEN: z.string().optional(),
   // HubSpot event registration reporting via Deals (works without Custom Objects).
   // Create a dedicated deal pipeline (recommended) and stages for registration statuses.
@@ -165,3 +162,8 @@ const EnvSchema = z.object({
 export type Env = z.infer<typeof EnvSchema>
 
 export const env: Env = EnvSchema.parse(process.env)
+
+// Fail fast in production if the JWT secret is the default placeholder.
+if (env.NODE_ENV === 'production' && env.AUTH_JWT_SECRET === 'dev-insecure-change-me-please') {
+  throw new Error('AUTH_JWT_SECRET must be set to a strong random value in production.')
+}

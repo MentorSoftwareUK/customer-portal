@@ -43,8 +43,12 @@ export async function buildServer() {
   // Seed admin if needed.
   await ensureSeedAdmin(app.log)
 
+  const allowedOrigins = env.PORTAL_BASE_URL
+    ? [env.PORTAL_BASE_URL.replace(/\/$/, '')]
+    : ['http://localhost:5173']
+
   await app.register(cors, {
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   })
@@ -56,25 +60,17 @@ export async function buildServer() {
 
   app.get('/health', async () => ({ ok: true }))
 
-  // Safe health check to confirm DB connectivity (does not expose secrets).
+  // Health check — minimal info.
   app.get('/health/db', async () => {
-    const mongoUri = env.MONGODB_URI
-    const mongoConfigured = Boolean(mongoUri && mongoUri.trim())
-
-    if (!mongoConfigured) {
-      return {
-        mongoConfigured: false,
-        mongoConnected: false,
-        mongoUriPresent: Boolean(mongoUri),
-        mongoUriLength: mongoUri?.length ?? 0,
-      }
+    if (!isMongoConfigured()) {
+      return { mongoConfigured: false, mongoConnected: false }
     }
 
     try {
       const db = await getDb()
       if (!db) return { mongoConfigured: true, mongoConnected: false }
       await db.command({ ping: 1 })
-      return { mongoConfigured: true, mongoConnected: true, dbName: db.databaseName }
+      return { mongoConfigured: true, mongoConnected: true }
     } catch {
       return { mongoConfigured: true, mongoConnected: false }
     }

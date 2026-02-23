@@ -2,6 +2,7 @@ import { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
 import { env } from '../env'
 import { getDb } from '../db'
+import { requireAdmin } from '../auth/requireAdmin'
 
 const HUBSPOT_AUTH_BASE_URL = 'https://app-eu1.hubspot.com/oauth'
 const HUBSPOT_TOKEN_URL = 'https://api.hubapi.com/oauth/v1/token'
@@ -13,6 +14,12 @@ const HUBSPOT_TOKEN_INFO_URL = 'https://api.hubapi.com/oauth/v1/access-tokens'
  * - /callback: Receives authorization code and exchanges for tokens
  */
 export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
+  // All HubSpot OAuth routes require admin auth.
+  app.addHook('preHandler', async (req, reply) => {
+    const ok = await requireAdmin(req, reply)
+    if (!ok) return reply
+  })
+
   /**
    * GET /api/hubspot/oauth/authorize
    * Initiates OAuth flow by redirecting to HubSpot
