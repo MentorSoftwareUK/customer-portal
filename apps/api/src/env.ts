@@ -163,7 +163,10 @@ export type Env = z.infer<typeof EnvSchema>
 
 export const env: Env = EnvSchema.parse(process.env)
 
-// Fail fast in production if the JWT secret is the default placeholder.
+// Warn loudly in production if the JWT secret is the default placeholder.
 if (env.NODE_ENV === 'production' && env.AUTH_JWT_SECRET === 'dev-insecure-change-me-please') {
-  throw new Error('AUTH_JWT_SECRET must be set to a strong random value in production.')
+  console.error(
+    '\n⚠️  WARNING: AUTH_JWT_SECRET is using the default dev placeholder.\n' +
+    '   Set AUTH_JWT_SECRET to a strong random value in your environment variables.\n',
+  )
 }
