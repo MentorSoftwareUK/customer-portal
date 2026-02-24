@@ -44,15 +44,18 @@ function getTransporter(): Transporter {
   return _transporter
 }
 
-async function sendViaSendGridHttp(params: { to: string; subject: string; text: string }) {
+async function sendViaSendGridHttp(params: { to: string; subject: string; text: string; html?: string }) {
   const apiKey = env.SENDGRID_API_KEY
   if (!apiKey) throw new Error('SendGrid API key is missing')
+
+  const content: { type: string; value: string }[] = [{ type: 'text/plain', value: params.text }]
+  if (params.html) content.push({ type: 'text/html', value: params.html })
 
   const payload = {
     personalizations: [{ to: [{ email: params.to }] }],
     from: { email: env.SMTP_FROM },
     subject: params.subject,
-    content: [{ type: 'text/plain', value: params.text }],
+    content,
   }
 
   console.log(
@@ -80,7 +83,7 @@ async function sendViaSendGridHttp(params: { to: string; subject: string; text: 
   console.log('[email] sent ok via sendgrid api status=%s', res.status)
 }
 
-export async function sendTextEmail(params: { to: string; subject: string; text: string }) {
+export async function sendTextEmail(params: { to: string; subject: string; text: string; html?: string }) {
   if (!isEmailConfigured()) {
     if (env.NODE_ENV !== 'production') {
       // Dev-friendly: log instead of failing background jobs.
@@ -108,6 +111,7 @@ export async function sendTextEmail(params: { to: string; subject: string; text:
       to: params.to,
       subject: params.subject,
       text: params.text,
+      ...(params.html ? { html: params.html } : {}),
     })
     console.log('[email] sent ok messageId=%s response=%s', info.messageId, info.response)
   } catch (err) {
@@ -116,10 +120,75 @@ export async function sendTextEmail(params: { to: string; subject: string; text:
   }
 }
 
+function buildOtpEmailHtml(code: string, ttlMins: number): string {
+  const digits = code.split('')
+  const digitBlocks = digits
+    .map(
+      (d) =>
+        `<td style="padding:0 5px"><span style="display:inline-block;width:44px;height:56px;line-height:56px;text-align:center;font-size:28px;font-weight:700;color:#ffffff;background:#e7007e;border-radius:8px;font-family:Poppins,Arial,sans-serif">${d}</span></td>`,
+    )
+    .join('')
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Your Mentor Portal sign-in code</title>
+</head>
+<body style="margin:0;padding:0;background:#f0f2f5;font-family:Poppins,Arial,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f2f5;padding:40px 16px">
+    <tr>
+      <td align="center">
+        <table width="520" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#14192d;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center">
+              <p style="margin:0 0 4px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#e7007e">MENTOR</p>
+              <p style="margin:0;font-size:22px;font-weight:700;color:#ffffff">Customer Portal</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="background:#ffffff;padding:40px;text-align:center">
+              <p style="margin:0 0 8px;font-size:18px;font-weight:600;color:#14192d">Your sign-in code</p>
+              <p style="margin:0 0 32px;font-size:14px;color:#6b7280">Use the code below to sign in to your Mentor Portal account.</p>
+
+              <!-- OTP digits -->
+              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 32px">
+                <tr>${digitBlocks}</tr>
+              </table>
+
+              <p style="margin:0 0 24px;font-size:13px;color:#9ca3af">This code expires in <strong style="color:#14192d">${ttlMins} minutes</strong>. Do not share it with anyone.</p>
+
+              <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 24px" />
+
+              <p style="margin:0;font-size:12px;color:#d1d5db">If you didn't request this code, you can safely ignore this email.</p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#14192d;border-radius:0 0 12px 12px;padding:20px 40px;text-align:center">
+              <p style="margin:0;font-size:11px;color:#6b7280">&copy; ${new Date().getFullYear()} Mentor Software. All rights reserved.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
 export async function sendLoginCodeEmail(params: { to: string; code: string }) {
   const subject = 'Your Mentor Portal sign-in code'
+  const ttl = env.AUTH_CODE_TTL_MINS ?? 10
+  const text = `Your Mentor Portal sign-in code is: ${params.code}\n\nThis code expires in ${ttl} minutes. Do not share it with anyone.\n\n-- Mentor Software`
+  const html = buildOtpEmailHtml(params.code, ttl)
 
-  const text = `Your sign-in code is: ${params.code}\n\nThis code expires in ${env.AUTH_CODE_TTL_MINS} minutes.`
-
-  await sendTextEmail({ to: params.to, subject, text })
+  await sendTextEmail({ to: params.to, subject, text, html })
 }
