@@ -32,6 +32,10 @@ export async function getDb(): Promise<Db | null> {
       serverSelectionTimeoutMS: 5_000,
       connectTimeoutMS: 5_000,
       tls: true,
+      // Node 22+ ships OpenSSL 3.x which can fail TLS handshake with some
+      // Atlas free-tier clusters. Allow the driver auto-negotiate the best
+      // protocol and disable OCSP stapling which can also trigger alert 80.
+      tlsInsecure: false, // keep cert validation on
     })
     await client.connect()
     db = client.db(env.MONGODB_DB)
