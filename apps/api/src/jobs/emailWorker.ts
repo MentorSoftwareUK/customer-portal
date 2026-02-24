@@ -89,44 +89,6 @@ function buildText(params: {
   return lines.join('\n')
 }
 
-  if (params.job.type === 'event_confirmation') {
-    return [
-      greeting,
-      '',
-      `You're registered for: ${params.eventTitle}`,
-      `When: ${params.eventDateLabel} (${params.timezoneLabel})`,
-      `Platform: ${params.platform}`,
-      '',
-      'We’ll share the joining link in a follow-up email.',
-      '',
-      'Mentor Team',
-    ].join('\n')
-  }
-
-  if (params.job.type === 'event_reminder') {
-    return [
-      greeting,
-      '',
-      `Just a reminder about: ${params.eventTitle}`,
-      `When: ${params.eventDateLabel} (${params.timezoneLabel})`,
-      `Platform: ${params.platform}`,
-      '',
-      'Joining link will be shared separately.',
-      '',
-      'Mentor Team',
-    ].join('\n')
-  }
-
-  return [
-    greeting,
-    '',
-    `Thanks for attending: ${params.eventTitle}`,
-    '',
-    'We’ll send the recording and slides once they’re ready.',
-    '',
-    'Mentor Team',
-  ].join('\n')
-}
 
 function retryDelayMs(attempts: number) {
   // 1m, 4m, 9m, 16m... capped at 60m
