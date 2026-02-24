@@ -20,6 +20,7 @@ export async function getDb(): Promise<Db | null> {
     client = new MongoClient(env.MONGODB_URI as string, {
       serverSelectionTimeoutMS: 5_000,
       connectTimeoutMS: 5_000,
+      tls: true,
     })
     await client.connect()
     db = client.db(env.MONGODB_DB)
