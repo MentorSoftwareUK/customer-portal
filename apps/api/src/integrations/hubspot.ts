@@ -761,3 +761,124 @@ export function canEditCompanyFromJobTitle(jobTitle: string | null | undefined) 
 
   return keywords.some((k) => jt.includes(k))
 }
+
+// ---------------------------------------------------------------------------
+// Meetings
+// ---------------------------------------------------------------------------
+
+const MEETING_PROPERTIES = [
+  'hs_meeting_title',
+  'hs_meeting_start_time',
+  'hs_meeting_end_time',
+  'hs_meeting_outcome',
+  'hubspot_owner_id',
+  'hs_meeting_external_url',
+  'hs_meeting_location',
+]
+
+type HubSpotOwner = {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+}
+
+// Map owner first name (lowercase) → MeetingTeam
+const OWNER_TEAM_MAP: Record<string, 'Training' | 'Success Team' | 'Renewals'> = {
+  shaun: 'Training',
+  simone: 'Success Team',
+  hope: 'Renewals',
+}
+
+async function hubspotGetOwner(ownerId: string): Promise<HubSpotOwner | null> {
+  try {
+    const res = await hubspotFetch(`/crm/v3/owners/${encodeURIComponent(ownerId)}`, { method: 'GET' })
+    return (await res.json()) as HubSpotOwner
+  } catch {
+    return null
+  }
+}
+
+export type HubSpotMeeting = {
+  id: string
+  title: string | null
+  startTimeMs: number | null
+  endTimeMs: number | null
+  outcome: string | null
+  joinUrl: string | null
+  location: string | null
+  ownerId: string | null
+  ownerName: string | null
+  team: 'Training' | 'Success Team' | 'Renewals'
+}
+
+export async function hubspotGetMeetingsForContact(contactId: string): Promise<HubSpotMeeting[]> {
+  // 1. Get all meeting IDs associated with this contact
+  const assocRes = await hubspotFetch(
+    `/crm/v3/objects/contacts/${encodeURIComponent(contactId)}/associations/meetings`,
+    { method: 'GET' },
+  )
+  const assocData = (await assocRes.json()) as { results: Array<{ id: string; type: string }> }
+  const meetingIds = assocData.results.map((r) => r.id)
+
+  if (!meetingIds.length) return []
+
+  // 2. Batch-read meeting properties
+  const batchRes = await hubspotFetch(`/crm/v3/objects/meetings/batch/read`, {
+    method: 'POST',
+    body: JSON.stringify({
+      inputs: meetingIds.map((id) => ({ id })),
+      properties: MEETING_PROPERTIES,
+    }),
+  })
+  const batchData = (await batchRes.json()) as {
+    results: Array<{ id: string; properties: Record<string, string | null> }>
+  }
+
+  // 3. Resolve unique owner IDs
+  const ownerIds = [...new Set(
+    batchData.results
+      .map((m) => m.properties['hubspot_owner_id'])
+      .filter((id): id is string => Boolean(id)),
+  )]
+  const ownerMap = new Map<string, HubSpotOwner | null>()
+  await Promise.all(ownerIds.map(async (id) => {
+    ownerMap.set(id, await hubspotGetOwner(id))
+  }))
+
+  // 4. Map to HubSpotMeeting
+  const now = Date.now()
+  return batchData.results
+    .map((m): HubSpotMeeting => {
+      const p = m.properties
+      const startRaw = p['hs_meeting_start_time']
+      const endRaw = p['hs_meeting_end_time']
+      const startMs = startRaw ? Number(startRaw) : null
+      const endMs = endRaw ? Number(endRaw) : null
+      const ownerId = p['hubspot_owner_id'] ?? null
+      const owner = ownerId ? ownerMap.get(ownerId) ?? null : null
+      const ownerFirst = (owner?.firstName ?? '').trim().toLowerCase()
+      const team = OWNER_TEAM_MAP[ownerFirst] ?? 'Success Team'
+      const ownerName = owner ? `${owner.firstName} ${owner.lastName}`.trim() : null
+
+      return {
+        id: m.id,
+        title: p['hs_meeting_title'] ?? null,
+        startTimeMs: startMs,
+        endTimeMs: endMs,
+        outcome: p['hs_meeting_outcome'] ?? null,
+        joinUrl: p['hs_meeting_external_url'] ?? null,
+        location: p['hs_meeting_location'] ?? null,
+        ownerId,
+        ownerName,
+        team,
+      }
+    })
+    // Only upcoming (not yet started or in progress now) and not cancelled
+    .filter((m) => {
+      if (m.outcome && m.outcome.toUpperCase() === 'CANCELED') return false
+      if (m.startTimeMs === null) return false
+      return m.startTimeMs >= now - 30 * 60 * 1000 // include if started within last 30 min (allow join)
+    })
+    .sort((a, b) => (a.startTimeMs ?? 0) - (b.startTimeMs ?? 0))
+}
