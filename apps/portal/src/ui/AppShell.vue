@@ -559,7 +559,7 @@ onUnmounted(() => {
             </RouterLink>
           </li>
 
-          <li>
+          <li v-if="featureFlags.meetingsEnabled">
             <RouterLink
               to="/app/meetings"
               class="group flex items-center rounded-lg p-2 text-base font-medium"
@@ -606,7 +606,7 @@ onUnmounted(() => {
             </RouterLink>
           </li>
 
-          <li>
+          <li v-if="featureFlags.knowledgeBaseEnabled || featureFlags.videosEnabled || featureFlags.documentsEnabled">
             <button
               type="button"
               class="group flex w-full items-center rounded-lg p-2 text-base font-medium text-white/80 transition duration-75 hover:bg-white/10 hover:text-white"
@@ -644,7 +644,7 @@ onUnmounted(() => {
               </svg>
             </button>
             <ul id="dropdown-resources" class="space-y-2 py-2" :class="resourcesOpen ? '' : 'hidden'">
-              <li>
+              <li v-if="featureFlags.knowledgeBaseEnabled">
                 <RouterLink
                   to="/app/knowledge-base"
                   class="group flex w-full items-center rounded-lg p-2 pl-11 text-base font-medium"
@@ -662,7 +662,7 @@ onUnmounted(() => {
                   Knowledge Base
                 </RouterLink>
               </li>
-              <li>
+              <li v-if="featureFlags.videosEnabled">
                 <RouterLink
                   to="/app/videos"
                   class="group flex w-full items-center rounded-lg p-2 pl-11 text-base font-medium"
@@ -681,7 +681,7 @@ onUnmounted(() => {
                   Video Library
                 </RouterLink>
               </li>
-              <li>
+              <li v-if="featureFlags.documentsEnabled">
                 <RouterLink
                   to="/app/documents"
                   class="group flex w-full items-center rounded-lg p-2 pl-11 text-base font-medium"
