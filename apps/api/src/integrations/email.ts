@@ -121,14 +121,6 @@ export async function sendTextEmail(params: { to: string; subject: string; text:
 }
 
 function buildOtpEmailHtml(code: string, ttlMins: number): string {
-  const digits = code.split('')
-  const digitBlocks = digits
-    .map(
-      (d) =>
-        `<td style="padding:0 5px"><span style="display:inline-block;width:44px;height:56px;line-height:56px;text-align:center;font-size:28px;font-weight:700;color:#ffffff;background:#e7007e;border-radius:8px;font-family:Poppins,Arial,sans-serif">${d}</span></td>`,
-    )
-    .join('')
-
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -145,8 +137,10 @@ function buildOtpEmailHtml(code: string, ttlMins: number): string {
           <!-- Header -->
           <tr>
             <td style="background:#14192d;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center">
-              <p style="margin:0 0 4px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#e7007e">MENTOR</p>
-              <p style="margin:0;font-size:22px;font-weight:700;color:#ffffff">Customer Portal</p>
+              <!-- Logo mark -->
+              <div style="display:inline-block;width:52px;height:52px;border-radius:50%;background:#e7007e;line-height:52px;text-align:center;font-size:24px;font-weight:700;color:#ffffff;font-family:Poppins,Arial,sans-serif;margin-bottom:12px">M</div>
+              <p style="margin:0;font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.3px">Mentor</p>
+              <p style="margin:4px 0 0;font-size:12px;font-weight:400;color:#9ca3af">Customer Portal</p>
             </td>
           </tr>
 
@@ -154,16 +148,15 @@ function buildOtpEmailHtml(code: string, ttlMins: number): string {
           <tr>
             <td style="background:#ffffff;padding:40px;text-align:center">
               <p style="margin:0 0 8px;font-size:18px;font-weight:600;color:#14192d">Your sign-in code</p>
-              <p style="margin:0 0 32px;font-size:14px;color:#6b7280">Use the code below to sign in to your Mentor Portal account.</p>
+              <p style="margin:0 0 28px;font-size:14px;color:#6b7280">Use the code below to sign in to your Mentor Portal account.</p>
 
-              <!-- OTP digits -->
-              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 32px">
-                <tr>${digitBlocks}</tr>
-              </table>
+              <!-- Single copyable code block -->
+              <p style="margin:0 auto 28px;display:inline-block;padding:16px 40px;font-size:36px;font-weight:700;letter-spacing:8px;color:#ffffff;background:#e7007e;border-radius:10px;font-family:Courier,monospace">${code}</p>
 
-              <p style="margin:0 0 24px;font-size:13px;color:#9ca3af">This code expires in <strong style="color:#14192d">${ttlMins} minutes</strong>. Do not share it with anyone.</p>
+              <p style="margin:0 0 4px;font-size:13px;color:#9ca3af">This code expires in <strong style="color:#14192d">${ttlMins} minutes</strong>.</p>
+              <p style="margin:0 0 24px;font-size:13px;color:#9ca3af">Do not share it with anyone.</p>
 
-              <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 24px" />
+              <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 20px" />
 
               <p style="margin:0;font-size:12px;color:#d1d5db">If you didn't request this code, you can safely ignore this email.</p>
             </td>
