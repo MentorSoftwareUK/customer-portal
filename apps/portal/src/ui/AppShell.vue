@@ -5,8 +5,8 @@ import { initDropdowns } from 'flowbite'
 
 // @ts-ignore Vue SFC default export is provided by vite/volar
 import QuickFindModal from '../components/QuickFindModal.vue'
-import { adminMe, authMe, getProfile, trackPageView, trackSessionEnd, trackSessionStart, type AuthUser, type ProfileDto } from '../lib/api'
-import { clearAllTokens, decodeJwtPayload, getAdminAccessToken } from '../lib/auth'
+import { authMe, getProfile, trackPageView, trackSessionEnd, trackSessionStart, type AuthUser, type ProfileDto } from '../lib/api'
+import { clearAllTokens, decodeJwtPayload, getAdminAccessToken, getUserAccessToken } from '../lib/auth'
 import { useFeatureFlags } from '../lib/featureFlags'
 
 const isMac = typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac')
@@ -40,19 +40,25 @@ onMounted(async () => {
 })
 
 onMounted(async () => {
-  const token = getAdminAccessToken()
-  const payload = decodeJwtPayload(token ?? '')
-  if (payload?.isAdmin === true) {
+  // Check admin token first
+  const adminToken = getAdminAccessToken()
+  const adminPayload = decodeJwtPayload(adminToken ?? '')
+  if (adminPayload?.isAdmin === true) {
     isAdmin.value = true
     return
   }
 
-  try {
-    await adminMe()
+  // Fall back to user token — regular portal login also embeds isAdmin
+  // when the email is in the admin allowlist. Calling adminMe() when there
+  // is no admin token always 401s and triggers a redirect to /admin/login.
+  const userToken = getUserAccessToken()
+  const userPayload = decodeJwtPayload(userToken ?? '')
+  if (userPayload?.isAdmin === true) {
     isAdmin.value = true
-  } catch {
-    isAdmin.value = false
+    return
   }
+
+  isAdmin.value = false
 })
 
 onMounted(async () => {

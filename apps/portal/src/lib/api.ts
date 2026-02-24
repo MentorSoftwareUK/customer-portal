@@ -101,12 +101,14 @@ async function apiFetch(input: string, init?: RequestInit) {
       path === '/admin-auth/login'
 
     if (res.status === 401 && !isAuthEndpoint) {
-      // Determine context from the current page, not just the API path.
-      // An admin page may call non-admin endpoints (e.g. /videos); a 401 on
-      // those should not redirect an admin away from the admin area.
+      // Determine context from the current page only, not the API path.
+      // An admin page may call non-admin endpoints (e.g. /videos) and a
+      // portal page may probe admin endpoints (e.g. adminMe check in
+      // AppShell) — in both cases only the browser URL matters for deciding
+      // which login page to redirect to.
       const isInAdminArea =
         typeof window !== 'undefined' &&
-        (window.location.pathname.startsWith('/admin') || path.startsWith('/admin') || path.startsWith('/admin-auth'))
+        window.location.pathname.startsWith('/admin')
       handleUnauthorized(isInAdminArea ? 'admin' : 'user')
     }
   } catch {
