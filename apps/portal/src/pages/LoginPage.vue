@@ -279,8 +279,8 @@ async function onSubmit() {
   <section class="min-h-screen flex" style="background-color: #14192D;">
 
     <!-- Left Panel — navy rounded block -->
-    <div class="hidden lg:flex lg:w-1/2 p-12">
-      <div class="w-full rounded-3xl p-12 flex flex-col justify-between" style="background-color: #14192D;">
+    <div class="hidden lg:flex lg:w-1/2 bg-gray-100 p-12">
+      <div class="w-full rounded-3xl p-12 flex flex-col justify-between" style="background-color: #14192D; box-shadow: 0 25px 80px rgba(0,0,0,0.5), 0 8px 30px rgba(0,0,0,0.3);">
         <!-- Logo -->
         <div>
           <img src="/logo.png" alt="Mentor" class="h-14 w-auto" />
