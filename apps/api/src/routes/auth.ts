@@ -358,6 +358,8 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
     let devCode: string | undefined
 
+    app.log.info({ email, smtpConfigured: isSmtpConfigured(), nodeEnv: env.NODE_ENV }, '[start] auth start request')
+
     // Dev ergonomics: when SMTP isn't configured, return the code so local/dev testing isn't blocked.
     if (env.NODE_ENV !== 'production' && !isSmtpConfigured()) {
       devCode = code
@@ -366,8 +368,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     }
 
     // Fire-and-forget: send the email in the background so the user sees the code input immediately.
+    app.log.info({ email }, '[start] sending login code email')
     sendLoginCodeEmail({ to: email, code }).catch((e) => {
-      app.log.error({ email, err: e instanceof Error ? e.message : e }, 'Failed to send login code email')
+      app.log.error({ email, err: e instanceof Error ? e.message : e }, '[start] Failed to send login code email')
     })
 
     return reply.status(200).send({ ok: true, email })

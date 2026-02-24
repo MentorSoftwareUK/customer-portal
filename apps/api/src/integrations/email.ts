@@ -38,12 +38,19 @@ export async function sendTextEmail(params: { to: string; subject: string; text:
     throw new Error('SMTP is not configured')
   }
 
-  await getTransporter().sendMail({
-    from: env.SMTP_FROM,
-    to: params.to,
-    subject: params.subject,
-    text: params.text,
-  })
+  console.log('[email] sending to=%s subject=%s host=%s port=%s', params.to, params.subject, env.SMTP_HOST, env.SMTP_PORT)
+  try {
+    const info = await getTransporter().sendMail({
+      from: env.SMTP_FROM,
+      to: params.to,
+      subject: params.subject,
+      text: params.text,
+    })
+    console.log('[email] sent ok messageId=%s response=%s', info.messageId, info.response)
+  } catch (err) {
+    console.error('[email] send failed:', err instanceof Error ? err.message : err)
+    throw err
+  }
 }
 
 export async function sendLoginCodeEmail(params: { to: string; code: string }) {

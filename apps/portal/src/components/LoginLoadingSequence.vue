@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 const props = defineProps<{
   done: boolean
@@ -9,35 +9,51 @@ const emit = defineEmits<{
   (e: 'complete'): void
 }>()
 
-type StepStatus = 'pending' | 'active' | 'done'
+const steps = [
+  'Verifying your email',
+  'Checking customer status',
+  'Confirming subscription',
+  'Preparing your portal',
+]
 
-const steps = ref<{ label: string; status: StepStatus }[]>([
-  { label: 'Verifying your email', status: 'active' },
-  { label: 'Checking customer status', status: 'pending' },
-  { label: 'Confirming subscription', status: 'pending' },
-  { label: 'Preparing your portal', status: 'pending' },
-])
-
-let currentIdx = 0
+const currentIdx = ref(0)
+const direction = ref<'next' | 'prev'>('next')
 let timer: ReturnType<typeof setTimeout> | null = null
 
+// Pacing: distribute time evenly so no single step feels stuck.
+// Steps 0-2 advance at ~1.8s each; step 3 waits for API completion.
+const STEP_INTERVAL = 1800
+
+const progress = computed(() => {
+  if (currentIdx.value >= steps.length - 1) return 100
+  // Each completed step = 25%, active step fills over STEP_INTERVAL
+  return ((currentIdx.value + 1) / steps.length) * 100
+})
+
+const currentLabel = computed(() => steps[currentIdx.value] ?? steps[steps.length - 1]!)
+
 function advance() {
-  if (currentIdx >= steps.value.length - 1) return
-  steps.value[currentIdx]!.status = 'done'
-  currentIdx++
-  steps.value[currentIdx]!.status = 'active'
+  if (currentIdx.value >= steps.length - 1) return
+  direction.value = 'next'
+  currentIdx.value++
 }
 
 function scheduleNext() {
+  // Don't auto-advance past step 2 (index 2) — step 3 waits for API.
+  if (currentIdx.value >= steps.length - 2) return
   timer = setTimeout(() => {
     advance()
-    if (currentIdx < steps.value.length - 1) {
-      scheduleNext()
-    }
-  }, 700)
+    scheduleNext()
+  }, STEP_INTERVAL)
 }
 
-onMounted(scheduleNext)
+onMounted(() => {
+  // Small initial delay so the first step is visible before advancing.
+  timer = setTimeout(() => {
+    advance()
+    scheduleNext()
+  }, STEP_INTERVAL)
+})
 
 watch(
   () => props.done,
@@ -48,17 +64,17 @@ watch(
       timer = null
     }
 
+    // Fast-forward remaining steps then emit complete.
     function finishFast() {
-      if (currentIdx < steps.value.length - 1) {
+      if (currentIdx.value < steps.length - 1) {
         advance()
-        timer = setTimeout(finishFast, 250)
+        timer = setTimeout(finishFast, 400)
       } else {
-        steps.value[currentIdx]!.status = 'done'
-        timer = setTimeout(() => emit('complete'), 600)
+        timer = setTimeout(() => emit('complete'), 800)
       }
     }
 
-    timer = setTimeout(finishFast, 200)
+    timer = setTimeout(finishFast, 300)
   },
 )
 
@@ -68,107 +84,83 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="py-6">
-    <p class="text-sm text-white/60 mb-6">Setting up your portal experience</p>
-
-    <div class="space-y-4">
+  <div class="py-8 flex flex-col items-center">
+    <!-- Progress bar -->
+    <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-8">
       <div
-        v-for="(s, i) in steps"
-        :key="i"
-        class="flex items-center gap-3.5 step-enter"
-        :style="{ animationDelay: `${i * 120}ms` }"
-      >
-        <!-- Icon -->
-        <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center">
-          <!-- Done: checkmark -->
-          <svg
-            v-if="s.status === 'done'"
-            class="w-5 h-5 text-emerald-400 check-pop"
-            viewBox="0 0 20 20"
-            fill="none"
-          >
-            <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5" opacity="0.3" />
-            <path
-              d="M6 10.5l2.5 2.5L14 7.5"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+        class="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full transition-all duration-700 ease-out"
+        :style="{ width: `${progress}%` }"
+      />
+    </div>
 
-          <!-- Active: spinner -->
+    <!-- Single-step swipe area -->
+    <div class="relative w-full h-16 overflow-hidden">
+      <Transition :name="direction === 'next' ? 'swipe' : 'swipe-back'" mode="out-in">
+        <div :key="currentIdx" class="absolute inset-0 flex flex-col items-center justify-center">
+          <!-- Spinner -->
           <svg
-            v-else-if="s.status === 'active'"
-            class="w-5 h-5 animate-spin"
-            viewBox="0 0 20 20"
+            class="w-6 h-6 mb-2.5 animate-spin"
+            viewBox="0 0 24 24"
             fill="none"
           >
-            <circle cx="10" cy="10" r="8" stroke="white" stroke-width="2" opacity="0.15" />
+            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" opacity="0.1" />
             <path
-              d="M18 10a8 8 0 0 0-8-8"
+              d="M22 12a10 10 0 0 0-10-10"
               stroke="#e7007e"
-              stroke-width="2"
+              stroke-width="2.5"
               stroke-linecap="round"
             />
           </svg>
 
-          <!-- Pending: dim dot -->
-          <div v-else class="w-2 h-2 rounded-full bg-white/20" />
+          <!-- Step label -->
+          <p class="text-sm font-medium text-white/90 tracking-wide">
+            {{ currentLabel }}
+            <span class="inline-flex ml-0.5">
+              <span class="dot" style="animation-delay: 0ms">.</span>
+              <span class="dot" style="animation-delay: 200ms">.</span>
+              <span class="dot" style="animation-delay: 400ms">.</span>
+            </span>
+          </p>
         </div>
+      </Transition>
+    </div>
 
-        <!-- Label -->
-        <span
-          class="text-sm font-medium transition-colors duration-300"
-          :class="{
-            'text-emerald-300': s.status === 'done',
-            'text-white': s.status === 'active',
-            'text-white/30': s.status === 'pending',
-          }"
-        >
-          {{ s.label }}
-          <span v-if="s.status === 'active'" class="inline-flex ml-0.5">
-            <span class="dot" style="animation-delay: 0ms">.</span>
-            <span class="dot" style="animation-delay: 200ms">.</span>
-            <span class="dot" style="animation-delay: 400ms">.</span>
-          </span>
-        </span>
-      </div>
+    <!-- Step dots -->
+    <div class="flex items-center gap-2 mt-6">
+      <div
+        v-for="(_, i) in steps"
+        :key="i"
+        class="h-1.5 rounded-full transition-all duration-500 ease-out"
+        :class="
+          i < currentIdx
+            ? 'w-1.5 bg-emerald-400'
+            : i === currentIdx
+              ? 'w-6 bg-primary-500'
+              : 'w-1.5 bg-white/20'
+        "
+      />
     </div>
   </div>
 </template>
 
 <style scoped>
-.step-enter {
-  animation: slideIn 0.4s ease-out both;
+/* Swipe left (next step) */
+.swipe-enter-active,
+.swipe-leave-active {
+  transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.swipe-enter-from {
+  opacity: 0;
+  transform: translateX(60px);
 }
 
-.check-pop {
-  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+.swipe-leave-to {
+  opacity: 0;
+  transform: translateX(-60px);
 }
 
-@keyframes popIn {
-  from {
-    transform: scale(0.4);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
+/* Dots animation */
 .dot {
   animation: dotPulse 1.4s ease-in-out infinite;
   opacity: 0;
