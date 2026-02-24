@@ -23,9 +23,9 @@ let timer: ReturnType<typeof setTimeout> | null = null
 
 function advance() {
   if (currentIdx >= steps.value.length - 1) return
-  steps.value[currentIdx].status = 'done'
+  steps.value[currentIdx]!.status = 'done'
   currentIdx++
-  steps.value[currentIdx].status = 'active'
+  steps.value[currentIdx]!.status = 'active'
 }
 
 function scheduleNext() {
@@ -53,7 +53,7 @@ watch(
         advance()
         timer = setTimeout(finishFast, 250)
       } else {
-        steps.value[currentIdx].status = 'done'
+        steps.value[currentIdx]!.status = 'done'
         timer = setTimeout(() => emit('complete'), 600)
       }
     }
