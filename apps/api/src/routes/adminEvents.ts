@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { requireAdmin } from '../auth/requireAdmin'
 import { cancelEventStore, createEventStore, getEventByIdStore, listEventsStore, updateEventStore } from '../store/events'
 import { listRegistrationsByEventId } from '../store/registrations'
+import { createEmailJob } from '../store/emailJobs'
+import { hubspotGetContactLists, hubspotGetContactsInList } from '../integrations/hubspot'
 
 const EventIdParamsSchema = z.object({
   id: z.string().trim().min(1),
@@ -207,5 +209,60 @@ export const adminEventsRoutes: FastifyPluginAsync = async (app) => {
 
     const regs = await listRegistrationsByEventId(parsed.data.id)
     return { registrations: regs }
+  })
+
+  app.get('/:id/invite-lists', async (req, reply) => {
+    const parsed = EventIdParamsSchema.safeParse(req.params)
+    if (!parsed.success) {
+      return reply.status(400).send({ error: 'invalid_request', issues: parsed.error.issues })
+    }
+
+    const lists = await hubspotGetContactLists()
+    return { lists }
+  })
+
+  app.post('/:id/send-invites', async (req, reply) => {
+    const paramsParsed = EventIdParamsSchema.safeParse(req.params)
+    if (!paramsParsed.success) {
+      return reply.status(400).send({ error: 'invalid_request', issues: paramsParsed.error.issues })
+    }
+
+    const bodyParsed = z.object({ listId: z.number().int().positive() }).safeParse(req.body)
+    if (!bodyParsed.success) {
+      return reply.status(400).send({ error: 'invalid_request', issues: bodyParsed.error.issues })
+    }
+
+    const event = await getEventByIdStore(paramsParsed.data.id)
+    if (!event) return reply.status(404).send({ error: 'not_found' })
+
+    const contacts = await hubspotGetContactsInList(bodyParsed.data.listId)
+    if (contacts.length === 0) {
+      return { queued: 0 }
+    }
+
+    const nowIso = new Date().toISOString()
+    let queued = 0
+
+    for (const contact of contacts) {
+      const recipientName = [contact.firstName, contact.lastName].filter(Boolean).join(' ') || contact.email
+      const job = {
+        id: crypto.randomUUID(),
+        type: 'event_invite' as const,
+        to: contact.email,
+        runAt: nowIso,
+        status: 'pending' as const,
+        attempts: 0,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+        payload: {
+          eventId: event.id,
+          recipientName,
+        },
+      }
+      await createEmailJob(job)
+      queued++
+    }
+
+    return { queued }
   })
 }

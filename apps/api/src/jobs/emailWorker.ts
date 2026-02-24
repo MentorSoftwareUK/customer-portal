@@ -12,12 +12,15 @@ import {
 import { sendTextEmail } from '../integrations/email'
 import {
   buildConfirmationHtml,
+  buildInviteHtml,
   buildReminderHtml,
   buildThankYouHtml,
 } from '../integrations/emailTemplates'
 
 function subjectFor(job: EmailJob, eventTitle: string) {
   switch (job.type) {
+    case 'event_invite':
+      return `You're invited: ${eventTitle}`
     case 'event_confirmation':
       return `Registration confirmed: ${eventTitle}`
     case 'event_reminder':
@@ -41,6 +44,20 @@ function buildText(params: {
   blogPostUrl?: string | null
 }) {
   const greeting = params.recipientName ? `Hi ${params.recipientName},` : 'Hi,'
+
+  if (params.job.type === 'event_invite') {
+    return [
+      greeting,
+      '',
+      `We'd like to invite you to our upcoming exclusive webinar: ${params.eventTitle}`,
+      `When: ${params.eventDateLabel}`,
+      ...(params.hostName ? [`Host: ${params.hostName}`] : []),
+      '',
+      'This is an exclusive session for Mentor customers. Spaces are limited — secure your spot today.',
+      '',
+      'The Mentor Software Team',
+    ].join('\n')
+  }
 
   if (params.job.type === 'event_confirmation') {
     return [
@@ -112,17 +129,7 @@ export async function runEmailWorkerOnce(logger: FastifyBaseLogger) {
 
   for (const job of jobs) {
     try {
-      const reg = await getRegistrationById(job.payload.registrationId)
       const evt = await getEventByIdStore(job.payload.eventId)
-
-      if (!reg) {
-        await markEmailJobFailed({
-          id: job.id,
-          nowIso,
-          error: `Registration not found: ${job.payload.registrationId}`,
-        })
-        continue
-      }
 
       if (!evt) {
         await markEmailJobFailed({
@@ -133,10 +140,27 @@ export async function runEmailWorkerOnce(logger: FastifyBaseLogger) {
         continue
       }
 
+      // For invite jobs, recipientName comes from the payload directly (no registration)
+      let recipientName: string
+      if (job.type === 'event_invite') {
+        recipientName = job.payload.recipientName ?? ''
+      } else {
+        const reg = await getRegistrationById(job.payload.registrationId ?? '')
+        if (!reg) {
+          await markEmailJobFailed({
+            id: job.id,
+            nowIso,
+            error: `Registration not found: ${job.payload.registrationId}`,
+          })
+          continue
+        }
+        recipientName = reg.name
+      }
+
       const subject = subjectFor(job, evt.title)
       const sharedParams = {
         job,
-        recipientName: reg.name,
+        recipientName,
         eventTitle: evt.title,
         eventDateLabel: evt.dateLabel,
         timezoneLabel: evt.timezoneLabel,
@@ -150,9 +174,21 @@ export async function runEmailWorkerOnce(logger: FastifyBaseLogger) {
       const text = buildText(sharedParams)
       let html: string | undefined
       try {
-        if (job.type === 'event_confirmation') {
+        if (job.type === 'event_invite') {
+          const registerUrl = `${env.PORTAL_BASE_URL}/app/events/${evt.id}`
+          html = buildInviteHtml({
+            recipientName,
+            eventTitle: evt.title,
+            startAt: evt.startAt,
+            durationMins: evt.durationMins,
+            description: evt.description,
+            hostName: evt.hostName,
+            hostTitle: evt.hostTitle,
+            registerUrl,
+          })
+        } else if (job.type === 'event_confirmation') {
           html = buildConfirmationHtml({
-            recipientName: reg.name,
+            recipientName,
             eventTitle: evt.title,
             startAt: evt.startAt,
             durationMins: evt.durationMins,
@@ -162,7 +198,7 @@ export async function runEmailWorkerOnce(logger: FastifyBaseLogger) {
           })
         } else if (job.type === 'event_reminder') {
           html = buildReminderHtml({
-            recipientName: reg.name,
+            recipientName,
             eventTitle: evt.title,
             startAt: evt.startAt,
             durationMins: evt.durationMins,
@@ -173,7 +209,7 @@ export async function runEmailWorkerOnce(logger: FastifyBaseLogger) {
           })
         } else if (job.type === 'event_thank_you') {
           html = buildThankYouHtml({
-            recipientName: reg.name,
+            recipientName,
             eventTitle: evt.title,
             startAt: evt.startAt,
             durationMins: evt.durationMins,

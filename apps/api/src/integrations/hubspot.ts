@@ -882,3 +882,106 @@ export async function hubspotGetMeetingsForContact(contactId: string): Promise<H
     })
     .sort((a, b) => (a.startTimeMs ?? 0) - (b.startTimeMs ?? 0))
 }
+
+// ─── Contact Lists ────────────────────────────────────────────────────────────
+
+export type HubSpotContactList = {
+  listId: number
+  name: string
+  size: number
+  dynamic: boolean
+}
+
+/**
+ * Returns all HubSpot contact lists (both static and dynamic).
+ * Uses the v1 Lists API which is available with a private app token.
+ */
+export async function hubspotGetContactLists(): Promise<HubSpotContactList[]> {
+  const token = env.HUBSPOT_PRIVATE_APP_TOKEN
+  if (!token) return []
+
+  let offset = 0
+  const allLists: HubSpotContactList[] = []
+
+  while (true) {
+    const url = `https://api.hubapi.com/contacts/v1/lists?count=250&offset=${offset}`
+    const res = await hubspotFetch(url, { method: 'GET' })
+    if (!res.ok) break
+
+    const data = await res.json() as {
+      lists: Array<{ listId: number; name: string; dynamic: boolean; metaData?: { size?: number }; size?: number }>
+      'has-more'?: boolean
+      offset?: number
+    }
+
+    for (const l of data.lists ?? []) {
+      allLists.push({
+        listId: l.listId,
+        name: l.name,
+        size: l.metaData?.size ?? (l as any).size ?? 0,
+        dynamic: l.dynamic,
+      })
+    }
+
+    if (!data['has-more']) break
+    offset = data.offset ?? (offset + 250)
+  }
+
+  return allLists.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+/**
+ * Returns all contacts (email, firstName, lastName) from a given HubSpot list.
+ * Paginates automatically using the vidOffset cursor.
+ */
+export async function hubspotGetContactsInList(
+  listId: number,
+): Promise<Array<{ email: string; firstName: string; lastName: string }>> {
+  const token = env.HUBSPOT_PRIVATE_APP_TOKEN
+  if (!token) return []
+
+  const contacts: Array<{ email: string; firstName: string; lastName: string }> = []
+  let vidOffset: number | undefined = undefined
+
+  while (true) {
+    const params = new URLSearchParams({
+      property: 'email',
+      count: '100',
+    })
+    params.append('property', 'firstname')
+    params.append('property', 'lastname')
+    if (vidOffset !== undefined) params.set('vidOffset', String(vidOffset))
+
+    const url = `https://api.hubapi.com/contacts/v1/lists/${listId}/contacts/all?${params.toString()}`
+    const res = await hubspotFetch(url, { method: 'GET' })
+    if (!res.ok) break
+
+    const data = await res.json() as {
+      contacts: Array<{
+        properties?: {
+          email?: { value?: string }
+          firstname?: { value?: string }
+          lastname?: { value?: string }
+        }
+      }>
+      'has-more'?: boolean
+      'vid-offset'?: number
+    }
+
+    for (const c of data.contacts ?? []) {
+      const email = c.properties?.email?.value ?? ''
+      if (email) {
+        contacts.push({
+          email,
+          firstName: c.properties?.firstname?.value ?? '',
+          lastName: c.properties?.lastname?.value ?? '',
+        })
+      }
+    }
+
+    if (!data['has-more']) break
+    vidOffset = data['vid-offset']
+  }
+
+  return contacts
+}

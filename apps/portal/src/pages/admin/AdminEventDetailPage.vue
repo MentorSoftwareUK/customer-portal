@@ -7,8 +7,11 @@ import {
   adminListEventRegistrations,
   adminUpdateRegistration,
   adminUpdateEvent,
+  adminGetInviteLists,
+  adminSendInvites,
   type AdminEventRegistrationDto,
   type EventDto,
+  type HubSpotContactList,
 } from '../../lib/api'
 
 const route = useRoute()
@@ -125,6 +128,47 @@ async function markFollowUpSent() {
     // ignore
   } finally {
     followUpSaving.value = false
+  }
+}
+
+// Invite modal
+const inviteModal = ref(false)
+const inviteLists = ref<HubSpotContactList[]>([])
+const inviteListsLoading = ref(false)
+const inviteListsError = ref<string | null>(null)
+const selectedListId = ref<number | null>(null)
+const inviteSending = ref(false)
+const inviteResult = ref<{ queued: number } | null>(null)
+const inviteSendError = ref<string | null>(null)
+
+async function openInviteModal() {
+  inviteModal.value = true
+  inviteResult.value = null
+  inviteSendError.value = null
+  selectedListId.value = null
+  inviteLists.value = []
+  inviteListsLoading.value = true
+  inviteListsError.value = null
+  try {
+    inviteLists.value = await adminGetInviteLists(eventId.value)
+  } catch (e) {
+    inviteListsError.value = e instanceof Error ? e.message : 'Failed to load lists'
+  } finally {
+    inviteListsLoading.value = false
+  }
+}
+
+async function sendInvites() {
+  if (!selectedListId.value) return
+  inviteSending.value = true
+  inviteSendError.value = null
+  try {
+    const result = await adminSendInvites(eventId.value, selectedListId.value)
+    inviteResult.value = result
+  } catch (e) {
+    inviteSendError.value = e instanceof Error ? e.message : 'Failed to send invites'
+  } finally {
+    inviteSending.value = false
   }
 }
 
@@ -534,6 +578,16 @@ const formattedDateTime = computed(() => {
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
                 </svg>
                 {{ editOpen ? 'Close edit' : 'Edit' }}
+              </button>
+              <button
+                type="button"
+                class="inline-flex items-center rounded-lg border border-pink-500/30 bg-pink-500/10 px-3 py-1.5 text-sm font-medium text-pink-300 hover:bg-pink-500/20 transition"
+                @click="openInviteModal"
+              >
+                <svg class="mr-1.5 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                </svg>
+                Send invites
               </button>
               <button
                 v-if="(event.status ?? '').toLowerCase() !== 'cancelled'"
@@ -1104,6 +1158,91 @@ const formattedDateTime = computed(() => {
                   {{ blogSaving ? 'Saving\u2026' : 'Save blog post' }}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- SEND INVITES MODAL -->
+    <Teleport to="body">
+      <Transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+        <div v-if="inviteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="inviteModal = false">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="inviteModal = false" />
+          <div class="relative w-full max-w-lg rounded-2xl border border-white/10 bg-[#14192d] text-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
+              <div>
+                <div class="text-sm font-semibold">Send invites</div>
+                <div class="text-xs text-white/50">Choose a HubSpot contact list to send a promotional email to.</div>
+              </div>
+              <button type="button" class="rounded-lg p-1 text-white/40 hover:text-white/70 transition" @click="inviteModal = false">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div class="p-5 space-y-4">
+              <!-- Success state -->
+              <div v-if="inviteResult" class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-center">
+                <div class="text-2xl mb-1">✉️</div>
+                <div class="text-sm font-semibold text-emerald-300">{{ inviteResult.queued }} invite{{ inviteResult.queued === 1 ? '' : 's' }} queued</div>
+                <div class="text-xs text-emerald-300/70 mt-1">Emails will be sent in the next processing cycle.</div>
+                <button type="button" class="mt-4 inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 hover:bg-white/10 transition" @click="inviteModal = false">Close</button>
+              </div>
+
+              <!-- Loading state -->
+              <div v-else-if="inviteListsLoading" class="py-6 text-center text-white/40 text-sm">
+                Loading contact lists&hellip;
+              </div>
+
+              <!-- Error state -->
+              <div v-else-if="inviteListsError" class="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">
+                {{ inviteListsError }}
+              </div>
+
+              <!-- List selection -->
+              <template v-else>
+                <div v-if="inviteLists.length === 0" class="py-4 text-center text-white/40 text-sm">
+                  No contact lists found in HubSpot.
+                </div>
+                <div v-else class="max-h-72 overflow-y-auto space-y-2 pr-1">
+                  <label
+                    v-for="list in inviteLists"
+                    :key="list.listId"
+                    class="flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition"
+                    :class="selectedListId === list.listId
+                      ? 'border-pink-500/50 bg-pink-500/10'
+                      : 'border-white/10 bg-white/5 hover:bg-white/10'"
+                  >
+                    <input
+                      type="radio"
+                      :value="list.listId"
+                      v-model="selectedListId"
+                      class="accent-[#e7007e]"
+                    />
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm font-medium text-white truncate">{{ list.name }}</div>
+                      <div class="text-xs text-white/40">{{ list.size.toLocaleString() }} contact{{ list.size === 1 ? '' : 's' }} &middot; {{ list.dynamic ? 'dynamic' : 'static' }}</div>
+                    </div>
+                  </label>
+                </div>
+
+                <div v-if="inviteSendError" class="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">{{ inviteSendError }}</div>
+
+                <div class="flex justify-end gap-3 pt-1">
+                  <button type="button" class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 hover:bg-white/10 transition" @click="inviteModal = false">Cancel</button>
+                  <button
+                    type="button"
+                    class="inline-flex items-center rounded-lg bg-[#e7007e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#c8006c] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="!selectedListId || inviteSending"
+                    @click="sendInvites"
+                  >
+                    <svg v-if="inviteSending" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    {{ inviteSending ? 'Sending\u2026' : selectedListId ? `Send to ${(inviteLists.find(l => l.listId === selectedListId)?.size ?? 0).toLocaleString()} contacts` : 'Select a list' }}
+                  </button>
+                </div>
+              </template>
             </div>
           </div>
         </div>

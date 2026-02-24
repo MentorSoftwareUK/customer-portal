@@ -1283,3 +1283,38 @@ export async function disconnectHubSpotOAuth(): Promise<void> {
     throw new Error(`Failed to disconnect OAuth: ${res.status}${text ? ` - ${text}` : ''}`)
   }
 }
+
+// ─── Event Invites (HubSpot contact list blast) ────────────────────────────────
+
+export type HubSpotContactList = {
+  listId: number
+  name: string
+  size: number
+  dynamic: boolean
+}
+
+export async function adminGetInviteLists(eventId: string): Promise<HubSpotContactList[]> {
+  const res = await adminApiFetch(`${getApiBaseUrl()}/api/admin/events/${eventId}/invite-lists`)
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Failed to load invite lists: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return ((await res.json()) as { lists: HubSpotContactList[] }).lists
+}
+
+export async function adminSendInvites(
+  eventId: string,
+  listId: number,
+): Promise<{ queued: number }> {
+  const res = await adminApiFetch(`${getApiBaseUrl()}/api/admin/events/${eventId}/send-invites`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ listId }),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Failed to send invites: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { queued: number }
+}
+

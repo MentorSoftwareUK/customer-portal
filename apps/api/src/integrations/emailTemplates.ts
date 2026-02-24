@@ -367,3 +367,72 @@ export function buildThankYouHtml(params: ThankYouParams): string {
 
   return wrapper(content)
 }
+
+// ─── Invite / Promotional email ───────────────────────────────────────────────
+
+export function buildInviteHtml(params: {
+  recipientName?: string | null
+  eventTitle: string
+  startAt: string
+  durationMins: number
+  description?: string | null
+  hostName?: string | null
+  hostTitle?: string | null
+  registerUrl: string
+}): string {
+  const greeting = params.recipientName ? `Hi ${escHtml(params.recipientName)},` : 'Hi,'
+  const dateStr = formatEventDate(params.startAt)
+  const timeStr = formatTimeRange(params.startAt, params.durationMins)
+
+  const metaRows: string[] = []
+  if (dateStr) {
+    metaRows.push(`
+      <tr>
+        <td style="padding:6px 0;font-size:14px;color:#6b7a99;font-family:'Segoe UI',Arial,sans-serif;white-space:nowrap;">&#128197;&nbsp; Date</td>
+        <td style="padding:6px 0 6px 16px;font-size:14px;font-weight:600;color:#1a1f3c;font-family:'Segoe UI',Arial,sans-serif;">${escHtml(dateStr)}</td>
+      </tr>`)
+  }
+  if (timeStr) {
+    metaRows.push(`
+      <tr>
+        <td style="padding:6px 0;font-size:14px;color:#6b7a99;font-family:'Segoe UI',Arial,sans-serif;white-space:nowrap;">&#128336;&nbsp; Time</td>
+        <td style="padding:6px 0 6px 16px;font-size:14px;font-weight:600;color:#1a1f3c;font-family:'Segoe UI',Arial,sans-serif;">${escHtml(timeStr)}</td>
+      </tr>`)
+  }
+  if (params.hostName) {
+    const hostLabel = params.hostTitle ? `${params.hostName}, ${params.hostTitle}` : params.hostName
+    metaRows.push(`
+      <tr>
+        <td style="padding:6px 0;font-size:14px;color:#6b7a99;font-family:'Segoe UI',Arial,sans-serif;white-space:nowrap;">&#127891;&nbsp; Host</td>
+        <td style="padding:6px 0 6px 16px;font-size:14px;font-weight:600;color:#1a1f3c;font-family:'Segoe UI',Arial,sans-serif;">${escHtml(hostLabel)}</td>
+      </tr>`)
+  }
+
+  const content = `
+        ${brandedHeader({ eventTitle: params.eventTitle, hostName: params.hostName })}
+        ${bodyCell(`
+          ${p(greeting)}
+          ${p(`We'd like to invite you to our upcoming exclusive webinar: <strong style="color:#1a1f3c;">${escHtml(params.eventTitle)}</strong>`)}
+          ${metaRows.length ? `
+          <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+            ${metaRows.join('')}
+          </table>` : ''}
+          ${params.description ? p(escHtml(params.description)) : ''}
+          ${p('This is an exclusive session for Mentor customers. Spaces are limited — secure your spot today.')}
+          <!-- CTA Button -->
+          <table cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+            <tr>
+              <td align="left">
+                <a href="${escAttr(params.registerUrl)}"
+                   target="_blank"
+                   style="display:inline-block;background:linear-gradient(135deg,#e7007e 0%,#a0005a 100%);color:#ffffff;font-family:'Segoe UI',Arial,sans-serif;font-size:16px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:8px;letter-spacing:0.3px;">
+                  Register Now &rarr;
+                </a>
+              </td>
+            </tr>
+          </table>
+          ${p('We look forward to seeing you there!')}
+        `)}`
+
+  return wrapper(content)
+}

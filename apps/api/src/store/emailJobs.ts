@@ -1,6 +1,6 @@
 import { getDb } from '../db'
 
-export type EmailJobType = 'event_confirmation' | 'event_reminder' | 'event_thank_you'
+export type EmailJobType = 'event_confirmation' | 'event_reminder' | 'event_thank_you' | 'event_invite'
 export type EmailJobStatus = 'pending' | 'sending' | 'sent' | 'failed'
 
 export type EmailJob = {
@@ -21,7 +21,10 @@ export type EmailJob = {
 
   payload: {
     eventId: string
-    registrationId: string
+    /** Set for confirmation/reminder/thank-you jobs; absent for invite jobs */
+    registrationId?: string
+    /** Display name for the recipient — used directly for invite jobs */
+    recipientName?: string
   }
 }
 
