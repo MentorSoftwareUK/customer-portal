@@ -25,6 +25,109 @@ const attendanceUpdating = ref<Record<string, boolean>>({})
 const editOpen = ref(false)
 const regsOpen = ref(true)
 
+// Quick-edit modals
+const slidesModal = ref(false)
+const slidesValue = ref('')
+const slidesSaving = ref(false)
+const slidesError = ref<string | null>(null)
+
+const recordingModal = ref(false)
+const recordingValue = ref('')
+const recordingSaving = ref(false)
+const recordingError = ref<string | null>(null)
+
+const blogModal = ref(false)
+const blogValue = ref('')
+const blogSaving = ref(false)
+const blogError = ref<string | null>(null)
+
+const followUpSaving = ref(false)
+
+function openSlidesModal() {
+  slidesValue.value = (event.value?.webinarSlides || []).map((s) => s.url).join(',\n')
+  slidesError.value = null
+  slidesModal.value = true
+}
+
+async function saveSlidesModal() {
+  if (!event.value) return
+  slidesSaving.value = true
+  slidesError.value = null
+  try {
+    const slides = slidesValue.value
+      .split(/[,\n]+/)
+      .map((v) => v.trim())
+      .filter(Boolean)
+      .map((url, i) => ({ label: `Slide deck ${i + 1}`, url }))
+    const updated = await adminUpdateEvent(event.value.id, { webinarSlides: slides })
+    event.value = updated
+    slidesModal.value = false
+  } catch (e) {
+    slidesError.value = e instanceof Error ? e.message : 'Failed to save'
+  } finally {
+    slidesSaving.value = false
+  }
+}
+
+function openRecordingModal() {
+  recordingValue.value = event.value?.webinarRecordingUrl ?? ''
+  recordingError.value = null
+  recordingModal.value = true
+}
+
+async function saveRecordingModal() {
+  if (!event.value) return
+  recordingSaving.value = true
+  recordingError.value = null
+  try {
+    const updated = await adminUpdateEvent(event.value.id, {
+      webinarRecordingUrl: recordingValue.value.trim() || null,
+    })
+    event.value = updated
+    recordingModal.value = false
+  } catch (e) {
+    recordingError.value = e instanceof Error ? e.message : 'Failed to save'
+  } finally {
+    recordingSaving.value = false
+  }
+}
+
+function openBlogModal() {
+  blogValue.value = event.value?.blogPostUrl ?? ''
+  blogError.value = null
+  blogModal.value = true
+}
+
+async function saveBlogModal() {
+  if (!event.value) return
+  blogSaving.value = true
+  blogError.value = null
+  try {
+    const updated = await adminUpdateEvent(event.value.id, {
+      blogPostUrl: blogValue.value.trim() || null,
+    })
+    event.value = updated
+    blogModal.value = false
+  } catch (e) {
+    blogError.value = e instanceof Error ? e.message : 'Failed to save'
+  } finally {
+    blogSaving.value = false
+  }
+}
+
+async function markFollowUpSent() {
+  if (!event.value) return
+  followUpSaving.value = true
+  try {
+    const updated = await adminUpdateEvent(event.value.id, { followUpEmailSent: true })
+    event.value = updated
+  } catch {
+    // ignore
+  } finally {
+    followUpSaving.value = false
+  }
+}
+
 type FormState = {
   title: string
   description: string
@@ -495,14 +598,15 @@ const formattedDateTime = computed(() => {
       <div class="rounded-2xl border border-white/10 bg-[#14192d] text-white shadow-[0_18px_40px_rgba(15,20,40,0.2)]">
         <div class="border-b border-white/10 px-5 py-4">
           <div class="text-sm font-semibold">Post-event checklist</div>
-          <div class="text-xs text-white/50">Track what still needs doing after the event.</div>
+          <div class="text-xs text-white/50">Complete each step after the event has run.</div>
         </div>
         <div class="divide-y divide-white/10">
-          <!-- Upload slides -->
+
+          <!-- 1. Upload slides -->
           <button
             type="button"
-            class="flex w-full items-center justify-between px-5 py-3.5 text-left transition hover:bg-white/5"
-            @click="editOpen = true"
+            class="flex w-full items-center justify-between px-5 py-3.5 text-left transition hover:bg-white/5 rounded-none"
+            @click="openSlidesModal"
           >
             <div class="flex items-center gap-3">
               <div
@@ -515,27 +619,22 @@ const formattedDateTime = computed(() => {
               </div>
               <div>
                 <div class="text-sm text-white/80">Upload slides</div>
-                <div v-if="!event.webinarSlides?.length" class="text-xs text-white/40">Click to add slide URLs in the edit panel</div>
+                <div class="text-xs text-white/40">{{ event.webinarSlides?.length ? event.webinarSlides.length + ' URL' + (event.webinarSlides.length > 1 ? 's' : '') + ' added' : 'Add slide deck URLs' }}</div>
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <span
-                class="rounded-full border px-2 py-0.5 text-xs font-semibold"
-                :class="event.webinarSlides?.length ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'"
-              >
+              <span class="rounded-full border px-2 py-0.5 text-xs font-semibold" :class="event.webinarSlides?.length ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'">
                 {{ event.webinarSlides?.length ? 'Done' : 'Pending' }}
               </span>
-              <svg class="h-3.5 w-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
+              <svg class="h-3.5 w-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
             </div>
           </button>
 
-          <!-- Add recording -->
+          <!-- 2. Add recording -->
           <button
             type="button"
-            class="flex w-full items-center justify-between px-5 py-3.5 text-left transition hover:bg-white/5"
-            @click="editOpen = true"
+            class="flex w-full items-center justify-between px-5 py-3.5 text-left transition hover:bg-white/5 rounded-none"
+            @click="openRecordingModal"
           >
             <div class="flex items-center gap-3">
               <div
@@ -548,33 +647,76 @@ const formattedDateTime = computed(() => {
               </div>
               <div>
                 <div class="text-sm text-white/80">Add recording</div>
-                <div v-if="!event.webinarRecordingUrl" class="text-xs text-white/40">Click to add a YouTube URL in the edit panel</div>
+                <div class="text-xs text-white/40">{{ event.webinarRecordingUrl ? 'YouTube URL added' : 'Paste a YouTube link once edited' }}</div>
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <span
-                class="rounded-full border px-2 py-0.5 text-xs font-semibold"
-                :class="event.webinarRecordingUrl ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'"
-              >
+              <span class="rounded-full border px-2 py-0.5 text-xs font-semibold" :class="event.webinarRecordingUrl ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'">
                 {{ event.webinarRecordingUrl ? 'Done' : 'Pending' }}
               </span>
-              <svg class="h-3.5 w-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
+              <svg class="h-3.5 w-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
             </div>
           </button>
 
-          <!-- Send follow-up -->
-          <div class="flex items-center justify-between px-5 py-3.5">
+          <!-- 3. Add blog post -->
+          <button
+            type="button"
+            class="flex w-full items-center justify-between px-5 py-3.5 text-left transition hover:bg-white/5 rounded-none"
+            @click="openBlogModal"
+          >
             <div class="flex items-center gap-3">
-              <div class="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-white/20 bg-white/5" />
+              <div
+                class="flex h-5 w-5 shrink-0 items-center justify-center rounded border"
+                :class="event.blogPostUrl ? 'border-emerald-500/50 bg-emerald-500/20' : 'border-white/20 bg-white/5'"
+              >
+                <svg v-if="event.blogPostUrl" class="h-3 w-3 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              </div>
               <div>
-                <div class="text-sm text-white/80">Send follow-up email</div>
-                <div class="text-xs text-white/40">Triggered automatically based on email settings</div>
+                <div class="text-sm text-white/80">Add blog post</div>
+                <div class="text-xs text-white/40">{{ event.blogPostUrl ? 'Summary post linked' : 'Link the webinar summary blog post' }}</div>
               </div>
             </div>
-            <span class="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-300">Pending</span>
+            <div class="flex items-center gap-2">
+              <span class="rounded-full border px-2 py-0.5 text-xs font-semibold" :class="event.blogPostUrl ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'">
+                {{ event.blogPostUrl ? 'Done' : 'Pending' }}
+              </span>
+              <svg class="h-3.5 w-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+            </div>
+          </button>
+
+          <!-- 4. Send follow-up email -->
+          <div class="flex items-center justify-between px-5 py-3.5">
+            <div class="flex items-center gap-3">
+              <div
+                class="flex h-5 w-5 shrink-0 items-center justify-center rounded border"
+                :class="event.followUpEmailSent ? 'border-emerald-500/50 bg-emerald-500/20' : 'border-white/20 bg-white/5'"
+              >
+                <svg v-if="event.followUpEmailSent" class="h-3 w-3 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              </div>
+              <div>
+                <div class="text-sm text-white/80">Send follow-up email</div>
+                <div class="text-xs text-white/40">{{ event.followUpEmailSent ? 'Marked as sent' : 'Usually sent ~2 days after the event once video is edited' }}</div>
+              </div>
+            </div>
+            <div v-if="event.followUpEmailSent">
+              <span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-300">Done</span>
+            </div>
+            <div v-else>
+              <button
+                type="button"
+                class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 hover:bg-white/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="followUpSaving"
+                @click="markFollowUpSent"
+              >
+                {{ followUpSaving ? 'Saving\u2026' : 'Mark as sent' }}
+              </button>
+            </div>
           </div>
+
         </div>
       </div>
 
@@ -862,5 +1004,111 @@ const formattedDateTime = computed(() => {
       </div>
 
     </template>
+
+    <!-- SLIDES QUICK-EDIT MODAL -->
+    <Teleport to="body">
+      <Transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+        <div v-if="slidesModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="slidesModal = false">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="slidesModal = false" />
+          <div class="relative w-full max-w-md rounded-2xl border border-white/10 bg-[#14192d] text-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
+              <div>
+                <div class="text-sm font-semibold">Upload slides</div>
+                <div class="text-xs text-white/50">One URL per line, or comma-separated.</div>
+              </div>
+              <button type="button" class="rounded-lg p-1 text-white/40 hover:text-white/70 transition" @click="slidesModal = false">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div class="p-5 space-y-4">
+              <textarea
+                v-model="slidesValue"
+                rows="5"
+                placeholder="https://docs.google.com/presentation/d/..."
+                class="w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#e7007e]/50 resize-none"
+              />
+              <div v-if="slidesError" class="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">{{ slidesError }}</div>
+              <div class="flex justify-end gap-3">
+                <button type="button" class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 hover:bg-white/10 transition" @click="slidesModal = false">Cancel</button>
+                <button type="button" class="inline-flex items-center rounded-lg bg-[#e7007e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#c8006c] transition disabled:opacity-50 disabled:cursor-not-allowed" :disabled="slidesSaving" @click="saveSlidesModal">
+                  {{ slidesSaving ? 'Saving\u2026' : 'Save slides' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- RECORDING QUICK-EDIT MODAL -->
+    <Teleport to="body">
+      <Transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+        <div v-if="recordingModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="recordingModal = false">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="recordingModal = false" />
+          <div class="relative w-full max-w-md rounded-2xl border border-white/10 bg-[#14192d] text-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
+              <div>
+                <div class="text-sm font-semibold">Add recording</div>
+                <div class="text-xs text-white/50">Paste the YouTube video URL.</div>
+              </div>
+              <button type="button" class="rounded-lg p-1 text-white/40 hover:text-white/70 transition" @click="recordingModal = false">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div class="p-5 space-y-4">
+              <input
+                v-model="recordingValue"
+                type="url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                class="w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#e7007e]/50"
+              />
+              <div v-if="recordingError" class="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">{{ recordingError }}</div>
+              <div class="flex justify-end gap-3">
+                <button type="button" class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 hover:bg-white/10 transition" @click="recordingModal = false">Cancel</button>
+                <button type="button" class="inline-flex items-center rounded-lg bg-[#e7007e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#c8006c] transition disabled:opacity-50 disabled:cursor-not-allowed" :disabled="recordingSaving" @click="saveRecordingModal">
+                  {{ recordingSaving ? 'Saving\u2026' : 'Save recording' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- BLOG POST QUICK-EDIT MODAL -->
+    <Teleport to="body">
+      <Transition enter-active-class="transition duration-150 ease-out" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+        <div v-if="blogModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="blogModal = false">
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="blogModal = false" />
+          <div class="relative w-full max-w-md rounded-2xl border border-white/10 bg-[#14192d] text-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
+              <div>
+                <div class="text-sm font-semibold">Add blog post</div>
+                <div class="text-xs text-white/50">Link the webinar summary article.</div>
+              </div>
+              <button type="button" class="rounded-lg p-1 text-white/40 hover:text-white/70 transition" @click="blogModal = false">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div class="p-5 space-y-4">
+              <input
+                v-model="blogValue"
+                type="url"
+                placeholder="https://yoursite.com/blog/webinar-summary"
+                class="w-full rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#e7007e]/50"
+              />
+              <div v-if="blogError" class="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">{{ blogError }}</div>
+              <div class="flex justify-end gap-3">
+                <button type="button" class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 hover:bg-white/10 transition" @click="blogModal = false">Cancel</button>
+                <button type="button" class="inline-flex items-center rounded-lg bg-[#e7007e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#c8006c] transition disabled:opacity-50 disabled:cursor-not-allowed" :disabled="blogSaving" @click="saveBlogModal">
+                  {{ blogSaving ? 'Saving\u2026' : 'Save blog post' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div>
 </template>

@@ -47,6 +47,8 @@ export type EventDto = {
   noShowCount?: number
   webinarSlides?: Array<{ label?: string; url: string }>
   webinarRecordingUrl?: string | null
+  blogPostUrl?: string | null
+  followUpEmailSent?: boolean | null
   emailStats?: {
     sent?: number
     delivered?: number

@@ -39,6 +39,8 @@ const EventPatchSchema = z.object({
   noShowCount: z.number().int().nonnegative().optional(),
   webinarSlides: z.array(WebinarSlideSchema).optional(),
   webinarRecordingUrl: z.string().trim().nullable().optional(),
+  blogPostUrl: z.string().trim().url().nullable().optional(),
+  followUpEmailSent: z.boolean().nullable().optional(),
   emailStats: z
     .object({
       sent: z.number().int().nonnegative().optional(),
