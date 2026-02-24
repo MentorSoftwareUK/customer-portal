@@ -573,6 +573,33 @@ export async function adminUpdateEvent(id: string, body: Partial<EventDto>): Pro
   return data.event
 }
 
+export async function adminCreateEvent(body: {
+  title: string
+  type: 'Webinar' | 'Lunch & Learn' | 'Podcast' | 'Other'
+  startAt: string
+  durationMins: number
+  platform: 'Teams' | 'Riverside' | 'TBD'
+  eligibility: 'customer' | 'non-customer' | 'both'
+  provision: 'childrens-home' | 'supported-accommodation' | 'over-18' | 'all'
+  description?: string
+  hostName?: string
+  hostTitle?: string
+  joinUrl?: string
+  priceForNonCustomers?: number | null
+}): Promise<EventDto> {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/events`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin event create failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  const data = (await res.json()) as { event: EventDto }
+  return data.event
+}
+
 export async function adminCancelEvent(id: string): Promise<EventDto> {
   const res = await apiFetch(`${getApiBaseUrl()}/admin/events/${encodeURIComponent(id)}/cancel`, {
     method: 'POST',

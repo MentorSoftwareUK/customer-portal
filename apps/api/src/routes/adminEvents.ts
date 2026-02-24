@@ -1,7 +1,8 @@
 import type { FastifyPluginAsync } from 'fastify'
+import crypto from 'node:crypto'
 import { z } from 'zod'
 import { requireAdmin } from '../auth/requireAdmin'
-import { cancelEventStore, getEventByIdStore, listEventsStore, updateEventStore } from '../store/events'
+import { cancelEventStore, createEventStore, getEventByIdStore, listEventsStore, updateEventStore } from '../store/events'
 import { listRegistrationsByEventId } from '../store/registrations'
 
 const EventIdParamsSchema = z.object({
@@ -48,6 +49,22 @@ const EventPatchSchema = z.object({
     .optional(),
 })
 
+const CreateEventSchema = z.object({
+  title: z.string().trim().min(1),
+  description: z.string().trim().default(''),
+  type: z.enum(['Webinar', 'Lunch & Learn', 'Podcast', 'Other']).default('Webinar'),
+  startAt: z.string().trim().min(1),
+  timezoneLabel: z.string().trim().default('Europe/London'),
+  eligibility: z.enum(['customer', 'non-customer', 'both']).default('customer'),
+  provision: z.enum(['childrens-home', 'supported-accommodation', 'over-18', 'all']).default('all'),
+  priceForNonCustomers: z.number().nullable().default(null),
+  durationMins: z.number().int().positive().default(60),
+  platform: z.enum(['Teams', 'Riverside', 'TBD']).default('TBD'),
+  hostName: z.string().trim().optional(),
+  hostTitle: z.string().trim().optional(),
+  joinUrl: z.string().trim().nullable().optional(),
+})
+
 function formatDateLabel(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return undefined
@@ -86,6 +103,43 @@ export const adminEventsRoutes: FastifyPluginAsync = async (app) => {
   })
 
   app.get('/', async () => ({ events: await listEventsStore() }))
+
+  app.post('/', async (req, reply) => {
+    const parsed = CreateEventSchema.safeParse(req.body)
+    if (!parsed.success) {
+      return reply.status(400).send({ error: 'invalid_request', issues: parsed.error.issues })
+    }
+
+    const d = parsed.data
+    const id = crypto.randomUUID()
+    const dateLabel = formatDateLabel(d.startAt) ?? d.startAt
+    const eligibilityLabel = inferEligibilityLabel(d.eligibility) ?? d.eligibility
+    const provisionLabel = inferProvisionLabel(d.provision) ?? d.provision
+
+    const event = await createEventStore({
+      id,
+      title: d.title,
+      description: d.description,
+      type: d.type,
+      startAt: d.startAt,
+      dateLabel,
+      timezoneLabel: d.timezoneLabel,
+      eligibility: d.eligibility,
+      eligibilityLabel,
+      provision: d.provision,
+      provisionLabel,
+      priceForNonCustomers: d.priceForNonCustomers,
+      durationMins: d.durationMins,
+      commentsCount: 0,
+      platform: d.platform,
+      hostName: d.hostName,
+      hostTitle: d.hostTitle,
+      joinUrl: d.joinUrl ?? null,
+      status: 'upcoming',
+    })
+
+    return reply.status(201).send({ event })
+  })
 
   app.get('/:id', async (req, reply) => {
     const parsed = EventIdParamsSchema.safeParse(req.params)

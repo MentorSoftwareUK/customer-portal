@@ -47,3 +47,12 @@ export async function updateEventStore(id: string, patch: Partial<EventDto>): Pr
 export async function cancelEventStore(id: string): Promise<EventDto | null> {
   return updateEventStore(id, { status: 'cancelled' })
 }
+
+export async function createEventStore(data: EventDto): Promise<EventDto> {
+  const db = await getDb()
+  if (!db) throw new Error('Database unavailable')
+
+  const col = db.collection<EventDoc>(COLLECTION)
+  await col.insertOne({ ...data, _id: data.id } as EventDoc)
+  return data
+}
