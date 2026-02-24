@@ -1,10 +1,17 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 // Ensure tests run without external dependencies.
+// These must be set BEFORE the server is imported so that dotenv (no override)
+// does not clobber them with real values from .env.
 process.env.HUBSPOT_PRIVATE_APP_TOKEN = ''
 process.env.MONGODB_URI = 'memory://disabled'
 process.env.ADMIN_EMAIL_ALLOWLIST = 'liam@mentorsoftware.co.uk'
 process.env.NODE_ENV = 'test'
+// Disable email so the /auth/start route returns devCode for test assertions.
+process.env.SENDGRID_API_KEY = ''
+process.env.SMTP_HOST = ''
+process.env.SMTP_PASS = ''
+process.env.SMTP_FROM = ''
 
 let app: Awaited<ReturnType<typeof import('../server')['buildServer']>>
 

@@ -6,7 +6,8 @@
     "dev:portal": "npm run dev -w portal",
     "dev": "concurrently -n api,portal -c blue,green 'npm run dev:api' 'npm run dev:portal'",
     "hubspot:video-thumbnails": "node scripts/hubspot-video-thumbnails.mjs",
-    "typecheck": "npm run typecheck -w api && npm run typecheck -w portal"
+    "typecheck": "npm run typecheck -w api && npm run typecheck -w portal",
+    "test": "npm run test -w api"
   },
   "keywords": [],
   "author": "",
