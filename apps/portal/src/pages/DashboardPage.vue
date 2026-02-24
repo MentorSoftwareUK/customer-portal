@@ -258,7 +258,7 @@ onMounted(async () => {
       </div>
         </div>
 
-        <div v-if="isMentorChampion" class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white">
+        <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white">
           <div class="flex h-12 w-12 items-center justify-center rounded-full bg-pink-500/10">
             <svg class="h-6 w-6 text-pink-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="8" r="4" />
