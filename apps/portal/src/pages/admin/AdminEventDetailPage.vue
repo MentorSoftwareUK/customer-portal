@@ -377,33 +377,33 @@ function onAttendanceChange(registration: AdminEventRegistrationDto, event: Even
 
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <section class="lg:col-span-2 space-y-4">
-          <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Engagement</h2>
+          <div class="ui-surface p-5">
+            <h2 class="text-base font-semibold text-white">Engagement</h2>
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Registered</dt>
-                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ engagementStats.registered }}</dd>
+              <div class="ui-surface-muted p-3">
+                <dt class="text-xs font-medium text-white/60">Registered</dt>
+                <dd class="mt-1 text-lg font-semibold text-white">{{ engagementStats.registered }}</dd>
               </div>
-              <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Attendees</dt>
-                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ engagementStats.attended }}</dd>
+              <div class="ui-surface-muted p-3">
+                <dt class="text-xs font-medium text-white/60">Attendees</dt>
+                <dd class="mt-1 text-lg font-semibold text-white">{{ engagementStats.attended }}</dd>
               </div>
-              <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Did not attend</dt>
-                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ engagementStats.noShow }}</dd>
+              <div class="ui-surface-muted p-3">
+                <dt class="text-xs font-medium text-white/60">Did not attend</dt>
+                <dd class="mt-1 text-lg font-semibold text-white">{{ engagementStats.noShow }}</dd>
               </div>
             </div>
           </div>
 
-          <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="ui-surface p-5">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Registrations</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Update attendance to track attendees and no‑shows.</p>
+                <h2 class="text-base font-semibold text-white">Registrations</h2>
+                <p class="text-xs text-white/60">Update attendance to track attendees and no‑shows.</p>
               </div>
               <button
                 type="button"
-                class="inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                class="ui-btn-secondary"
                 :disabled="registrationsLoading || registrations.length === 0"
                 @click="exportRegistrationsCsv"
               >
@@ -412,8 +412,8 @@ function onAttendanceChange(registration: AdminEventRegistrationDto, event: Even
             </div>
 
             <div class="mt-4 overflow-x-auto">
-              <table class="w-full text-left text-sm text-gray-600 dark:text-gray-300">
-                <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-700/40 dark:text-gray-300">
+              <table class="ui-table">
+                <thead>
                   <tr>
                     <th class="px-4 py-2">Name</th>
                     <th class="px-4 py-2">Email</th>
@@ -425,13 +425,13 @@ function onAttendanceChange(registration: AdminEventRegistrationDto, event: Even
                 </thead>
                 <tbody>
                   <tr v-if="registrationsLoading">
-                    <td colspan="6" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Loading registrations…</td>
+                    <td colspan="6" class="px-4 py-3 text-sm text-white/50">Loading registrations…</td>
                   </tr>
                   <tr v-else-if="registrations.length === 0">
-                    <td colspan="6" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No registrations yet.</td>
+                    <td colspan="6" class="px-4 py-3 text-sm text-white/50">No registrations yet.</td>
                   </tr>
-                  <tr v-else v-for="reg in registrations" :key="reg.id" class="border-b border-gray-100 dark:border-gray-700">
-                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ reg.name }}</td>
+                  <tr v-else v-for="reg in registrations" :key="reg.id" class="border-b border-white/10">
+                    <td class="px-4 py-3 font-medium text-white">{{ reg.name }}</td>
                     <td class="px-4 py-3">{{ reg.email }}</td>
                     <td class="px-4 py-3 capitalize">{{ reg.attendeeType }}</td>
                     <td class="px-4 py-3 capitalize">{{ reg.status.replace('_', ' ') }}</td>
@@ -454,32 +454,32 @@ function onAttendanceChange(registration: AdminEventRegistrationDto, event: Even
             </div>
           </div>
 
-          <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Email performance</h2>
+          <div class="ui-surface p-5">
+            <h2 class="text-base font-semibold text-white">Email performance</h2>
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
-              <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Sent</dt>
-                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ emailStats.sent ?? '—' }}</dd>
+              <div class="ui-surface-muted p-3">
+                <dt class="text-xs font-medium text-white/60">Sent</dt>
+                <dd class="mt-1 text-lg font-semibold text-white">{{ emailStats.sent ?? '—' }}</dd>
               </div>
-              <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Delivered</dt>
-                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ emailStats.delivered ?? '—' }}</dd>
+              <div class="ui-surface-muted p-3">
+                <dt class="text-xs font-medium text-white/60">Delivered</dt>
+                <dd class="mt-1 text-lg font-semibold text-white">{{ emailStats.delivered ?? '—' }}</dd>
               </div>
-              <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Bounced</dt>
-                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ emailStats.bounced ?? '—' }}</dd>
+              <div class="ui-surface-muted p-3">
+                <dt class="text-xs font-medium text-white/60">Bounced</dt>
+                <dd class="mt-1 text-lg font-semibold text-white">{{ emailStats.bounced ?? '—' }}</dd>
               </div>
-              <div class="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">CTR</dt>
-                <dd class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">{{ emailStats.ctr ?? '—' }}</dd>
+              <div class="ui-surface-muted p-3">
+                <dt class="text-xs font-medium text-white/60">CTR</dt>
+                <dd class="mt-1 text-lg font-semibold text-white">{{ emailStats.ctr ?? '—' }}</dd>
               </div>
             </div>
-            <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">Email metrics will populate once HubSpot email analytics are wired.</p>
+            <p class="mt-3 text-xs text-white/50">Email metrics will populate once HubSpot email analytics are wired.</p>
           </div>
 
-          <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Post-webinar checklist</h2>
-            <ul class="mt-3 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+          <div class="ui-surface p-5">
+            <h2 class="text-base font-semibold text-white">Post-webinar checklist</h2>
+            <ul class="mt-3 space-y-2 text-sm text-white/80">
               <li class="flex items-center justify-between">
                 <span>Upload slides</span>
                 <span class="text-xs font-semibold" :class="event.webinarSlides?.length ? 'text-green-600 dark:text-green-300' : 'text-amber-600 dark:text-amber-300'">
@@ -499,11 +499,11 @@ function onAttendanceChange(registration: AdminEventRegistrationDto, event: Even
             </ul>
           </div>
 
-          <div v-if="showResources" class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Webinar resources</h2>
+          <div v-if="showResources" class="ui-surface p-5">
+            <h2 class="text-base font-semibold text-white">Webinar resources</h2>
 
             <div v-if="event.webinarSlides && event.webinarSlides.length" class="mt-3">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Slides</h3>
+              <h3 class="text-sm font-semibold text-white">Slides</h3>
               <ul class="mt-2 space-y-2 text-sm">
                 <li v-for="slide in event.webinarSlides" :key="slide.url">
                   <a
@@ -519,8 +519,8 @@ function onAttendanceChange(registration: AdminEventRegistrationDto, event: Even
             </div>
 
             <div v-if="event.webinarRecordingUrl" class="mt-4">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Recording</h3>
-              <div v-if="youtubeEmbedUrl" class="mt-2 aspect-video overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 class="text-sm font-semibold text-white">Recording</h3>
+              <div v-if="youtubeEmbedUrl" class="mt-2 aspect-video overflow-hidden rounded-lg border border-white/10">
                 <iframe
                   :src="youtubeEmbedUrl"
                   title="Webinar recording"
@@ -544,34 +544,34 @@ function onAttendanceChange(registration: AdminEventRegistrationDto, event: Even
         </section>
 
         <aside class="space-y-4">
-          <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Webinar details</h2>
+          <div class="ui-surface p-5">
+            <h2 class="text-base font-semibold text-white">Webinar details</h2>
             <dl class="mt-4 space-y-3 text-sm">
               <div class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Host</dt>
-                <dd class="font-medium text-gray-900 dark:text-white text-right">{{ event.hostName || '—' }}</dd>
+                <dt class="text-white/60">Host</dt>
+                <dd class="font-medium text-white text-right">{{ event.hostName || '—' }}</dd>
               </div>
               <div class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Provision</dt>
-                <dd class="font-medium text-gray-900 dark:text-white text-right">{{ event.provisionLabel }}</dd>
+                <dt class="text-white/60">Provision</dt>
+                <dd class="font-medium text-white text-right">{{ event.provisionLabel }}</dd>
               </div>
               <div class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Audience</dt>
-                <dd class="font-medium text-gray-900 dark:text-white text-right">{{ event.eligibilityLabel }}</dd>
+                <dt class="text-white/60">Audience</dt>
+                <dd class="font-medium text-white text-right">{{ event.eligibilityLabel }}</dd>
               </div>
               <div class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Duration</dt>
-                <dd class="font-medium text-gray-900 dark:text-white text-right">{{ event.durationMins }} mins</dd>
+                <dt class="text-white/60">Duration</dt>
+                <dd class="font-medium text-white text-right">{{ event.durationMins }} mins</dd>
               </div>
               <div class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Registrations</dt>
-                <dd class="font-medium text-gray-900 dark:text-white text-right">{{ registrations.length }}</dd>
+                <dt class="text-white/60">Registrations</dt>
+                <dd class="font-medium text-white text-right">{{ registrations.length }}</dd>
               </div>
             </dl>
           </div>
 
-          <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Edit details</h2>
+          <div class="ui-surface p-5">
+            <h2 class="text-base font-semibold text-white">Edit details</h2>
             <form class="mt-4 space-y-3" @submit.prevent="onSave">
               <div>
                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Title</label>

@@ -7,6 +7,8 @@ const events = ref<EventDto[]>([])
 const loading = ref(true)
 const loadError = ref<string | null>(null)
 const openMenuId = ref<string | null>(null)
+const actionsOpen = ref(false)
+const filterOpen = ref(false)
 
 const router = useRouter()
 
@@ -57,6 +59,8 @@ function toggleMenu(id: string) {
 
 function closeMenu() {
   openMenuId.value = null
+  actionsOpen.value = false
+  filterOpen.value = false
 }
 
 function goToEvent(id: string) {
@@ -188,78 +192,70 @@ async function submitCreate() {
                   Cancelled
                 </button>
               </div>
-              <button
-                id="actionsDropdownButton"
-                data-dropdown-toggle="actionsDropdown"
-                class="ui-btn-secondary w-full md:w-auto"
-                type="button"
-              >
-                <svg class="-ml-1 mr-1.5 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path
-                    clip-rule="evenodd"
-                    fill-rule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  />
-                </svg>
-                Actions
-              </button>
-              <div id="actionsDropdown" class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-                <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="actionsDropdownButton">
-                  <li>
-                    <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Mass Edit</a>
-                  </li>
-                </ul>
-                <div class="py-1">
-                  <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete all</a>
+              <div class="relative">
+                <button
+                  class="ui-btn-secondary w-full md:w-auto"
+                  type="button"
+                  @click.stop="actionsOpen = !actionsOpen; filterOpen = false"
+                >
+                  <svg class="-ml-1 mr-1.5 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path
+                      clip-rule="evenodd"
+                      fill-rule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    />
+                  </svg>
+                  Actions
+                </button>
+                <div v-if="actionsOpen" class="absolute right-0 top-full mt-1 z-50 w-44 rounded-lg border border-white/10 bg-[#1a2035] shadow-xl" @click.stop>
+                  <ul class="py-1 text-sm text-white/80">
+                    <li>
+                      <button type="button" class="block w-full text-left py-2 px-4 hover:bg-white/10">Mass Edit</button>
+                    </li>
+                  </ul>
+                  <div class="border-t border-white/10 py-1">
+                    <button type="button" class="block w-full text-left py-2 px-4 text-sm text-white/80 hover:bg-white/10">Delete all</button>
+                  </div>
                 </div>
               </div>
 
-              <button
-                id="filterDropdownButton"
-                data-dropdown-toggle="filterDropdown"
-                class="ui-btn-secondary w-full md:w-auto"
-                type="button"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 w-4 mr-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fill-rule="evenodd"
-                    d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 008 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                Filter
-                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path
-                    clip-rule="evenodd"
-                    fill-rule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  />
-                </svg>
-              </button>
-              <div id="filterDropdown" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
-                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose status</h6>
-                <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
-                  <li
-                    class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-600 dark:bg-gray-800"
-                    role="switch"
-                    aria-checked="false"
-                  >
-                    <span class="text-gray-900 dark:text-gray-100">Published</span>
-                    <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 transition dark:bg-gray-600">
-                      <span class="inline-block h-5 w-5 translate-x-1 rounded-full bg-white shadow transition" />
-                    </span>
-                  </li>
-                  <li
-                    class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-600 dark:bg-gray-800"
-                    role="switch"
-                    aria-checked="false"
-                  >
-                    <span class="text-gray-900 dark:text-gray-100">Draft</span>
-                    <span class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 transition dark:bg-gray-600">
-                      <span class="inline-block h-5 w-5 translate-x-1 rounded-full bg-white shadow transition" />
-                    </span>
-                  </li>
-                </ul>
+              <div class="relative">
+                <button
+                  class="ui-btn-secondary w-full md:w-auto"
+                  type="button"
+                  @click.stop="filterOpen = !filterOpen; actionsOpen = false"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 w-4 mr-2 text-white/60" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                      fill-rule="evenodd"
+                      d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 008 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Filter
+                  <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path
+                      clip-rule="evenodd"
+                      fill-rule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    />
+                  </svg>
+                </button>
+                <div v-if="filterOpen" class="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-white/10 bg-[#1a2035] p-3 shadow-xl" @click.stop>
+                  <h6 class="mb-3 text-sm font-medium text-white">Filter by status</h6>
+                  <ul class="space-y-1 text-sm">
+                    <li v-for="opt in ['all','upcoming','completed','cancelled','draft','published']" :key="opt">
+                      <button
+                        type="button"
+                        class="w-full text-left rounded-lg px-3 py-2 capitalize transition"
+                        :class="statusFilter === opt ? 'bg-primary-600/30 text-white font-medium' : 'text-white/70 hover:bg-white/10'"
+                        @click="statusFilter = opt as typeof statusFilter; filterOpen = false"
+                      >
+                        {{ opt }}
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -313,43 +309,45 @@ async function submitCreate() {
                 <td class="px-4 py-3">{{ event.registeredCount ?? 0 }}</td>
                 <td class="px-4 py-3">{{ event.attendeesCount ?? 0 }}</td>
                 <td class="px-4 py-3">{{ event.noShowCount ?? 0 }}</td>
-                <td class="px-4 py-3 flex items-center justify-end">
-                  <button
-                    :id="`admin-event-${event.id}-dropdown-button`"
-                    class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
-                    type="button"
-                    @click.stop="toggleMenu(event.id)"
-                  >
-                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                    </svg>
-                  </button>
-                  <div
-                    v-if="openMenuId === event.id"
-                    :id="`admin-event-${event.id}-dropdown`"
-                    class="z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
-                    @click.stop
-                  >
-                    <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" :aria-labelledby="`admin-event-${event.id}-dropdown-button`">
-                      <li>
-                        <button
-                          type="button"
-                          class="block w-full text-left py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                          @click="goToEvent(event.id); closeMenu()"
-                        >
-                          View details
-                        </button>
-                      </li>
-                      <li>
-                        <button
-                          type="button"
-                          class="block w-full text-left py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                          @click="goToEvent(event.id); closeMenu()"
-                        >
-                          Edit details
-                        </button>
-                      </li>
-                    </ul>
+                <td class="px-4 py-3">
+                  <div class="relative flex items-center justify-end">
+                    <button
+                      :id="`admin-event-${event.id}-dropdown-button`"
+                      class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
+                      type="button"
+                      @click.stop="toggleMenu(event.id)"
+                    >
+                      <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+                      </svg>
+                    </button>
+                    <div
+                      v-if="openMenuId === event.id"
+                      :id="`admin-event-${event.id}-dropdown`"
+                      class="absolute right-0 top-full mt-1 z-50 w-44 rounded-lg border border-white/10 bg-[#1a2035] shadow-xl"
+                      @click.stop
+                    >
+                      <ul class="py-1 text-sm text-white/80">
+                        <li>
+                          <button
+                            type="button"
+                            class="block w-full text-left py-2 px-4 hover:bg-white/10"
+                            @click="goToEvent(event.id); closeMenu()"
+                          >
+                            View details
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            type="button"
+                            class="block w-full text-left py-2 px-4 hover:bg-white/10"
+                            @click="goToEvent(event.id); closeMenu()"
+                          >
+                            Edit details
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </td>
               </tr>
