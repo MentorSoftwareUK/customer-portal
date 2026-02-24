@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer'
 import type { Transporter } from 'nodemailer'
+import crypto from 'node:crypto'
 import { env } from '../env'
 
 const SENDGRID_API_URL = 'https://api.sendgrid.com/v3/mail/send'
@@ -10,6 +11,11 @@ export function isSmtpConfigured() {
 
 function isSendGridConfigured() {
   return Boolean(env.SENDGRID_API_KEY && env.SMTP_FROM)
+}
+
+function keyFingerprint(value: string | undefined) {
+  if (!value) return 'missing'
+  return crypto.createHash('sha256').update(value).digest('hex').slice(0, 8)
 }
 
 export function isEmailConfigured() {
@@ -49,7 +55,13 @@ async function sendViaSendGridHttp(params: { to: string; subject: string; text: 
     content: [{ type: 'text/plain', value: params.text }],
   }
 
-  console.log('[email] sending via sendgrid api to=%s subject=%s', params.to, params.subject)
+  console.log(
+    '[email] sending via sendgrid api to=%s subject=%s key=%s from=%s',
+    params.to,
+    params.subject,
+    keyFingerprint(apiKey),
+    env.SMTP_FROM,
+  )
   const res = await fetch(SENDGRID_API_URL, {
     method: 'POST',
     headers: {
