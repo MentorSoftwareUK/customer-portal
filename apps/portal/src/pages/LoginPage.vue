@@ -13,6 +13,7 @@ import {
 import { setUserAccessToken } from '../lib/auth'
 import { writeProvisionFilter } from '../lib/provision'
 import { writeProductVersionFilter } from '../lib/productVersion'
+import LoginLoadingSequence from '../components/LoginLoadingSequence.vue'
 
 const router = useRouter()
 
@@ -34,6 +35,48 @@ const response = ref<AuthLookupResponse | null>(null)
 const error = ref<string | null>(null)
 const info = ref<string | null>(null)
 const devCodeHint = ref<string | null>(null)
+const showLoadingSequence = ref(false)
+const apiDone = ref(false)
+let resolveAnimationCb: (() => void) | null = null
+
+function onAnimationComplete() {
+  if (resolveAnimationCb) {
+    resolveAnimationCb()
+    resolveAnimationCb = null
+  }
+}
+
+function waitForAnimationComplete(): Promise<void> {
+  return new Promise(resolve => {
+    resolveAnimationCb = resolve
+  })
+}
+
+const resendCooldown = ref(0)
+let cooldownTimer: ReturnType<typeof setInterval> | null = null
+
+async function resendCode() {
+  if (resendCooldown.value > 0 || loading.value) return
+  loading.value = true
+  error.value = null
+  try {
+    const started = await authStart(email.value)
+    if (started.devCode) devCodeHint.value = started.devCode
+    info.value = 'A new code has been sent to your email.'
+    resendCooldown.value = 30
+    cooldownTimer = setInterval(() => {
+      resendCooldown.value--
+      if (resendCooldown.value <= 0 && cooldownTimer) {
+        clearInterval(cooldownTimer)
+        cooldownTimer = null
+      }
+    }, 1000)
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Failed to resend code'
+  } finally {
+    loading.value = false
+  }
+}
 
 const onboard = ref({
   firstName: '',
@@ -113,14 +156,14 @@ async function onSubmit() {
   try {
     if (step.value === 'email') {
       response.value = null
+      showLoadingSequence.value = true
+      apiDone.value = false
+      const animationDone = waitForAnimationComplete()
 
-      // Fire lookup + start in parallel to eliminate serial round-trip delay.
-      // Lookup provides UX context (customer badge, provision filter).
-      // Start issues the code + fires the email.
+      // Fire lookup + start in parallel while the loading animation plays.
       const lookupPromise = lookupWithTimeout(email.value, 3000).catch(() => null)
       const startPromise = authStart(email.value)
 
-      // Await lookup first (for UX decisions), but it's already running in parallel with start.
       try {
         response.value = await lookupPromise
 
@@ -135,7 +178,10 @@ async function onSubmit() {
         // ignore
       }
 
-      // If HubSpot is configured and user is NOT a live customer, collect onboarding details.
+      // Determine next step, but wait for animation to finish before transitioning.
+      let nextStep: 'onboard' | 'password' | 'code' = 'code'
+      let startResult: Awaited<ReturnType<typeof authStart>> | null = null
+
       if (response.value && !response.value.warning && response.value.isLiveCustomer !== true) {
         const props = response.value.hubspot.properties
         onboard.value = {
@@ -144,23 +190,29 @@ async function onSubmit() {
           phone: props?.phone ?? '',
           company: props?.company ?? '',
         }
-        step.value = 'onboard'
-        return
+        nextStep = 'onboard'
+      } else if (response.value?.isLiveCustomer === true && response.value?.auth?.hasPassword) {
+        nextStep = 'password'
+      } else {
+        startResult = await startPromise
       }
 
-      // Live customer + password set: offer password login first.
-      if (response.value?.isLiveCustomer === true && response.value?.auth?.hasPassword) {
+      // Signal the loading animation to fast-forward remaining steps.
+      apiDone.value = true
+      await animationDone
+
+      showLoadingSequence.value = false
+
+      if (nextStep === 'onboard') {
+        step.value = 'onboard'
+      } else if (nextStep === 'password') {
         step.value = 'password'
         info.value = 'Enter your password to sign in, or use a code instead.'
-        return
+      } else {
+        if (startResult?.devCode) devCodeHint.value = startResult.devCode
+        info.value = 'We\u2019ve sent you a sign-in code.'
+        step.value = 'code'
       }
-
-      const started = await startPromise
-      if (started.devCode) {
-        devCodeHint.value = started.devCode
-      }
-      info.value = 'We\u2019ve sent you a sign-in code.'
-      step.value = 'code'
       return
     }
 
@@ -214,6 +266,11 @@ async function onSubmit() {
     error.value = e instanceof Error ? e.message : 'Unknown error'
   } finally {
     loading.value = false
+    showLoadingSequence.value = false
+    if (resolveAnimationCb) {
+      resolveAnimationCb()
+      resolveAnimationCb = null
+    }
   }
 }
 </script>
@@ -226,6 +283,10 @@ async function onSubmit() {
           <h1 class="ui-surface-title text-xl font-bold leading-tight tracking-tight md:text-2xl">
             Sign in to Mentor Portal
           </h1>
+
+          <LoginLoadingSequence v-if="showLoadingSequence" :done="apiDone" @complete="onAnimationComplete" />
+
+          <template v-else>
           <p class="text-sm text-white/70">
             Enter your email to continue. Customers can sign in with a password or a one-time code.
           </p>
@@ -355,6 +416,17 @@ async function onSubmit() {
               <p class="mt-2 text-xs text-white/60">
                 Enter the code we emailed you. It expires in ~10 minutes.
               </p>
+              <p class="mt-1 text-xs text-white/40">
+                Can't find it? Check your spam or junk folder.
+              </p>
+              <button
+                type="button"
+                class="mt-3 text-xs text-primary-400 hover:text-primary-300 underline underline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="loading || resendCooldown > 0"
+                @click="resendCode"
+              >
+                {{ resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : 'Resend code' }}
+              </button>
               <p v-if="devCodeHint" class="mt-2 text-xs text-amber-700 dark:text-amber-200">
                 Dev hint (no SMTP configured): code is <span class="font-semibold">{{ devCodeHint }}</span>
               </p>
@@ -444,6 +516,7 @@ async function onSubmit() {
           <div v-if="response?.warning" class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
             Integration not configured yet: {{ response.warning }}
           </div>
+          </template>
         </div>
       </div>
     </div>
