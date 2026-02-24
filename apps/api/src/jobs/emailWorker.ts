@@ -10,6 +10,11 @@ import {
   type EmailJob,
 } from '../store/emailJobs'
 import { sendTextEmail } from '../integrations/email'
+import {
+  buildConfirmationHtml,
+  buildReminderHtml,
+  buildThankYouHtml,
+} from '../integrations/emailTemplates'
 
 function subjectFor(job: EmailJob, eventTitle: string) {
   switch (job.type) {
@@ -18,7 +23,7 @@ function subjectFor(job: EmailJob, eventTitle: string) {
     case 'event_reminder':
       return `Reminder: ${eventTitle}`
     case 'event_thank_you':
-      return `Thank you for attending: ${eventTitle}`
+      return `Thank you for joining: ${eventTitle}`
   }
 }
 
@@ -29,8 +34,60 @@ function buildText(params: {
   eventDateLabel: string
   timezoneLabel: string
   platform: string
+  hostName?: string | null
+  joinUrl?: string | null
+  webinarRecordingUrl?: string | null
+  webinarSlides?: Array<{ label?: string; url: string }> | null
+  blogPostUrl?: string | null
 }) {
   const greeting = params.recipientName ? `Hi ${params.recipientName},` : 'Hi,'
+
+  if (params.job.type === 'event_confirmation') {
+    return [
+      greeting,
+      '',
+      `You're registered for: ${params.eventTitle}`,
+      `When: ${params.eventDateLabel} (${params.timezoneLabel})`,
+      ...(params.hostName ? [`Host: ${params.hostName}`] : []),
+      ...(params.joinUrl ? ['', `Join: ${params.joinUrl}`] : []),
+      '',
+      "If you're not able to attend live, don't worry. We'll share the recording and presentation slides with you after the webinar.",
+      '',
+      'The Mentor Software Team',
+    ].join('\n')
+  }
+
+  if (params.job.type === 'event_reminder') {
+    return [
+      greeting,
+      '',
+      `Just a reminder about our upcoming ${params.eventTitle} webinar${params.hostName ? ` with ${params.hostName}` : ''}.`,
+      '',
+      `Date: ${params.eventDateLabel}`,
+      ...(params.hostName ? [`Host: ${params.hostName}`] : []),
+      ...(params.joinUrl ? ['', `Join the session: ${params.joinUrl}`] : []),
+      '',
+      "We'll share the recording and presentation slides with you after the webinar. We look forward to seeing you there!",
+      '',
+      'The Mentor Software Team',
+    ].join('\n')
+  }
+
+  // event_thank_you
+  const lines = [
+    greeting,
+    '',
+    'Thank you for joining our exclusive Mentor customer webinar.',
+    `"${params.eventTitle}"`,
+    '',
+    "If you couldn't attend live, or want to revisit the session, you can now:",
+  ]
+  if (params.webinarRecordingUrl) lines.push(`- Watch the recording: ${params.webinarRecordingUrl}`)
+  if (params.webinarSlides?.[0]) lines.push(`- Download the slides: ${params.webinarSlides[0].url}`)
+  if (params.blogPostUrl) lines.push(`- Read the key summary blog: ${params.blogPostUrl}`)
+  lines.push('', 'If you have any questions or would like further support, our team is always here to help.', '', 'The Mentor Software Team')
+  return lines.join('\n')
+}
 
   if (params.job.type === 'event_confirmation') {
     return [
@@ -115,16 +172,61 @@ export async function runEmailWorkerOnce(logger: FastifyBaseLogger) {
       }
 
       const subject = subjectFor(job, evt.title)
-      const text = buildText({
+      const sharedParams = {
         job,
         recipientName: reg.name,
         eventTitle: evt.title,
         eventDateLabel: evt.dateLabel,
         timezoneLabel: evt.timezoneLabel,
         platform: evt.platform,
-      })
+        hostName: evt.hostName ?? null,
+        joinUrl: evt.joinUrl ?? null,
+        webinarRecordingUrl: evt.webinarRecordingUrl ?? null,
+        webinarSlides: evt.webinarSlides ?? null,
+        blogPostUrl: (evt as any).blogPostUrl ?? null,
+      }
+      const text = buildText(sharedParams)
+      let html: string | undefined
+      try {
+        if (job.type === 'event_confirmation') {
+          html = buildConfirmationHtml({
+            recipientName: reg.name,
+            eventTitle: evt.title,
+            startAt: evt.startAt,
+            durationMins: evt.durationMins,
+            hostName: evt.hostName,
+            hostTitle: evt.hostTitle,
+            joinUrl: evt.joinUrl,
+          })
+        } else if (job.type === 'event_reminder') {
+          html = buildReminderHtml({
+            recipientName: reg.name,
+            eventTitle: evt.title,
+            startAt: evt.startAt,
+            durationMins: evt.durationMins,
+            hostName: evt.hostName,
+            hostTitle: evt.hostTitle,
+            joinUrl: evt.joinUrl,
+            description: evt.description,
+          })
+        } else if (job.type === 'event_thank_you') {
+          html = buildThankYouHtml({
+            recipientName: reg.name,
+            eventTitle: evt.title,
+            startAt: evt.startAt,
+            durationMins: evt.durationMins,
+            hostName: evt.hostName,
+            hostTitle: evt.hostTitle,
+            webinarRecordingUrl: evt.webinarRecordingUrl,
+            webinarSlides: evt.webinarSlides,
+            blogPostUrl: (evt as any).blogPostUrl,
+          })
+        }
+      } catch (htmlErr) {
+        logger.warn({ htmlErr }, 'Failed to build HTML email; falling back to plain text')
+      }
 
-      await sendTextEmail({ to: job.to, subject, text })
+      await sendTextEmail({ to: job.to, subject, text, html })
       await markEmailJobSent({ id: job.id, nowIso })
     } catch (err: any) {
       const message = err?.message ? String(err.message) : String(err)
