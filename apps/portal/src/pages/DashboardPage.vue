@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { listInvoices, listMeetings, listEvents, type InvoiceDto, type MeetingDto, type EventDto } from '../lib/api'
 import PipelineStageTracker from '../components/PipelineStageTracker.vue'
+import HubSpotContactForm from '../components/HubSpotContactForm.vue'
 import { useFeatureFlags } from '../lib/featureFlags'
 import { provisionFilterLabel, readProvisionFilter, type ProvisionFilter } from '../lib/provision'
 import { getUserAccessToken, decodeJwtPayload } from '../lib/auth'
@@ -174,6 +175,25 @@ const lifecycleStages = [
 
 const activeLifecycleStage = ref<'discovery' | 'demo' | 'contract' | 'training' | 'live'>('training')
 
+// Show the stats grid only when there are enough feature-gated cards to justify the row.
+// Events + Meetings alone are not worth the row — they'll reappear when tickets/invoices
+// (or other features) are turned back on.
+const showStatsGrid = computed(() =>
+  featureFlags.value.ticketsEnabled ||
+  featureFlags.value.invoicesEnabled
+)
+
+// Contact Us modal
+const contactModalOpen = ref(false)
+
+function openContactModal() {
+  contactModalOpen.value = true
+}
+
+function closeContactModal() {
+  contactModalOpen.value = false
+}
+
 onMounted(async () => {
   await loadFeatureFlags()
 
@@ -225,12 +245,16 @@ onMounted(async () => {
           </svg>
           Training Videos
         </RouterLink>
-        <RouterLink to="/app/events" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/10">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#e7007e] hover:bg-[#c9006d] text-white font-medium transition-colors"
+          @click="openContactModal"
+        >
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
-          View Events
-        </RouterLink>
+          Contact Us
+        </button>
       </div>
         </div>
 
@@ -268,8 +292,8 @@ onMounted(async () => {
       </RouterLink>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Stats Grid - only shown when enough features are active to fill the row -->
+    <div v-if="showStatsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- Tickets -->
       <div v-if="featureFlags.ticketsEnabled" class="bg-[#14192d] rounded-lg p-5 border border-white/10">
         <div class="flex items-center justify-between mb-3">
@@ -563,4 +587,54 @@ onMounted(async () => {
       </div>
     </div>
   </div>
+
+  <!-- Contact Us Modal -->
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-show="contactModalOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeContactModal" />
+
+        <!-- Modal panel -->
+        <div class="relative z-10 w-full max-w-lg rounded-xl bg-[#14192d] border border-white/10 shadow-2xl overflow-hidden">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+            <div>
+              <h2 class="text-lg font-semibold text-white">Contact Us</h2>
+              <p class="text-sm text-gray-400 mt-0.5">We\'ll get back to you as soon as possible.</p>
+            </div>
+            <button
+              type="button"
+              class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Close"
+              @click="closeContactModal"
+            >
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- HubSpot Form -->
+          <div class="px-6 py-5 max-h-[70vh] overflow-y-auto">
+            <HubSpotContactForm
+              portal-id="145032754"
+              form-id="2e2ce646-a095-46a9-9cc9-94bfdec91dc2"
+              region="eu1"
+            />
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
