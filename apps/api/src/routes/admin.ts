@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { requireAdmin } from '../auth/requireAdmin'
 import { getAdminSettings, updateAdminSettings } from '../store/settings'
 import { env } from '../env'
+import { isEmailConfigured } from '../integrations/email'
 import { hubspotGetMe } from '../integrations/hubspot'
 
 const PatchSettingsSchema = z.object({
@@ -93,10 +94,6 @@ const PatchSettingsSchema = z.object({
     .optional(),
 })
 
-function isSmtpConfigured() {
-  return Boolean(env.SMTP_HOST && env.SMTP_PORT && env.SMTP_FROM)
-}
-
 export const adminRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', async (req, reply) => {
     const ok = await requireAdmin(req, reply)
@@ -158,7 +155,7 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
     return {
       settings,
       system: {
-        smtpConfigured: isSmtpConfigured(),
+        smtpConfigured: isEmailConfigured(),
         emailJobsEnabled: env.EMAIL_JOBS_ENABLED,
       },
     }

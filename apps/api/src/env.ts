@@ -152,6 +152,7 @@ const EnvSchema = z.object({
   SMTP_USER: optionalString(),
   SMTP_PASS: optionalString(),
   SMTP_FROM: optionalString(),
+  SENDGRID_API_KEY: optionalString(),
   
   // Admin + background jobs
   ADMIN_EMAIL_ALLOWLIST: z.string().optional(),

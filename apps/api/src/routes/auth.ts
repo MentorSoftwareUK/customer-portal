@@ -11,7 +11,7 @@ import {
 import { env } from '../env'
 import { createAuthCode, verifyAndConsumeAuthCode } from '../auth/codes'
 import { hasPassword, setPassword, verifyPassword } from '../auth/passwords'
-import { isSmtpConfigured, sendLoginCodeEmail } from '../integrations/email'
+import { isEmailConfigured, sendLoginCodeEmail } from '../integrations/email'
 import { getBearerToken, signAccessToken, verifyAccessToken, type AuthTokenPayload } from '../auth/jwt'
 import { hubspotUpsertContactByEmail } from '../integrations/hubspot'
 
@@ -358,10 +358,10 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
     let devCode: string | undefined
 
-    app.log.info({ email, smtpConfigured: isSmtpConfigured(), nodeEnv: env.NODE_ENV }, '[start] auth start request')
+    app.log.info({ email, emailConfigured: isEmailConfigured(), nodeEnv: env.NODE_ENV }, '[start] auth start request')
 
     // Dev ergonomics: when SMTP isn't configured, return the code so local/dev testing isn't blocked.
-    if (env.NODE_ENV !== 'production' && !isSmtpConfigured()) {
+    if (env.NODE_ENV !== 'production' && !isEmailConfigured()) {
       devCode = code
       app.log.info({ email, code }, 'Login code (dev)')
       return reply.status(200).send({ ok: true, email, devCode })
