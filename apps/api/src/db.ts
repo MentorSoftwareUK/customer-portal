@@ -17,7 +17,18 @@ export async function getDb(): Promise<Db | null> {
   if (failedAt && Date.now() - failedAt < RETRY_INTERVAL_MS) return null
 
   try {
-    client = new MongoClient(env.MONGODB_URI as string, {
+    const uri = env.MONGODB_URI as string
+    // Append retryWrites & majority write-concern if the URI doesn't already
+    // include them — Atlas best practice and sometimes stabilises handshakes.
+    const separator = uri.includes('?') ? '&' : '?'
+    const extras: string[] = []
+    if (!/retryWrites/i.test(uri)) extras.push('retryWrites=true')
+    if (!/\bw=/i.test(uri)) extras.push('w=majority')
+    const finalUri = extras.length ? `${uri}${separator}${extras.join('&')}` : uri
+
+    console.log('[mongo] connecting, node=%s, openssl=%s', process.version, process.versions.openssl)
+
+    client = new MongoClient(finalUri, {
       serverSelectionTimeoutMS: 5_000,
       connectTimeoutMS: 5_000,
       tls: true,
@@ -25,6 +36,7 @@ export async function getDb(): Promise<Db | null> {
     await client.connect()
     db = client.db(env.MONGODB_DB)
     failedAt = 0
+    console.log('[mongo] connected ok')
     return db
   } catch (err) {
     console.error('[mongo] connection failed; will retry in 30 s', err)
