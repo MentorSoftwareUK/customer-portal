@@ -293,9 +293,39 @@ function statusBadge(status?: string | null) {
     case 'completed': return 'bg-sky-500/20 text-sky-200 border-sky-500/30'
     case 'cancelled': return 'bg-rose-500/20 text-rose-200 border-rose-500/30'
     case 'draft': return 'bg-amber-500/20 text-amber-200 border-amber-500/30'
+    case 'upcoming': return 'bg-violet-500/20 text-violet-200 border-violet-500/30'
     default: return 'bg-white/10 text-white/70 border-white/10'
   }
 }
+
+function typeBadge(type?: string | null) {
+  switch ((type ?? '').toLowerCase()) {
+    case 'webinar': return 'border-violet-500/30 bg-violet-500/20 text-violet-200'
+    case 'workshop': return 'border-blue-500/30 bg-blue-500/20 text-blue-200'
+    case 'qa':
+    case 'q&a': return 'border-cyan-500/30 bg-cyan-500/20 text-cyan-200'
+    case 'training': return 'border-orange-500/30 bg-orange-500/20 text-orange-200'
+    default: return 'border-white/10 bg-white/5 text-white/50'
+  }
+}
+
+function formatDuration(mins?: number | null): string {
+  if (mins == null) return '\u2014'
+  if (mins < 60) return `${mins}min`
+  const h = mins / 60
+  const label = h === Math.floor(h) ? `${Math.floor(h)}` : `${h}`
+  return `${label}hr${h !== 1 ? 's' : ''}`
+}
+
+const formattedDateTime = computed(() => {
+  const ev = event.value
+  if (!ev?.startAt) return ev?.dateLabel ?? ''
+  const d = new Date(ev.startAt)
+  if (Number.isNaN(d.getTime())) return ev?.dateLabel ?? ''
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  const date = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+  return `${time} · ${date}`
+})
 </script>
 
 <template>
@@ -352,9 +382,12 @@ function statusBadge(status?: string | null) {
                   {{ event.status ?? 'upcoming' }}
                 </span>
                 <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-white/50">
-                  {{ event.dateLabel }} &middot; {{ event.timezoneLabel }}
+                  {{ formattedDateTime }}
                 </span>
-                <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-white/50 capitalize">
+                <span
+                  class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize"
+                  :class="typeBadge(event.type)"
+                >
                   {{ event.type }}
                 </span>
               </div>
@@ -430,8 +463,8 @@ function statusBadge(status?: string | null) {
             </div>
             <div class="rounded-xl border border-white/10 bg-white/5 p-4">
               <div class="text-xs font-semibold uppercase tracking-wide text-white/50">Duration</div>
-              <div class="mt-2 text-2xl font-semibold text-white">{{ event.durationMins ?? '\u2014' }}</div>
-              <p class="mt-1 text-xs text-white/40">minutes</p>
+              <div class="mt-2 text-2xl font-semibold text-white">{{ formatDuration(event.durationMins) }}</div>
+              <p class="mt-1 text-xs text-white/40">duration</p>
             </div>
           </div>
 
@@ -465,7 +498,12 @@ function statusBadge(status?: string | null) {
           <div class="text-xs text-white/50">Track what still needs doing after the event.</div>
         </div>
         <div class="divide-y divide-white/10">
-          <div class="flex items-center justify-between px-5 py-3.5">
+          <!-- Upload slides -->
+          <button
+            type="button"
+            class="flex w-full items-center justify-between px-5 py-3.5 text-left transition hover:bg-white/5"
+            @click="editOpen = true"
+          >
             <div class="flex items-center gap-3">
               <div
                 class="flex h-5 w-5 shrink-0 items-center justify-center rounded border"
@@ -475,16 +513,30 @@ function statusBadge(status?: string | null) {
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
               </div>
-              <span class="text-sm text-white/80">Upload slides</span>
+              <div>
+                <div class="text-sm text-white/80">Upload slides</div>
+                <div v-if="!event.webinarSlides?.length" class="text-xs text-white/40">Click to add slide URLs in the edit panel</div>
+              </div>
             </div>
-            <span
-              class="rounded-full border px-2 py-0.5 text-xs font-semibold"
-              :class="event.webinarSlides?.length ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'"
-            >
-              {{ event.webinarSlides?.length ? 'Done' : 'Pending' }}
-            </span>
-          </div>
-          <div class="flex items-center justify-between px-5 py-3.5">
+            <div class="flex items-center gap-2">
+              <span
+                class="rounded-full border px-2 py-0.5 text-xs font-semibold"
+                :class="event.webinarSlides?.length ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'"
+              >
+                {{ event.webinarSlides?.length ? 'Done' : 'Pending' }}
+              </span>
+              <svg class="h-3.5 w-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </button>
+
+          <!-- Add recording -->
+          <button
+            type="button"
+            class="flex w-full items-center justify-between px-5 py-3.5 text-left transition hover:bg-white/5"
+            @click="editOpen = true"
+          >
             <div class="flex items-center gap-3">
               <div
                 class="flex h-5 w-5 shrink-0 items-center justify-center rounded border"
@@ -494,19 +546,32 @@ function statusBadge(status?: string | null) {
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
               </div>
-              <span class="text-sm text-white/80">Add recording</span>
+              <div>
+                <div class="text-sm text-white/80">Add recording</div>
+                <div v-if="!event.webinarRecordingUrl" class="text-xs text-white/40">Click to add a YouTube URL in the edit panel</div>
+              </div>
             </div>
-            <span
-              class="rounded-full border px-2 py-0.5 text-xs font-semibold"
-              :class="event.webinarRecordingUrl ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'"
-            >
-              {{ event.webinarRecordingUrl ? 'Done' : 'Pending' }}
-            </span>
-          </div>
+            <div class="flex items-center gap-2">
+              <span
+                class="rounded-full border px-2 py-0.5 text-xs font-semibold"
+                :class="event.webinarRecordingUrl ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-300'"
+              >
+                {{ event.webinarRecordingUrl ? 'Done' : 'Pending' }}
+              </span>
+              <svg class="h-3.5 w-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </button>
+
+          <!-- Send follow-up -->
           <div class="flex items-center justify-between px-5 py-3.5">
             <div class="flex items-center gap-3">
               <div class="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-white/20 bg-white/5" />
-              <span class="text-sm text-white/80">Send follow-up email</span>
+              <div>
+                <div class="text-sm text-white/80">Send follow-up email</div>
+                <div class="text-xs text-white/40">Triggered automatically based on email settings</div>
+              </div>
             </div>
             <span class="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-300">Pending</span>
           </div>
