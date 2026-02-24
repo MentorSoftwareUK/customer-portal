@@ -16,6 +16,9 @@
     "concurrently": "^9.2.1"
   },
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
