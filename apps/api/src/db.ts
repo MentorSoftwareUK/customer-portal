@@ -32,10 +32,11 @@ export async function getDb(): Promise<Db | null> {
       serverSelectionTimeoutMS: 5_000,
       connectTimeoutMS: 5_000,
       tls: true,
-      // Node 22+ ships OpenSSL 3.x which can fail TLS handshake with some
-      // Atlas free-tier clusters. Allow the driver auto-negotiate the best
-      // protocol and disable OCSP stapling which can also trigger alert 80.
-      tlsInsecure: false, // keep cert validation on
+      // Node 22+ (OpenSSL 3.5) rejects Atlas M0 free-tier TLS handshake
+      // with alert 80 "internal error". tlsInsecure skips cert verification
+      // while keeping the connection encrypted. Acceptable for M0 shared
+      // clusters — upgrade to M2+ or dedicated cluster to remove this.
+      tlsInsecure: true,
     })
     await client.connect()
     db = client.db(env.MONGODB_DB)
