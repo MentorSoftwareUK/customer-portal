@@ -32,15 +32,6 @@ const userName = computed(() => {
   return firstName.charAt(0).toUpperCase() + firstName.slice(1)
 })
 
-const isMentorChampion = computed(() => {
-  const token = getUserAccessToken()
-  if (!token) return false
-  const payload = decodeJwtPayload(token)
-  const buyingRole = payload?.buyingRole as string | undefined | null
-  if (!buyingRole) return false
-  return buyingRole.trim().toLowerCase() === 'champion'
-})
-
 const overdueInvoices = computed(() => invoices.value.filter((i) => i.status === 'Overdue'))
 const outstandingInvoices = computed(() => invoices.value.filter((i) => i.status !== 'Paid'))
 
