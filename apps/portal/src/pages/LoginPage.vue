@@ -276,10 +276,10 @@ async function onSubmit() {
 </script>
 
 <template>
-  <section class="min-h-screen bg-white flex">
+  <section class="min-h-screen flex" style="background-color: #14192D;">
 
     <!-- Left Panel — navy rounded block -->
-    <div class="hidden lg:flex lg:w-1/2 bg-white p-12">
+    <div class="hidden lg:flex lg:w-1/2 p-12">
       <div class="w-full rounded-3xl p-12 flex flex-col justify-between" style="background-color: #14192D;">
         <!-- Logo -->
         <div>
@@ -295,7 +295,7 @@ async function onSubmit() {
     </div>
 
     <!-- Right Panel — login form -->
-    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white" style="box-shadow: -20px 0 60px rgba(0,0,0,0.35);">
       <div class="w-full max-w-md">
 
         <!-- Mobile logo -->
