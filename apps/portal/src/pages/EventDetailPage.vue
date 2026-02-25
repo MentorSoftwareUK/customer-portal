@@ -188,7 +188,7 @@ const typeBadgeClass = computed(() => {
           <!-- Practical information -->
           <div class="rounded-2xl border border-white/10 bg-white/5 px-6 py-6 text-white">
             <h2 class="text-base font-semibold text-white">Practical information</h2>
-            <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div class="mt-4 space-y-5">
               <div>
                 <h3 class="text-xs font-semibold uppercase tracking-wide text-white/40">What you'll need</h3>
                 <p class="mt-2 text-[0.9375rem] leading-relaxed text-white/75">
@@ -202,6 +202,28 @@ const typeBadgeClass = computed(() => {
                 </p>
               </div>
             </div>
+          </div>
+
+          <!-- Session etiquette -->
+          <div class="rounded-2xl border border-white/10 bg-white/5 px-6 py-6 text-white">
+            <h2 class="text-base font-semibold text-white">Session etiquette</h2>
+            <p class="mt-4 text-[0.9375rem] leading-relaxed text-white/75">
+              To keep the session focused and protect the confidentiality of your team, we ask that all attendees join muted. If you have a question, please use the raise hand feature — the host will invite you to unmute at an appropriate moment.
+            </p>
+            <p class="mt-3 text-[0.9375rem] leading-relaxed text-white/75">
+              This helps us maintain the flow of the session and ensures that sensitive information discussed within your home stays private.
+            </p>
+          </div>
+
+          <!-- Need help? -->
+          <div class="rounded-2xl border border-white/10 bg-white/5 px-6 py-6 text-white">
+            <h2 class="text-base font-semibold text-white">Need help?</h2>
+            <p class="mt-4 text-[0.9375rem] leading-relaxed text-white/75">
+              If you're unsure whether this session is right for your team, register anyway and add a note — we'll follow up.
+            </p>
+            <p class="mt-3 text-sm text-white/50">
+              <span class="font-medium text-white/70">Tip:</span> If you can't attend live, we'll share materials and a recording link afterwards when available.
+            </p>
           </div>
 
           <!-- Event resources (post-event) -->
@@ -315,7 +337,7 @@ const typeBadgeClass = computed(() => {
 
           <!-- ── KEY DETAILS ── -->
           <div class="rounded-2xl border border-white/10 bg-white/5 px-5 py-5 text-white">
-            <h2 class="text-xs font-semibold uppercase tracking-wide text-white/40">Key details</h2>
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-white">Key details</h2>
             <dl class="mt-3 space-y-2.5 text-sm">
               <div class="flex items-start justify-between gap-4">
                 <dt class="text-white/50">Date &amp; time</dt>
@@ -353,16 +375,7 @@ const typeBadgeClass = computed(() => {
             </dl>
           </div>
 
-          <!-- ── NEED HELP? (most recessive) ── -->
-          <div class="rounded-2xl border border-white/[0.06] px-5 py-4 text-white">
-            <h2 class="text-sm font-semibold text-white/50">Need help?</h2>
-            <p class="mt-2 text-sm leading-relaxed text-white/40">
-              If you're unsure whether this session is right for your team, register anyway and add a note — we'll follow up.
-            </p>
-            <p class="mt-2 text-xs text-white/30">
-              <span class="font-medium text-white/40">Tip:</span> If you can't attend live, we'll share materials afterwards when available.
-            </p>
-          </div>
+
         </aside>
       </div>
     </template>
