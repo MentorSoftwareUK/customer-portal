@@ -22,7 +22,6 @@ const companyDraft = ref<UpdateCompanyRequest>({})
 
 const canEditCompany = computed(() => profile.value?.permissions.canEditCompany === true)
 const hasCompany = computed(() => Boolean(profile.value?.company))
-const companyName = computed(() => profile.value?.company?.name || 'No company on file')
 
 function resetDraftsFromProfile(p: ProfileDto) {
   personalDraft.value = {
