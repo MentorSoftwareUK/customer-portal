@@ -904,7 +904,7 @@ export async function hubspotGetContactLists(): Promise<HubSpotContactList[]> {
   const allLists: HubSpotContactList[] = []
 
   while (true) {
-    const url = `https://api.hubapi.com/contacts/v1/lists?count=250&offset=${offset}`
+    const url = `/contacts/v1/lists?count=250&offset=${offset}`
     const res = await hubspotFetch(url, { method: 'GET' })
     if (!res.ok) break
 
@@ -952,7 +952,7 @@ export async function hubspotGetContactsInList(
     params.append('property', 'lastname')
     if (vidOffset !== undefined) params.set('vidOffset', String(vidOffset))
 
-    const url = `https://api.hubapi.com/contacts/v1/lists/${listId}/contacts/all?${params.toString()}`
+    const url = `/contacts/v1/lists/${listId}/contacts/all?${params.toString()}`
     const res = await hubspotFetch(url, { method: 'GET' })
     if (!res.ok) break
 
