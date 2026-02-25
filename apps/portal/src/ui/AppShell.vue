@@ -16,6 +16,19 @@ const router = useRouter()
 const currentPath = computed(() => route.path)
 const isMeetingsPage = computed(() => currentPath.value === '/app/meetings' || currentPath.value.startsWith('/app/meetings/'))
 const isEventDetailPage = computed(() => /^\/app\/events\/.+/.test(currentPath.value))
+const isDark = ref(false)
+
+function toggleDark() {
+  isDark.value = !isDark.value
+  if (isDark.value) {
+    document.documentElement.classList.add('dark')
+    localStorage.setItem('mentor-theme', 'dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+    localStorage.setItem('mentor-theme', 'light')
+  }
+}
+
 const sessionId = ref<string | null>(null)
 
 const user = ref<AuthUser | null>(null)
@@ -256,6 +269,14 @@ watch(
 )
 
 onMounted(() => {
+  const saved = localStorage.getItem('mentor-theme')
+  if (saved === 'dark') {
+    isDark.value = true
+    document.documentElement.classList.add('dark')
+  }
+})
+
+onMounted(() => {
   window.addEventListener('keydown', onGlobalKeydown)
   nextTick(() => initDropdowns())
 })
@@ -397,6 +418,22 @@ onUnmounted(() => {
             </div>
             <div class="px-4 py-3 text-sm text-white/70">No notifications yet.</div>
           </div>
+
+          <button
+            type="button"
+            @click="toggleDark"
+            class="mr-1 rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white focus:ring-4 focus:ring-white/15"
+            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+          >
+            <!-- Sun: shown when dark (click to go light) -->
+            <svg v-if="isDark" aria-hidden="true" class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+            </svg>
+            <!-- Moon: shown when light (click to go dark) -->
+            <svg v-else aria-hidden="true" class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+            </svg>
+          </button>
 
           <button
             type="button"
@@ -731,48 +768,18 @@ onUnmounted(() => {
             </RouterLink>
           </li>
 
-          <li>
-            <RouterLink
-              to="/app/profile"
-              class="group flex items-center rounded-lg p-2 text-base font-medium"
-              :class="isActive('/app/profile') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
-            >
-              <svg
-                aria-hidden="true"
-                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 2a5 5 0 00-3.536 8.536A7 7 0 002 17a1 1 0 102 0 5 5 0 0110 0 1 1 0 102 0 7 7 0 00-4.464-6.464A5 5 0 0010 2z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-              <span class="ml-3">Profile</span>
-            </RouterLink>
-          </li>
         </ul>
 
-        <ul class="mt-5 space-y-2 border-t border-white/10 pt-5">
-          <li>
-            <RouterLink
-              to="/admin/events"
-              class="group flex items-center rounded-lg p-2 text-base font-medium text-white/80 transition duration-75 hover:bg-white/10 hover:text-white"
-              v-if="isAdmin"
-            >
-              <span class="ml-3">Admin</span>
-            </RouterLink>
-          </li>
-        </ul>
+        <div class="mt-auto pt-5 border-t border-white/10">
+          <p class="px-2 text-xs text-white/25">&copy; Mentor Software 2026</p>
+        </div>
       </div>
     </aside>
 
     <main
       id="main-content"
       class="min-h-screen md:ml-64 text-gray-900"
-      :class="isMeetingsPage ? 'pt-0 bg-[#0f1428]' : isEventDetailPage ? 'pt-20 bg-[#14192d]' : 'pt-20 bg-[#e2e2e2]'"
+      :class="isMeetingsPage ? 'pt-0 bg-[#0f1428]' : isEventDetailPage ? 'pt-20 bg-[#14192d]' : isDark ? 'pt-20 bg-[#14192d]' : 'pt-20 bg-[#e2e2e2]'"
     >
       <div
         class="w-full"

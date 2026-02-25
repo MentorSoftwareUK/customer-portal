@@ -280,8 +280,8 @@ async function onSubmit() {
     <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
       <div class="ui-surface w-full md:mt-0 sm:max-w-md xl:p-0">
         <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-          <div class="flex justify-center mb-2">
-            <img src="/logo.png" alt="Mentor" class="h-12 w-auto" />
+          <div class="flex justify-center mb-4">
+            <img src="/New-Mentor-Icon@2x.png" alt="Mentor" class="h-16 w-auto" />
           </div>
           <h1 class="ui-surface-title text-xl font-bold leading-tight tracking-tight md:text-2xl">
             Sign in to Mentor Portal

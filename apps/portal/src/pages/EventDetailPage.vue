@@ -147,7 +147,7 @@ const typeBadgeClass = computed(() => {
             <span class="text-white/40">{{ event.timezoneLabel }}</span>
           </template>
         </p>
-        <p v-if="event.description" class="mt-4 max-w-3xl text-[0.9375rem] leading-relaxed text-white/70">
+        <p v-if="event.description" class="mt-4 text-[0.9375rem] leading-relaxed text-white/70">
           {{ event.description }}
         </p>
       </div>
