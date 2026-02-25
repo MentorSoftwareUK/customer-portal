@@ -5,7 +5,8 @@ import { initDropdowns } from 'flowbite'
 
 // @ts-ignore Vue SFC default export is provided by vite/volar
 import QuickFindModal from '../components/QuickFindModal.vue'
-import { authMe, getProfile, trackPageView, trackSessionEnd, trackSessionStart, type AuthUser, type ProfileDto } from '../lib/api'
+import ToastContainer from './ToastContainer.vue'
+import { authMe, getProfile, listEvents, listMeetings, trackPageView, trackSessionEnd, trackSessionStart, type AuthUser, type ProfileDto } from '../lib/api'
 import { clearAllTokens, decodeJwtPayload, getAdminAccessToken, getUserAccessToken } from '../lib/auth'
 import { useFeatureFlags } from '../lib/featureFlags'
 
@@ -42,6 +43,62 @@ const onboardingCheckInFlight = ref(false)
 
 const { featureFlags, featureFlagsLoaded, loadFeatureFlags } = useFeatureFlags()
 
+interface NotificationItem {
+  id: string
+  title: string
+  subtitle: string
+  type: 'event' | 'meeting'
+  href: string
+}
+
+const notifications = ref<NotificationItem[]>([])
+
+async function loadNotifications() {
+  if (isAdmin.value) return
+  try {
+    const now = Date.now()
+    const sevenDays = 7 * 24 * 60 * 60 * 1000
+    const [eventsRes, meetingsRes] = await Promise.allSettled([listEvents(), listMeetings()])
+    const items: NotificationItem[] = []
+
+    if (eventsRes.status === 'fulfilled') {
+      eventsRes.value
+        .filter(
+          (e) =>
+            !e.completed &&
+            e.status !== 'cancelled' &&
+            new Date(e.startAt).getTime() > now &&
+            new Date(e.startAt).getTime() - now <= sevenDays,
+        )
+        .forEach((e) =>
+          items.push({
+            id: `event-${e.id}`,
+            title: e.title,
+            subtitle: `${e.type} · ${e.dateLabel}`,
+            type: 'event',
+            href: `/app/events/${e.id}`,
+          }),
+        )
+    }
+
+    if (meetingsRes.status === 'fulfilled') {
+      meetingsRes.value.meetings.forEach((m) =>
+        items.push({
+          id: `meeting-${m.id}`,
+          title: `${m.team} meeting`,
+          subtitle: `With ${m.hostName ?? 'your mentor'} · ${m.dateTimeLabel}`,
+          type: 'meeting',
+          href: '/app/meetings',
+        }),
+      )
+    }
+
+    notifications.value = items
+  } catch {
+    // silently ignore
+  }
+}
+
 onMounted(async () => {
   try {
     const res = await authMe()
@@ -51,6 +108,7 @@ onMounted(async () => {
   }
 
   await loadOnboardingStatus(true)
+  await loadNotifications()
 })
 
 onMounted(async () => {
@@ -304,6 +362,7 @@ onUnmounted(() => {
     </a>
 
     <QuickFindModal v-model:open="findOpen" :items="availableFindItems" title="Quick find" :initial-query="findSeed" />
+    <ToastContainer />
 
     <nav class="fixed left-0 right-0 top-0 z-50 h-16 border-b border-white/10 bg-[#14192d] px-4 py-0">
       <div class="flex flex-wrap items-center justify-between">
@@ -393,7 +452,7 @@ onUnmounted(() => {
           <button
             type="button"
             data-dropdown-toggle="notification-dropdown"
-            class="mr-1 rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white focus:ring-4 focus:ring-white/15"
+            class="relative mr-1 rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white focus:ring-4 focus:ring-white/15"
           >
             <span class="sr-only">View notifications</span>
             <svg
@@ -407,16 +466,44 @@ onUnmounted(() => {
                 d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"
               ></path>
             </svg>
+            <span
+              v-if="notifications.length > 0"
+              class="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#e7007e] text-[9px] font-bold text-white"
+            >{{ notifications.length }}</span>
           </button>
 
           <div
             id="notification-dropdown"
-            class="z-50 my-4 hidden w-72 list-none divide-y divide-white/10 overflow-hidden rounded-xl border border-white/10 bg-brand-secondary text-base shadow-lg"
+            class="z-50 my-4 hidden w-80 list-none overflow-hidden rounded-xl border border-white/10 bg-[#14192d] text-base shadow-2xl"
           >
-            <div class="bg-white/5 px-4 py-2 text-center text-sm font-medium text-white/80">
+            <div class="bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-white/80">
               Notifications
             </div>
-            <div class="px-4 py-3 text-sm text-white/70">No notifications yet.</div>
+            <div v-if="notifications.length === 0" class="px-4 py-4 text-center text-sm text-white/40">
+              No upcoming events or meetings in the next 7 days.
+            </div>
+            <RouterLink
+              v-for="n in notifications"
+              :key="n.id"
+              :to="n.href"
+              class="flex items-start gap-3 border-t border-white/10 px-4 py-3 transition hover:bg-white/5"
+            >
+              <span
+                class="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full"
+                :class="n.type === 'event' ? 'bg-violet-500/20 text-violet-300' : 'bg-[#e7007e]/15 text-[#e7007e]'"
+              >
+                <svg v-if="n.type === 'event'" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+                <svg v-else class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.553.894l3 1.5a1 1 0 10.894-1.788L11 9.382V6z" clip-rule="evenodd" />
+                </svg>
+              </span>
+              <div class="min-w-0">
+                <p class="truncate text-sm font-medium text-white/90">{{ n.title }}</p>
+                <p class="mt-0.5 truncate text-xs text-white/50">{{ n.subtitle }}</p>
+              </div>
+            </RouterLink>
           </div>
 
           <button

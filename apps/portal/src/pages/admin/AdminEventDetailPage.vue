@@ -13,6 +13,9 @@ import {
   type EventDto,
   type HubSpotContactList,
 } from '../../lib/api'
+import { useToast } from '../../lib/toast'
+
+const toast = useToast()
 
 const route = useRoute()
 const eventId = computed(() => String(route.params.id || ''))
@@ -74,9 +77,11 @@ async function saveSlidesModal() {
       .map((url, i) => ({ label: `Slide deck ${i + 1}`, url }))
     const updated = await adminUpdateEvent(event.value.id, { webinarSlides: slides })
     event.value = updated
+    toast.success('Slides saved')
     slidesModal.value = false
   } catch (e) {
     slidesError.value = e instanceof Error ? e.message : 'Failed to save'
+    toast.error(slidesError.value)
   } finally {
     slidesSaving.value = false
   }
@@ -97,9 +102,11 @@ async function saveRecordingModal() {
       webinarRecordingUrl: recordingValue.value.trim() || null,
     })
     event.value = updated
+    toast.success('Recording URL saved')
     recordingModal.value = false
   } catch (e) {
     recordingError.value = e instanceof Error ? e.message : 'Failed to save'
+    toast.error(recordingError.value)
   } finally {
     recordingSaving.value = false
   }
@@ -120,9 +127,11 @@ async function saveBlogModal() {
       blogPostUrl: blogValue.value.trim() || null,
     })
     event.value = updated
+    toast.success('Blog post URL saved')
     blogModal.value = false
   } catch (e) {
     blogError.value = e instanceof Error ? e.message : 'Failed to save'
+    toast.error(blogError.value)
   } finally {
     blogSaving.value = false
   }
@@ -134,7 +143,9 @@ async function markFollowUpSent() {
   try {
     const updated = await adminUpdateEvent(event.value.id, { followUpEmailSent: true })
     event.value = updated
+    toast.success('Follow-up email marked as sent')
   } catch {
+    toast.error('Failed to mark follow-up email')
     // ignore
   } finally {
     followUpSaving.value = false
@@ -403,9 +414,11 @@ async function onSave() {
     const updated = await adminUpdateEvent(event.value.id, patch)
     event.value = updated
     await loadEvent()
+    toast.success('Event changes saved')
     editOpen.value = false
   } catch (e) {
     saveError.value = e instanceof Error ? e.message : 'Failed to save changes'
+    toast.error(saveError.value)
   } finally {
     saving.value = false
   }
@@ -418,9 +431,11 @@ async function onCancelEvent() {
   try {
     const updated = await adminCancelEvent(event.value.id)
     event.value = updated
+    toast.success('Event cancelled')
     await loadEvent()
   } catch (e) {
     saveError.value = e instanceof Error ? e.message : 'Failed to cancel event'
+    toast.error(saveError.value)
   } finally {
     cancelling.value = false
   }
