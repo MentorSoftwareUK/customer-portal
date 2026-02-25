@@ -78,34 +78,14 @@ function exportCsv() {
 <template>
   <div class="space-y-6">
     <!-- Header -->
+    <div class="flex flex-col gap-2">
+      <p class="text-xs uppercase tracking-[0.08em] text-gray-600">Control center</p>
+      <h2 class="text-2xl font-semibold text-gray-900">HubSpot form contact audit</h2>
+      <p class="text-sm text-gray-700">Detects contacts corrupted by a form submission — email changed, firstname changed, lastname unchanged, old email moved to hs_additional_emails.</p>
+    </div>
     <div class="rounded-2xl bg-[#14192d] text-white p-6 shadow-lg">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 class="text-xl font-semibold">HubSpot Form Contact Audit</h1>
-          <p class="mt-1 text-sm text-white/60 max-w-2xl">
-            Detects contacts where a form submission caused a name + email change corruption: the
-            primary email was updated, the old email moved to <code class="text-pink-300 text-xs">hs_additional_emails</code>,
-            and <code class="text-pink-300 text-xs">firstname</code> was changed while
-            <code class="text-pink-300 text-xs">lastname</code> remained the same.
-          </p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <span class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60">
-              ✦ lastname unchanged
-            </span>
-            <span class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60">
-              ✦ firstname changed
-            </span>
-            <span class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60">
-              ✦ email changed
-            </span>
-            <span class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60">
-              ✦ old email in hs_additional_emails
-            </span>
-            <span class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60">
-              ✦ triggered by form submission
-            </span>
-          </div>
-        </div>
+        <div />
         <div class="flex shrink-0 gap-3">
           <button
             v-if="result?.results.length"

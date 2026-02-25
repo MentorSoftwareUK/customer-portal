@@ -121,6 +121,11 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
+    <div class="flex flex-col gap-2">
+      <p class="text-xs uppercase tracking-[0.08em] text-gray-600">Control center</p>
+      <h2 class="text-2xl font-semibold text-gray-900">User management</h2>
+      <p class="text-sm text-gray-700">View, search and manage portal users.</p>
+    </div>
     <div class="ui-surface relative shadow-md sm:rounded-lg overflow-hidden">
       <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
         <div class="w-full md:w-1/2">

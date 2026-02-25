@@ -33,12 +33,14 @@ function formatAudience(event: EventDto) {
 }
 
 function statusBadge(status?: string) {
-  const value = (status ?? 'upcoming').toLowerCase()
-  if (value === 'completed') return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
-  if (value === 'cancelled') return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
-  if (value === 'draft') return 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-  if (value === 'published') return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200'
-  return 'bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200'
+  switch ((status ?? 'upcoming').toLowerCase()) {
+    case 'published': return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/30'
+    case 'completed': return 'bg-sky-500/20 text-sky-200 border-sky-500/30'
+    case 'cancelled': return 'bg-rose-500/20 text-rose-200 border-rose-500/30'
+    case 'draft': return 'bg-amber-500/20 text-amber-200 border-amber-500/30'
+    case 'upcoming': return 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30'
+    default: return 'bg-white/10 text-white/70 border-white/10'
+  }
 }
 
 onMounted(async () => {
@@ -120,6 +122,11 @@ async function submitCreate() {
 
 <template>
   <div class="space-y-6" @click="closeMenu">
+    <div class="flex flex-col gap-2">
+      <p class="text-xs uppercase tracking-[0.08em] text-gray-600">Control center</p>
+      <h2 class="text-2xl font-semibold text-gray-900">Event management</h2>
+      <p class="text-sm text-gray-700">Create, manage and monitor all events.</p>
+    </div>
       <div class="ui-surface relative shadow-md sm:rounded-lg overflow-hidden">
         <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
           <div class="w-full md:w-1/2">
@@ -302,7 +309,7 @@ async function submitCreate() {
                 <td class="px-4 py-3">{{ formatAudience(event) }}</td>
                 <td class="px-4 py-3">{{ formatPrice(event.priceForNonCustomers) }}</td>
                 <td class="px-4 py-3">
-                  <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" :class="statusBadge(event.status)">
+                  <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize" :class="statusBadge(event.status)">
                     {{ event.status ?? 'upcoming' }}
                   </span>
                 </td>

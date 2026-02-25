@@ -99,6 +99,8 @@ const statusBadge = (status: string | null) => {
       return 'bg-rose-500/20 text-rose-200 border-rose-500/30'
     case 'draft':
       return 'bg-amber-500/20 text-amber-200 border-amber-500/30'
+    case 'upcoming':
+      return 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30'
     default:
       return 'bg-white/10 text-white/70 border-white/10'
   }
@@ -199,16 +201,13 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
+    <div class="flex flex-col gap-2">
+      <p class="text-xs uppercase tracking-[0.08em] text-gray-600">Control center</p>
+      <h2 class="text-2xl font-semibold text-gray-900">Reports</h2>
+      <p class="text-sm text-gray-700">Event pipeline, attendance, and revenue indicators for campaign planning and customer success.</p>
+    </div>
     <div class="rounded-2xl border border-white/10 bg-[#0f1428] p-6 text-white shadow-[0_18px_40px_rgba(15,20,40,0.35)]">
-      <div class="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-widest text-white/40">Mentor Admin</p>
-          <h1 class="mt-2 text-2xl font-semibold">Marketing & Success reporting</h1>
-          <p class="mt-2 text-sm text-white/60">
-            Event pipeline, attendance, and revenue indicators tailored for campaign planning and customer success follow-up.
-          </p>
-        </div>
-        <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center justify-end gap-2">
           <button
             class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 hover:bg-white/10"
             type="button"
@@ -224,7 +223,6 @@ onMounted(() => {
             Export CSV
           </button>
         </div>
-      </div>
 
       <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-xl border border-white/10 bg-white/5 p-4">

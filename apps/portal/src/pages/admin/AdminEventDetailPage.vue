@@ -450,7 +450,7 @@ function statusBadge(status?: string | null) {
     case 'completed': return 'bg-sky-500/20 text-sky-200 border-sky-500/30'
     case 'cancelled': return 'bg-rose-500/20 text-rose-200 border-rose-500/30'
     case 'draft': return 'bg-amber-500/20 text-amber-200 border-amber-500/30'
-    case 'upcoming': return 'bg-violet-500/20 text-violet-200 border-violet-500/30'
+    case 'upcoming': return 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30'
     default: return 'bg-white/10 text-white/70 border-white/10'
   }
 }
