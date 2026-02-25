@@ -528,7 +528,7 @@ onUnmounted(() => {
       class="fixed left-0 top-0 z-40 h-screen w-64 -translate-x-full border-r border-white/10 bg-[#14192d] pt-16 transition-transform md:translate-x-0"
       aria-label="Sidenav"
     >
-      <div class="h-full overflow-y-auto bg-[#14192d] px-3 py-5">
+      <div class="flex h-full flex-col overflow-y-auto bg-[#14192d] px-3 py-5">
         <form action="#" method="GET" class="mb-2 md:hidden">
           <label for="sidebar-search" class="sr-only">Search</label>
           <div class="relative">
@@ -770,7 +770,7 @@ onUnmounted(() => {
 
         </ul>
 
-        <div class="mt-auto pt-5 border-t border-white/10">
+        <div class="mt-auto flex-shrink-0 pt-5 border-t border-white/10">
           <p class="px-2 text-xs text-white/25">&copy; Mentor Software 2026</p>
         </div>
       </div>

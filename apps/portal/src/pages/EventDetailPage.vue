@@ -355,6 +355,7 @@ const typeBadgeClass = computed(() => {
                 <dt class="text-white/50">Join link</dt>
                 <dd class="text-right">
                   <a
+                    v-if="isRegistered"
                     :href="event.joinUrl"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -362,6 +363,10 @@ const typeBadgeClass = computed(() => {
                   >
                     {{ joinLabel }} →
                   </a>
+                  <span v-else class="inline-flex items-center gap-1 text-white/30 text-xs">
+                    <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                    Available after registration
+                  </span>
                 </dd>
               </div>
               <div v-if="event.provisionLabel" class="flex items-start justify-between gap-4">
