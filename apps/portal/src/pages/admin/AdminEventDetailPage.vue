@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   adminCancelEvent,
@@ -27,6 +27,16 @@ const registrationsLoading = ref(false)
 const attendanceUpdating = ref<Record<string, boolean>>({})
 const editOpen = ref(false)
 const regsOpen = ref(true)
+const actionsOpen = ref(false)
+const actionsRef = ref<HTMLElement | null>(null)
+
+function handleActionsClickOutside(e: MouseEvent) {
+  if (actionsRef.value && !actionsRef.value.contains(e.target as Node)) {
+    actionsOpen.value = false
+  }
+}
+onMounted(() => document.addEventListener('mousedown', handleActionsClickOutside))
+onUnmounted(() => document.removeEventListener('mousedown', handleActionsClickOutside))
 
 // Quick-edit modals
 const slidesModal = ref(false)
@@ -542,62 +552,112 @@ const formattedDateTime = computed(() => {
               <p v-if="event.description" class="mt-2 text-sm text-white/60 leading-relaxed">{{ event.description }}</p>
             </div>
 
-            <!-- Action buttons -->
-            <div class="flex flex-wrap items-center gap-2 lg:shrink-0">
+            <!-- Action dropdown -->
+            <div ref="actionsRef" class="relative lg:shrink-0">
               <button
                 type="button"
-                class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="!event.joinUrl"
-                @click="copyToClipboard(event.joinUrl ?? '')"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10 transition"
+                @click="actionsOpen = !actionsOpen"
               >
-                Copy join link
-              </button>
-              <button
-                type="button"
-                class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="!portalEventUrl"
-                @click="copyToClipboard(portalEventUrl)"
-              >
-                Copy event URL
-              </button>
-              <button
-                type="button"
-                class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/10 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="registrationsLoading || registrations.length === 0"
-                @click="exportRegistrationsCsv"
-              >
-                Export CSV
-              </button>
-              <button
-                type="button"
-                class="inline-flex items-center rounded-lg border border-white/10 px-3 py-1.5 text-sm font-medium transition"
-                :class="editOpen ? 'bg-white/15 text-white border-white/20' : 'bg-white/5 text-white/80 hover:bg-white/10'"
-                @click="editOpen = !editOpen"
-              >
-                <svg class="mr-1.5 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                Actions
+                <svg class="h-3.5 w-3.5 transition-transform" :class="actionsOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
-                {{ editOpen ? 'Close edit' : 'Edit' }}
               </button>
-              <button
-                type="button"
-                class="inline-flex items-center rounded-lg border border-pink-500/30 bg-pink-500/10 px-3 py-1.5 text-sm font-medium text-pink-300 hover:bg-pink-500/20 transition"
-                @click="openInviteModal"
+
+              <Transition
+                enter-active-class="transition ease-out duration-100"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-75"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
               >
-                <svg class="mr-1.5 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                </svg>
-                Send invites
-              </button>
-              <button
-                v-if="(event.status ?? '').toLowerCase() !== 'cancelled'"
-                type="button"
-                class="inline-flex items-center rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-sm font-medium text-rose-300 hover:bg-rose-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="cancelling"
-                @click="onCancelEvent"
-              >
-                {{ cancelling ? 'Cancelling\u2026' : 'Cancel event' }}
-              </button>
+                <div
+                  v-if="actionsOpen"
+                  class="absolute right-0 z-50 mt-1 w-52 origin-top-right rounded-xl border border-white/10 bg-[#1a1a2e] py-1 shadow-xl"
+                >
+                  <!-- Copy join link -->
+                  <button
+                    type="button"
+                    class="flex w-full items-center gap-2.5 px-3.5 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    :disabled="!event.joinUrl"
+                    @click="copyToClipboard(event.joinUrl ?? ''); actionsOpen = false"
+                  >
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                    </svg>
+                    Copy join link
+                  </button>
+
+                  <!-- Copy event URL -->
+                  <button
+                    type="button"
+                    class="flex w-full items-center gap-2.5 px-3.5 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    :disabled="!portalEventUrl"
+                    @click="copyToClipboard(portalEventUrl); actionsOpen = false"
+                  >
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                    </svg>
+                    Copy event URL
+                  </button>
+
+                  <!-- Export CSV -->
+                  <button
+                    type="button"
+                    class="flex w-full items-center gap-2.5 px-3.5 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    :disabled="registrationsLoading || registrations.length === 0"
+                    @click="exportRegistrationsCsv(); actionsOpen = false"
+                  >
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    Export CSV
+                  </button>
+
+                  <div class="my-1 border-t border-white/10" />
+
+                  <!-- Edit -->
+                  <button
+                    type="button"
+                    class="flex w-full items-center gap-2.5 px-3.5 py-2 text-sm transition"
+                    :class="editOpen ? 'text-white bg-white/5' : 'text-white/70 hover:bg-white/5 hover:text-white'"
+                    @click="editOpen = !editOpen; actionsOpen = false"
+                  >
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                    </svg>
+                    {{ editOpen ? 'Close edit' : 'Edit event' }}
+                  </button>
+
+                  <!-- Send invites -->
+                  <button
+                    type="button"
+                    class="flex w-full items-center gap-2.5 px-3.5 py-2 text-sm text-pink-300 hover:bg-pink-500/10 transition"
+                    @click="openInviteModal(); actionsOpen = false"
+                  >
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                    </svg>
+                    Send invites
+                  </button>
+
+                  <!-- Cancel event -->
+                  <button
+                    v-if="(event.status ?? '').toLowerCase() !== 'cancelled'"
+                    type="button"
+                    class="flex w-full items-center gap-2.5 px-3.5 py-2 text-sm text-rose-300 hover:bg-rose-500/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="cancelling"
+                    @click="onCancelEvent(); actionsOpen = false"
+                  >
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    {{ cancelling ? 'Cancelling\u2026' : 'Cancel event' }}
+                  </button>
+                </div>
+              </Transition>
             </div>
           </div>
 
