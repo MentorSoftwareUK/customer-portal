@@ -549,7 +549,6 @@ const formattedDateTime = computed(() => {
                 </span>
               </div>
               <h1 class="mt-3 text-2xl font-semibold leading-tight">{{ event.title }}</h1>
-              <p v-if="event.description" class="mt-2 text-sm text-white/60 leading-relaxed">{{ event.description }}</p>
             </div>
 
             <!-- Action dropdown -->
@@ -660,6 +659,7 @@ const formattedDateTime = computed(() => {
               </Transition>
             </div>
           </div>
+          <p v-if="event.description" class="mt-3 text-sm text-white/60 leading-relaxed">{{ event.description }}</p>
 
           <!-- STATS ROW -->
           <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">

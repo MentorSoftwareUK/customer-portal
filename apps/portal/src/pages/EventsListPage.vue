@@ -173,8 +173,7 @@ onMounted(async () => {
 
       <div>
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-base font-semibold text-white">Next up</h3>
-          <span class="text-sm text-gray-400">Next 3 upcoming events</span>
+          <h3 class="text-base font-semibold text-black">Next up</h3>
         </div>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -192,7 +191,7 @@ onMounted(async () => {
 
             <div class="mt-5">
               <h4 class="text-xl font-semibold leading-snug text-white">{{ displayEventTitle(e) }}</h4>
-              <p class="mt-3 text-sm text-white/70">{{ e.description }}</p>
+              <p class="mt-3 text-sm text-white/70">{{ e.description && e.description.length > 180 ? e.description.slice(0, 180) + '\u2026' : e.description }}</p>
             </div>
 
             <div class="mt-6 flex items-center justify-between gap-3">
