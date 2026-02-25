@@ -9,7 +9,7 @@ import { toastState, removeToast } from '../lib/toast'
         <div
           v-for="toast in toastState.items"
           :key="toast.id"
-          class="flex items-start w-full max-w-sm p-4 rounded-xl shadow-2xl pointer-events-auto border backdrop-blur-sm"
+          class="flex items-center w-full max-w-sm p-4 rounded-xl shadow-2xl pointer-events-auto border backdrop-blur-sm"
           :class="{
             'bg-[#14192d]/95 border-emerald-500/40': toast.type === 'success',
             'bg-[#14192d]/95 border-rose-500/40': toast.type === 'error',
@@ -20,7 +20,7 @@ import { toastState, removeToast } from '../lib/toast'
         >
           <!-- Icon -->
           <div
-            class="mt-0.5 flex-shrink-0 rounded-full p-1"
+            class="flex-shrink-0 rounded-full p-1"
             :class="{
               'bg-emerald-500/15 text-emerald-400': toast.type === 'success',
               'bg-rose-500/15 text-rose-400': toast.type === 'error',
@@ -65,13 +65,22 @@ import { toastState, removeToast } from '../lib/toast'
 </template>
 
 <style scoped>
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes toast-in {
+  0%   { transform: translateX(115%); opacity: 0; }
+  55%  { transform: translateX(-14px); opacity: 1; }
+  75%  { transform: translateX(6px); }
+  90%  { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+.toast-enter-active {
+  animation: toast-in 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 .toast-enter-from {
-  opacity: 0;
-  transform: translateX(110%);
+  /* handled by keyframe */
+}
+.toast-leave-active {
+  transition: all 0.22s ease-in;
 }
 .toast-leave-to {
   opacity: 0;
