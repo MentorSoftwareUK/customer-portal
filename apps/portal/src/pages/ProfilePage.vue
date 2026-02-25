@@ -22,7 +22,7 @@ const companyDraft = ref<UpdateCompanyRequest>({})
 
 const canEditCompany = computed(() => profile.value?.permissions.canEditCompany === true)
 const hasCompany = computed(() => Boolean(profile.value?.company))
-const companyName = computed(() => profile.value?.company?.name || 'No company linked in HubSpot')
+const companyName = computed(() => profile.value?.company?.name || 'No company on file')
 
 function resetDraftsFromProfile(p: ProfileDto) {
   personalDraft.value = {
@@ -111,9 +111,8 @@ onMounted(load)
     <div class="bg-[#14192d] rounded-lg p-6 sm:p-8 border border-white/10">
       <h2 class="text-2xl sm:text-3xl font-bold text-white">Profile</h2>
       <p class="mt-2 text-base text-gray-400">
-        Keep your contact and company details up to date — changes sync to HubSpot.
+        Keep your contact and company details up to date.
       </p>
-      <p class="mt-3 text-sm text-white/60">Company (read-only): {{ companyName }}</p>
     </div>
 
     <div v-if="error" class="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-200">
@@ -199,7 +198,7 @@ onMounted(load)
         </div>
 
         <div v-if="!hasCompany" class="text-sm text-white/70">
-          No company is associated with this contact in HubSpot.
+          No company is associated with your account.
         </div>
 
         <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2">

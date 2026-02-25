@@ -2,6 +2,9 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { getAdminSettings, patchAdminSettings, type AdminSettings, getHubSpotOAuthStatus, initiateHubSpotOAuth, disconnectHubSpotOAuth, type HubSpotOAuthStatus } from '../../lib/api'
 import { loadFeatureFlags } from '../../lib/featureFlags'
+import { useToast } from '../../lib/toast'
+
+const toast = useToast()
 
 const loading = ref(true)
 const saving = ref(false)
@@ -144,12 +147,14 @@ async function save() {
     dirty.value = false
     await loadFeatureFlags(true)
     saved.value = true
+    toast.success('Settings saved')
     setTimeout(() => (saved.value = false), 1500)
   } catch (e: any) {
     const detail = e?.message ? String(e.message) : ''
     errorTitle.value = "We couldn't save your changes"
     errorAction.value = 'save'
     error.value = detail || 'Please try again in a moment.'
+    toast.error(errorTitle.value)
   } finally {
     saving.value = false
   }

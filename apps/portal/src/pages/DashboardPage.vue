@@ -218,7 +218,7 @@ onMounted(async () => {
             Welcome back<template v-if="userName">, {{ userName }}</template>
           </h1>
           <p class="text-gray-400 text-base mb-6">
-            Here’s a quick summary of today’s priorities for {{ provisionLabel }}
+            {{ provision === 'all' ? "Here's your portal overview." : `Here's today's highlights for ${provisionLabel}.` }}
           </p>
 
           <!-- Quick Actions -->
