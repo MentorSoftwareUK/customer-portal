@@ -281,7 +281,7 @@ async function onSubmit() {
       <div class="ui-surface w-full md:mt-0 sm:max-w-md xl:p-0">
         <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
           <div class="flex justify-center mb-4">
-            <img src="/New-Mentor-Icon@2x.png" alt="Mentor" class="h-16 w-auto" />
+            <img src="/mentor-icon.png" alt="Mentor" class="h-16 w-auto" />
           </div>
           <h1 class="ui-surface-title text-xl font-bold leading-tight tracking-tight md:text-2xl">
             Sign in to Mentor Portal
