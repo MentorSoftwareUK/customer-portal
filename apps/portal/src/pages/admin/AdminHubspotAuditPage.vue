@@ -154,13 +154,13 @@ function exportCsv() {
         <div class="rounded-xl border border-white/10 bg-white/5 p-4">
           <div class="text-xs font-semibold uppercase tracking-wide text-white/40">Scan status</div>
           <div class="mt-1.5 text-sm font-semibold" :class="result.truncated ? 'text-amber-300' : 'text-emerald-300'">
-            {{ result.truncated ? 'Truncated (500 limit)' : 'Complete' }}
+            {{ result.truncated ? 'Truncated (5,000 limit)' : 'Complete' }}
           </div>
         </div>
       </div>
 
       <div v-if="result?.truncated" class="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
-        ⚠ Scan was capped at 500 contacts. Re-run to check subsequent pages, or export to track progress.
+        ⚠ Scan was capped at 5,000 contacts. Re-run to check subsequent pages, or export to track progress.
       </div>
     </div>
 
@@ -172,8 +172,8 @@ function exportCsv() {
     <!-- Loading placeholder -->
     <div v-if="loading" class="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-sm">
       <div class="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-[#e7007e] border-t-transparent"></div>
-      <p class="text-sm text-gray-500">Fetching contacts and scanning property history&hellip;</p>
-      <p class="mt-1 text-xs text-gray-400">This may take 15–30 seconds depending on your HubSpot database size.</p>
+      <p class="text-sm text-gray-500">Scanning all contacts and checking property history&hellip;</p>
+      <p class="mt-1 text-xs text-gray-400">This may take 30–60 seconds for large databases. All contacts are checked, not just those with additional emails currently set.</p>
     </div>
 
     <!-- No results -->

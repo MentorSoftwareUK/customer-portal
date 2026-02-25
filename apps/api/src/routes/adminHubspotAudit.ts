@@ -49,32 +49,27 @@ function hubspotHeaders() {
 }
 
 /**
- * Search for contacts that have hs_additional_emails set.
- * Returns pages of contact IDs.
+ * List ALL contacts (no filter). Uses the standard contacts list endpoint
+ * with cursor-based pagination so every contact is included.
  */
-async function searchContactsWithAdditionalEmails(
+async function listAllContacts(
   after?: string,
 ): Promise<{ results: Array<{ id: string }>; nextAfter?: string }> {
-  const body = {
-    filterGroups: [
-      {
-        filters: [{ propertyName: 'hs_additional_emails', operator: 'HAS_PROPERTY' }],
-      },
-    ],
-    properties: ['firstname', 'lastname', 'email', 'hs_additional_emails'],
-    limit: 100,
-    ...(after ? { after } : {}),
-  }
-
-  const res = await fetch('https://api.hubapi.com/crm/v3/objects/contacts/search', {
-    method: 'POST',
-    headers: hubspotHeaders(),
-    body: JSON.stringify(body),
+  const params = new URLSearchParams({
+    limit: '100',
+    archived: 'false',
+    properties: 'email',
   })
+  if (after) params.set('after', after)
+
+  const res = await fetch(
+    `https://api.hubapi.com/crm/v3/objects/contacts?${params.toString()}`,
+    { method: 'GET', headers: hubspotHeaders() },
+  )
 
   if (!res.ok) {
     const text = await res.text().catch(() => '')
-    throw new Error(`HubSpot search failed (${res.status}): ${text}`)
+    throw new Error(`HubSpot contacts list failed (${res.status}): ${text}`)
   }
 
   const data = await res.json() as {
@@ -195,7 +190,7 @@ function detectPattern(contact: ContactWithHistory): FormCorruptionMatch | null 
 
 // ─── Route ───────────────────────────────────────────────────────────────────
 
-const MAX_CONTACTS_TO_SCAN = 500
+const MAX_CONTACTS_TO_SCAN = 5_000
 
 export const adminHubspotAuditRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', async (req, reply) => {
@@ -226,7 +221,7 @@ export const adminHubspotAuditRoutes: FastifyPluginAsync = async (app) => {
 
     try {
       outer: while (true) {
-        const page = await searchContactsWithAdditionalEmails(after)
+        const page = await listAllContacts(after)
         if (page.results.length === 0) break
 
         // Fetch history for each contact in this page concurrently (batches of 10)
