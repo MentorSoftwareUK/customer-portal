@@ -15,6 +15,7 @@ const route = useRoute()
 const router = useRouter()
 const currentPath = computed(() => route.path)
 const isMeetingsPage = computed(() => currentPath.value === '/app/meetings' || currentPath.value.startsWith('/app/meetings/'))
+const isEventDetailPage = computed(() => /^\/app\/events\/.+/.test(currentPath.value))
 const sessionId = ref<string | null>(null)
 
 const user = ref<AuthUser | null>(null)
@@ -771,7 +772,7 @@ onUnmounted(() => {
     <main
       id="main-content"
       class="min-h-screen md:ml-64 text-gray-900"
-      :class="isMeetingsPage ? 'pt-0 bg-[#0f1428]' : 'pt-20 bg-[#e2e2e2]'"
+      :class="isMeetingsPage ? 'pt-0 bg-[#0f1428]' : isEventDetailPage ? 'pt-20 bg-[#14192d]' : 'pt-20 bg-[#e2e2e2]'"
     >
       <div
         class="w-full"
