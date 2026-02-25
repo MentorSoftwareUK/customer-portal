@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   adminCancelEvent,
@@ -29,6 +29,17 @@ const registrations = ref<AdminEventRegistrationDto[]>([])
 const registrationsLoading = ref(false)
 const attendanceUpdating = ref<Record<string, boolean>>({})
 const editOpen = ref(false)
+const editPanelRef = ref<HTMLElement | null>(null)
+
+watch(editOpen, async (open) => {
+  if (open) {
+    await nextTick()
+    if (editPanelRef.value) {
+      const top = editPanelRef.value.getBoundingClientRect().top + window.scrollY - 80
+      window.scrollTo({ top, behavior: 'smooth' })
+    }
+  }
+})
 const regsOpen = ref(true)
 const actionsOpen = ref(false)
 const actionsRef = ref<HTMLElement | null>(null)
@@ -858,7 +869,7 @@ const formattedDateTime = computed(() => {
         leave-from-class="opacity-100 translate-y-0"
         leave-to-class="opacity-0 -translate-y-1"
       >
-        <div v-if="editOpen" class="rounded-2xl border border-white/10 bg-[#14192d] text-white shadow-[0_18px_40px_rgba(15,20,40,0.2)]">
+        <div v-if="editOpen" ref="editPanelRef" class="rounded-2xl border border-white/10 bg-[#14192d] text-white shadow-[0_18px_40px_rgba(15,20,40,0.2)]">
           <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
             <div>
               <div class="text-sm font-semibold">Edit details</div>
