@@ -18,11 +18,6 @@ const isRegistered = computed(() => {
   return registration.value.status === 'registered' || registration.value.status === 'paid'
 })
 const isPaymentPending = computed(() => registration.value?.status === 'payment_pending')
-const ctaLabel = computed(() => {
-  if (isRegistered.value) return 'Registered'
-  if (isPaymentPending.value) return 'Complete payment'
-  return 'Register for this session'
-})
 
 watchEffect(async () => {
   const id = eventId.value
