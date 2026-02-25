@@ -48,6 +48,28 @@ function hubspotHeaders() {
   }
 }
 
+const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms))
+
+/**
+ * Fetch with automatic retry on 429. Backs off using the Retry-After header
+ * if present, otherwise uses exponential backoff.
+ */
+async function hubspotFetchWithRetry(
+  url: string,
+  init: RequestInit,
+  maxRetries = 4,
+): Promise<Response> {
+  let attempt = 0
+  while (true) {
+    const res = await fetch(url, init)
+    if (res.status !== 429 || attempt >= maxRetries) return res
+    const retryAfter = res.headers.get('Retry-After')
+    const waitMs = retryAfter ? Number(retryAfter) * 1000 : Math.min(1000 * 2 ** attempt, 10_000)
+    await sleep(waitMs)
+    attempt++
+  }
+}
+
 /**
  * List ALL contacts (no filter). Uses the standard contacts list endpoint
  * with cursor-based pagination so every contact is included.
@@ -62,7 +84,7 @@ async function listAllContacts(
   })
   if (after) params.set('after', after)
 
-  const res = await fetch(
+  const res = await hubspotFetchWithRetry(
     `https://api.hubapi.com/crm/v3/objects/contacts?${params.toString()}`,
     { method: 'GET', headers: hubspotHeaders() },
   )
@@ -90,7 +112,7 @@ async function fetchContactWithHistory(contactId: string): Promise<ContactWithHi
   const props = 'firstname,lastname,email,hs_additional_emails'
   const url = `https://api.hubapi.com/crm/v3/objects/contacts/${contactId}?propertiesWithHistory=${props}&properties=${props}`
 
-  const res = await fetch(url, { method: 'GET', headers: hubspotHeaders() })
+  const res = await hubspotFetchWithRetry(url, { method: 'GET', headers: hubspotHeaders() })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     throw new Error(`HubSpot contact fetch failed (${res.status}): ${text}`)
@@ -224,8 +246,9 @@ export const adminHubspotAuditRoutes: FastifyPluginAsync = async (app) => {
         const page = await listAllContacts(after)
         if (page.results.length === 0) break
 
-        // Fetch history for each contact in this page concurrently (batches of 10)
-        const batchSize = 10
+        // Process in small batches of 3 with a gap between each to stay within
+        // HubSpot's ten_secondly_rolling rate limit (~100 req / 10 s for private apps).
+        const batchSize = 3
         for (let i = 0; i < page.results.length; i += batchSize) {
           const batch = page.results.slice(i, i + batchSize)
           const details = await Promise.all(
@@ -246,10 +269,15 @@ export const adminHubspotAuditRoutes: FastifyPluginAsync = async (app) => {
               break outer
             }
           }
+
+          // Small gap between batches to avoid rate limiting (300 ms ≈ ~10 req/s)
+          if (i + batchSize < page.results.length) await sleep(300)
         }
 
         if (!page.nextAfter) break
         after = page.nextAfter
+        // Brief pause between pages as well
+        await sleep(500)
       }
     } catch (err: any) {
       return reply.status(502).send({

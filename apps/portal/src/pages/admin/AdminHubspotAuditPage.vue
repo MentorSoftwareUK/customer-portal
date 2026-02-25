@@ -173,7 +173,7 @@ function exportCsv() {
     <div v-if="loading" class="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-sm">
       <div class="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-[#e7007e] border-t-transparent"></div>
       <p class="text-sm text-gray-500">Scanning all contacts and checking property history&hellip;</p>
-      <p class="mt-1 text-xs text-gray-400">This may take 30–60 seconds for large databases. All contacts are checked, not just those with additional emails currently set.</p>
+      <p class="mt-1 text-xs text-gray-400">For ~2,000 contacts this takes around 3–5 minutes. Requests are rate-limited to stay within HubSpot's API limits.</p>
     </div>
 
     <!-- No results -->
