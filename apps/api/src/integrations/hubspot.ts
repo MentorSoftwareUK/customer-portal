@@ -894,37 +894,38 @@ export type HubSpotContactList = {
 
 /**
  * Returns all HubSpot contact lists (both static and dynamic).
- * Uses the v1 Lists API which is available with a private app token.
+ * Uses the v3 Lists API — requires crm.lists.read scope.
  */
 export async function hubspotGetContactLists(): Promise<HubSpotContactList[]> {
   const token = env.HUBSPOT_PRIVATE_APP_TOKEN
   if (!token) return []
 
-  let offset = 0
+  let after: string | undefined = undefined
   const allLists: HubSpotContactList[] = []
 
   while (true) {
-    const url = `/contacts/v1/lists?count=250&offset=${offset}`
-    const res = await hubspotFetch(url, { method: 'GET' })
+    const params = new URLSearchParams({ objectTypeId: '0-1', count: '250' })
+    if (after) params.set('after', after)
+
+    const res = await hubspotFetch(`/crm/v3/lists?${params.toString()}`, { method: 'GET' })
     if (!res.ok) break
 
     const data = await res.json() as {
-      lists: Array<{ listId: number; name: string; dynamic: boolean; metaData?: { size?: number }; size?: number }>
-      'has-more'?: boolean
-      offset?: number
+      lists: Array<{ listId: string; name: string; listType: string; size?: number }>
+      paging?: { next?: { after?: string } }
     }
 
     for (const l of data.lists ?? []) {
       allLists.push({
-        listId: l.listId,
+        listId: Number(l.listId),
         name: l.name,
-        size: l.metaData?.size ?? (l as any).size ?? 0,
-        dynamic: l.dynamic,
+        size: l.size ?? 0,
+        dynamic: l.listType === 'DYNAMIC',
       })
     }
 
-    if (!data['has-more']) break
-    offset = data.offset ?? (offset + 250)
+    after = data.paging?.next?.after
+    if (!after) break
   }
 
   return allLists.sort((a, b) => a.name.localeCompare(b.name))
@@ -932,7 +933,8 @@ export async function hubspotGetContactLists(): Promise<HubSpotContactList[]> {
 
 /**
  * Returns all contacts (email, firstName, lastName) from a given HubSpot list.
- * Paginates automatically using the vidOffset cursor.
+ * Uses v3 memberships endpoint + batch read — requires crm.lists.read and
+ * crm.objects.contacts.read scopes.
  */
 export async function hubspotGetContactsInList(
   listId: number,
@@ -940,47 +942,64 @@ export async function hubspotGetContactsInList(
   const token = env.HUBSPOT_PRIVATE_APP_TOKEN
   if (!token) return []
 
-  const contacts: Array<{ email: string; firstName: string; lastName: string }> = []
-  let vidOffset: number | undefined = undefined
+  // Step 1: collect all record IDs from the list memberships endpoint
+  const recordIds: string[] = []
+  let after: string | undefined = undefined
 
   while (true) {
-    const params = new URLSearchParams({
-      property: 'email',
-      count: '100',
-    })
-    params.append('property', 'firstname')
-    params.append('property', 'lastname')
-    if (vidOffset !== undefined) params.set('vidOffset', String(vidOffset))
+    const params = new URLSearchParams({ limit: '500' })
+    if (after) params.set('after', after)
 
-    const url = `/contacts/v1/lists/${listId}/contacts/all?${params.toString()}`
-    const res = await hubspotFetch(url, { method: 'GET' })
+    const res = await hubspotFetch(`/crm/v3/lists/${listId}/memberships?${params.toString()}`, { method: 'GET' })
     if (!res.ok) break
 
     const data = await res.json() as {
-      contacts: Array<{
-        properties?: {
-          email?: { value?: string }
-          firstname?: { value?: string }
-          lastname?: { value?: string }
-        }
-      }>
-      'has-more'?: boolean
-      'vid-offset'?: number
+      results: Array<{ recordId: string }>
+      paging?: { next?: { after?: string } }
     }
 
-    for (const c of data.contacts ?? []) {
-      const email = c.properties?.email?.value ?? ''
+    for (const r of data.results ?? []) {
+      recordIds.push(r.recordId)
+    }
+
+    after = data.paging?.next?.after
+    if (!after) break
+  }
+
+  if (recordIds.length === 0) return []
+
+  // Step 2: batch-read contact properties in chunks of 100
+  const contacts: Array<{ email: string; firstName: string; lastName: string }> = []
+  const chunkSize = 100
+
+  for (let i = 0; i < recordIds.length; i += chunkSize) {
+    const chunk = recordIds.slice(i, i + chunkSize)
+    const res = await hubspotFetch('/crm/v3/objects/contacts/batch/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        inputs: chunk.map(id => ({ id })),
+        properties: ['email', 'firstname', 'lastname'],
+      }),
+    })
+    if (!res.ok) continue
+
+    const data = await res.json() as {
+      results: Array<{
+        properties: { email?: string; firstname?: string; lastname?: string }
+      }>
+    }
+
+    for (const c of data.results ?? []) {
+      const email = c.properties?.email ?? ''
       if (email) {
         contacts.push({
           email,
-          firstName: c.properties?.firstname?.value ?? '',
-          lastName: c.properties?.lastname?.value ?? '',
+          firstName: c.properties?.firstname ?? '',
+          lastName: c.properties?.lastname ?? '',
         })
       }
     }
-
-    if (!data['has-more']) break
-    vidOffset = data['vid-offset']
   }
 
   return contacts
