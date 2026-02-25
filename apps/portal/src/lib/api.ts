@@ -1294,7 +1294,7 @@ export type HubSpotContactList = {
 }
 
 export async function adminGetInviteLists(eventId: string): Promise<HubSpotContactList[]> {
-  const res = await adminApiFetch(`${getApiBaseUrl()}/api/admin/events/${eventId}/invite-lists`)
+  const res = await adminApiFetch(`${getApiBaseUrl()}/admin/events/${eventId}/invite-lists`)
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     throw new Error(`Failed to load invite lists: ${res.status}${text ? ` - ${text}` : ''}`)
@@ -1306,7 +1306,7 @@ export async function adminSendInvites(
   eventId: string,
   listId: number,
 ): Promise<{ queued: number }> {
-  const res = await adminApiFetch(`${getApiBaseUrl()}/api/admin/events/${eventId}/send-invites`, {
+  const res = await adminApiFetch(`${getApiBaseUrl()}/admin/events/${eventId}/send-invites`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ listId }),
