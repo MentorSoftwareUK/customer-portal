@@ -125,6 +125,10 @@ const baseFindItems: QuickFindItem[] = [
 
 const availableFindItems = computed(() => {
   return baseFindItems.filter((item) => {
+    if (!featureFlags.value.meetingsEnabled && item.to.startsWith('/app/meetings')) return false
+    if (!featureFlags.value.knowledgeBaseEnabled && item.to.startsWith('/app/knowledge-base')) return false
+    if (!featureFlags.value.documentsEnabled && item.to.startsWith('/app/documents')) return false
+    if (!featureFlags.value.videosEnabled && item.to.startsWith('/app/videos')) return false
     if (!featureFlags.value.ticketsEnabled && item.to.startsWith('/app/tickets')) return false
     if (!featureFlags.value.invoicesEnabled && item.to.startsWith('/app/invoices')) return false
     return true

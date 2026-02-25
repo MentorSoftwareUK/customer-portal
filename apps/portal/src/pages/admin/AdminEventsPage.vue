@@ -16,7 +16,7 @@ const statusFilter = ref<'all' | 'upcoming' | 'completed' | 'cancelled' | 'draft
 
 const filteredEvents = computed(() => {
   if (statusFilter.value === 'all') return events.value
-  return events.value.filter((event) => (event.status ?? 'upcoming') === statusFilter.value)
+  return events.value.filter((event) => (event.status ?? 'upcoming').toLowerCase() === statusFilter.value)
 })
 
 const total = computed(() => filteredEvents.value.length)
@@ -310,7 +310,7 @@ async function submitCreate() {
                 <td class="px-4 py-3">{{ formatPrice(event.priceForNonCustomers) }}</td>
                 <td class="px-4 py-3">
                   <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize" :class="statusBadge(event.status)">
-                    {{ event.status ?? 'upcoming' }}
+                    {{ (event.status ?? 'upcoming').charAt(0).toUpperCase() + (event.status ?? 'upcoming').slice(1).toLowerCase() }}
                   </span>
                 </td>
                 <td class="px-4 py-3">{{ event.registeredCount ?? 0 }}</td>
