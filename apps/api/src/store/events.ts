@@ -41,7 +41,7 @@ export async function updateEventStore(id: string, patch: Partial<EventDto>): Pr
     { $set: patch },
     { projection: { _id: 0 }, returnDocument: 'after' },
   )
-  return res.value ?? null
+  return res ?? null
 }
 
 export async function cancelEventStore(id: string): Promise<EventDto | null> {

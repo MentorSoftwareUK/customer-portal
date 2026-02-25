@@ -31,7 +31,10 @@ function goToPortalLogin() {
 </script>
 
 <template>
-  <section class="min-h-screen bg-slate-900 text-white flex items-center justify-center px-4">
+  <section class="min-h-screen bg-white flex flex-col items-center justify-center px-4">
+    <div class="flex justify-center mb-4">
+      <img src="/mentor-icon.png" alt="Mentor" class="h-16 w-auto" />
+    </div>
     <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-xl p-8 shadow-lg space-y-6">
       <div class="space-y-2">
         <h1 class="text-2xl font-bold">Admin Sign in</h1>
