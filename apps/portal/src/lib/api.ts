@@ -1302,6 +1302,41 @@ export async function adminGetInviteLists(eventId: string): Promise<HubSpotConta
   return ((await res.json()) as { lists: HubSpotContactList[] }).lists
 }
 
+// ─── HubSpot Form Contact Corruption Audit ────────────────────────────────────
+
+export type FormCorruptionMatch = {
+  contactId: string
+  hubspotUrl: string
+  currentEmail: string
+  currentFirstName: string
+  currentLastName: string
+  previousEmail: string
+  firstNameBefore: string
+  firstNameAfter: string
+  additionalEmails: string
+  changeTimestamp: string
+  sourceType: string
+  sourceId: string | null
+}
+
+export type FormCorruptionAuditResult = {
+  scanned: number
+  matched: number
+  truncated: boolean
+  results: FormCorruptionMatch[]
+}
+
+export async function runFormCorruptionAudit(): Promise<FormCorruptionAuditResult> {
+  const res = await adminApiFetch(
+    `${getApiBaseUrl()}/admin/hubspot-audit/form-contact-corruption`,
+  )
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Audit failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as FormCorruptionAuditResult
+}
+
 export async function adminSendInvites(
   eventId: string,
   listId: number,

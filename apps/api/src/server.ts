@@ -24,6 +24,7 @@ import { profileRoutes } from './routes/profile'
 import { featuresRoutes } from './routes/features'
 import { hubspotOAuthRoutes } from './routes/hubspotOAuth'
 import { activityRoutes } from './routes/activity'
+import { adminHubspotAuditRoutes } from './routes/adminHubspotAudit'
 import { startEmailWorker } from './jobs/emailWorker'
 import { ensureSeedAdmin } from './store/adminUsers'
 
@@ -85,6 +86,7 @@ export async function buildServer() {
   await app.register(adminRoutes, { prefix: '/admin' })
   await app.register(adminEventsRoutes, { prefix: '/admin/events' })
   await app.register(adminRegistrationsRoutes, { prefix: '/admin/registrations' })
+  await app.register(adminHubspotAuditRoutes, { prefix: '/admin/hubspot-audit' })
   await app.register(adminReportsRoutes, { prefix: '/admin/reports' })
   await app.register(adminAnalyticsRoutes, { prefix: '/admin/analytics' })
   await app.register(usersRoutes, { prefix: '/admin/users' })

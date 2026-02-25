@@ -28,6 +28,7 @@ const AdminContentPage = () => import('./pages/admin/AdminContentPage.vue')
 const AdminUsersPage = () => import('./pages/admin/AdminUsersPage.vue')
 const AdminSettingsPage = () => import('./pages/admin/AdminSettingsPage.vue')
 const AdminLoginPage = () => import('./pages/admin/AdminLoginPage.vue')
+const AdminHubspotAuditPage = () => import('./pages/admin/AdminHubspotAuditPage.vue')
 
 export const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/login' },
@@ -71,6 +72,7 @@ export const routes: RouteRecordRaw[] = [
       { path: 'content', component: AdminContentPage },
       { path: 'users', component: AdminUsersPage },
       { path: 'settings', component: AdminSettingsPage },
+      { path: 'hubspot-audit', component: AdminHubspotAuditPage },
     ],
   },
 ]

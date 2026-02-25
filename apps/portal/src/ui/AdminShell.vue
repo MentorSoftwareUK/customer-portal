@@ -32,6 +32,7 @@ const findItems: QuickFindItem[] = [
   { label: 'Admin: Content', to: '/admin/content', description: 'Knowledge base and documents', keywords: ['kb', 'resources'] },
   { label: 'Admin: Users', to: '/admin/users', description: 'Portal user access', keywords: ['accounts'] },
   { label: 'Admin: Settings', to: '/admin/settings', description: 'System configuration', keywords: ['config'] },
+  { label: 'Admin: HubSpot Audit', to: '/admin/hubspot-audit', description: 'Form contact corruption audit', keywords: ['hubspot', 'audit', 'data', 'corruption'] },
   { label: 'Portal dashboard', to: '/app/dashboard', description: 'Back to the portal' },
 ]
 
@@ -465,6 +466,25 @@ onUnmounted(() => {
                 ></path>
               </svg>
               <span class="ml-3">User management</span>
+            </RouterLink>
+          </li>
+
+          <li>
+            <RouterLink
+              to="/admin/hubspot-audit"
+              class="group flex items-center rounded-lg p-2 text-base font-medium"
+              :class="isActive('/admin/hubspot-audit') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+            >
+              <svg
+                aria-hidden="true"
+                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+              </svg>
+              <span class="ml-3">HubSpot audit</span>
             </RouterLink>
           </li>
 
