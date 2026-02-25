@@ -291,7 +291,7 @@ async function onSubmit() {
 
           <template v-else>
           <p class="text-sm text-white/70">
-            Enter your email to continue. Customers can sign in with a password or a one-time code.
+            Enter your work email to continue.
           </p>
 
           <form class="space-y-4 md:space-y-6" @submit.prevent="onSubmit">
