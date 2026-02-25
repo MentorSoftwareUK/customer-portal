@@ -82,149 +82,137 @@ const youtubeEmbedUrl = computed(() => {
 </script>
 
 <template>
-  <div class="space-y-5">
-      <div v-if="loadError" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-200">
-        {{ loadError }}
-      </div>
+  <div class="space-y-6">
 
-      <div v-else-if="loading" role="status" class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 animate-pulse">
-        <div class="space-y-3">
-          <div class="h-3 w-32 rounded-full bg-gray-200 dark:bg-gray-700" />
-          <div class="h-2.5 w-72 rounded-full bg-gray-200 dark:bg-gray-700" />
-          <div class="h-2.5 w-56 rounded-full bg-gray-200 dark:bg-gray-700" />
-        </div>
-        <span class="sr-only">Loading...</span>
-      </div>
+    <!-- Error -->
+    <div v-if="loadError" class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+      {{ loadError }}
+    </div>
 
-      <template v-else-if="event">
+    <!-- Skeleton -->
+    <div v-else-if="loading" role="status" class="animate-pulse space-y-4">
+      <div class="h-5 w-24 rounded-full bg-gray-200" />
+      <div class="h-8 w-2/3 rounded-lg bg-gray-200" />
+      <div class="h-4 w-1/2 rounded-lg bg-gray-200" />
+      <span class="sr-only">Loading…</span>
+    </div>
+
+    <template v-else-if="event">
+      <!-- Breadcrumb -->
       <nav class="flex" aria-label="Breadcrumb">
-        <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse text-sm">
-          <li class="inline-flex items-center">
-            <RouterLink
-              to="/app/events"
-              class="inline-flex items-center font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-white"
-            >
+        <ol class="inline-flex items-center gap-1.5 text-sm">
+          <li>
+            <RouterLink to="/app/events" class="font-medium text-gray-500 hover:text-gray-800 transition">
               Events
             </RouterLink>
           </li>
-          <li aria-current="page">
-            <div class="flex items-center">
-              <svg class="w-3 h-3 text-gray-400 mx-1 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4" />
-              </svg>
-              <span class="ms-1 text-gray-500 md:ms-2 dark:text-gray-400">Details</span>
-            </div>
+          <li class="text-gray-400" aria-hidden="true">/</li>
+          <li aria-current="page" class="font-medium text-gray-800 truncate max-w-[200px] sm:max-w-none">
+            {{ event.title }}
           </li>
         </ol>
       </nav>
 
-      <header class="space-y-4">
-        <div class="min-w-0">
-          <div class="flex flex-wrap items-center gap-3">
-            <EventTypeChip :type="event.type" />
-          </div>
+      <!-- ─── Hero ───────────────────────────────────────────────────────── -->
+      <div class="rounded-2xl border border-gray-200 bg-white px-6 py-8 shadow-sm sm:px-8">
+        <EventTypeChip :type="event.type" />
+        <h1 class="mt-3 text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-4xl">
+          {{ event.title }}
+        </h1>
+        <p class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-500">
+          <span class="font-medium text-gray-700">{{ event.dateLabel }}</span>
+          <span aria-hidden="true" class="text-gray-300">·</span>
+          <span>{{ durationLabel }}</span>
+          <span aria-hidden="true" class="text-gray-300">·</span>
+          <span>Hosted by <span class="font-medium text-gray-700">{{ event.hostName || 'Mentor team' }}</span></span>
+          <template v-if="event.timezoneLabel">
+            <span aria-hidden="true" class="text-gray-300">·</span>
+            <span class="text-gray-400">{{ event.timezoneLabel }}</span>
+          </template>
+        </p>
+        <p v-if="event.description" class="mt-4 text-base leading-relaxed text-gray-600">
+          {{ event.description }}
+        </p>
+      </div>
 
-          <h1 class="mt-2 text-2xl font-semibold text-gray-900 dark:text-white">{{ event.title }}</h1>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">{{ event.description }}</p>
-        </div>
+      <!-- ─── Two-column layout ──────────────────────────────────────────── -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
 
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-          <div class="ui-surface bg-brand-primary p-4">
-            <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/60">
-              <svg class="h-4 w-4 text-white/60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M8 7h8M8 11h5M7 3v2M17 3v2M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              Event
-            </div>
-            <div class="mt-1 text-sm font-semibold text-white">{{ event.title }}</div>
-          </div>
-          <div class="ui-surface bg-brand-primary p-4">
-            <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/60">
-              <svg class="h-4 w-4 text-white/60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M12 6v6l4 2M12 22a10 10 0 100-20 10 10 0 000 20z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              Date & time
-            </div>
-            <div class="mt-1 text-sm font-semibold text-white">{{ event.dateLabel }}</div>
-            <div class="text-xs text-white/60">{{ event.timezoneLabel }}</div>
-          </div>
-          <div class="ui-surface bg-brand-primary p-4">
-            <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/60">
-              <svg class="h-4 w-4 text-white/60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M12 12a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.5" />
-                <path d="M4 20a8 8 0 0116 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-              Host
-            </div>
-            <div class="mt-1 text-sm font-semibold text-white">{{ event.hostName || 'Mentor team' }}</div>
-          </div>
-          <div class="ui-surface bg-brand-primary p-4">
-            <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/60">
-              <svg class="h-4 w-4 text-white/60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M4 5h16v10H4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
-                <path d="M8 19h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-              Platform
-            </div>
-            <div class="mt-1 text-sm font-semibold text-white">{{ event.platform }}</div>
-          </div>
-        </div>
-      </header>
+        <!-- LEFT — Content cards -->
+        <section class="space-y-5">
 
-      <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <section class="lg:col-span-2 space-y-4">
-          <div class="ui-surface bg-brand-primary p-5">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">What we’ll cover</h2>
-            <ul class="mt-3 space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <li>Finding the right information quickly: events, meetings, resources, and support.</li>
-              <li>Common workflows for children’s homes: logging issues, following up, and keeping a clear record.</li>
-              <li>What “good” looks like: simple checks managers and team leaders can use.</li>
+          <!-- What we'll cover -->
+          <div class="rounded-2xl border border-gray-200 bg-white px-6 py-6 shadow-sm">
+            <h2 class="text-lg font-semibold text-gray-900">What we'll cover</h2>
+            <ul class="mt-4 space-y-3">
+              <li class="flex items-start gap-3 text-[0.9375rem] leading-relaxed text-gray-700">
+                <span class="mt-[0.45rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[#e7007e]" aria-hidden="true" />
+                Finding the right information quickly: events, meetings, resources, and support.
+              </li>
+              <li class="flex items-start gap-3 text-[0.9375rem] leading-relaxed text-gray-700">
+                <span class="mt-[0.45rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[#e7007e]" aria-hidden="true" />
+                Common workflows for children's homes: logging issues, following up, and keeping a clear record.
+              </li>
+              <li class="flex items-start gap-3 text-[0.9375rem] leading-relaxed text-gray-700">
+                <span class="mt-[0.45rem] h-1.5 w-1.5 shrink-0 rounded-full bg-[#e7007e]" aria-hidden="true" />
+                What "good" looks like: simple checks managers and team leaders can use.
+              </li>
             </ul>
           </div>
 
-          <div class="ui-surface bg-brand-primary p-5">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Who should attend</h2>
-            <p class="mt-3 text-sm text-gray-700 dark:text-gray-300">
+          <!-- Who should attend -->
+          <div class="rounded-2xl border border-gray-200 bg-white px-6 py-6 shadow-sm">
+            <h2 class="text-lg font-semibold text-gray-900">Who should attend</h2>
+            <p class="mt-4 text-[0.9375rem] leading-relaxed text-gray-700">
               This session is suitable for registered managers, deputy managers, team leaders, admins, and anyone who needs to use Mentor as part of their role.
             </p>
           </div>
 
-          <div class="ui-surface bg-brand-primary p-5">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Practical information</h2>
-            <dl class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <!-- Practical information -->
+          <div class="rounded-2xl border border-gray-200 bg-white px-6 py-6 shadow-sm">
+            <h2 class="text-lg font-semibold text-gray-900">Practical information</h2>
+            <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">What you’ll need</dt>
-                <dd class="mt-1 text-sm text-gray-700 dark:text-gray-300">A laptop/desktop with internet and access to {{ event.platform }}.</dd>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400">What you'll need</h3>
+                <p class="mt-2 text-[0.9375rem] leading-relaxed text-gray-700">
+                  A laptop or desktop with internet access and {{ event.platform }}.
+                </p>
               </div>
               <div>
-                <dt class="text-xs font-medium text-gray-500 dark:text-gray-400">Accessibility</dt>
-                <dd class="mt-1 text-sm text-gray-700 dark:text-gray-300">If you need adjustments (captions, materials in advance), tell us when registering.</dd>
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400">Accessibility</h3>
+                <p class="mt-2 text-[0.9375rem] leading-relaxed text-gray-700">
+                  If you need adjustments — captions, materials in advance — let us know when registering.
+                </p>
               </div>
-            </dl>
+            </div>
           </div>
 
-          <div v-if="showResources" class="ui-surface bg-brand-primary p-5">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Webinar resources</h2>
+          <!-- Event resources (post-event) -->
+          <div v-if="showResources" class="rounded-2xl border border-gray-200 bg-white px-6 py-6 shadow-sm">
+            <h2 class="text-lg font-semibold text-gray-900">Event resources</h2>
 
-            <div v-if="event.webinarSlides && event.webinarSlides.length" class="mt-3">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Slides</h3>
-              <ul class="mt-2 space-y-2 text-sm">
+            <div v-if="event.webinarSlides && event.webinarSlides.length" class="mt-4">
+              <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400">Slides</h3>
+              <ul class="mt-2 space-y-2">
                 <li v-for="slide in event.webinarSlides" :key="slide.url">
                   <a
                     :href="slide.url"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-primary-600 hover:text-primary-700 dark:text-primary-400"
+                    class="inline-flex items-center gap-1.5 text-sm font-medium text-[#e7007e] hover:underline"
                   >
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
                     {{ slide.label || 'Download slides' }}
                   </a>
                 </li>
               </ul>
             </div>
 
-            <div v-if="event.webinarRecordingUrl" class="mt-4">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Recording</h3>
-              <div v-if="youtubeEmbedUrl" class="mt-2 aspect-video overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+            <div v-if="event.webinarRecordingUrl" class="mt-5">
+              <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400">Recording</h3>
+              <div v-if="youtubeEmbedUrl" class="mt-3 aspect-video overflow-hidden rounded-xl border border-gray-200">
                 <iframe
                   :src="youtubeEmbedUrl"
                   title="Webinar recording"
@@ -239,105 +227,124 @@ const youtubeEmbedUrl = computed(() => {
                 :href="event.webinarRecordingUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="mt-2 inline-flex text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400"
+                class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-[#e7007e] hover:underline"
               >
-                Watch recording
+                Watch recording →
               </a>
             </div>
           </div>
         </section>
 
-        <aside class="space-y-4">
-          <div class="ui-surface bg-brand-primary p-5">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Register</h2>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ priceLabel }}</p>
-              </div>
-              <span
-                v-if="isRegistered"
-                class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-200"
-              >
-                Registered
-              </span>
-              <span
-                v-else-if="isPaymentPending"
-                class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900/30 dark:text-amber-200"
-              >
-                Payment pending
-              </span>
-            </div>
-            <div class="mt-5 space-y-2">
-              <RouterLink
-                v-if="!isRegistered"
-                :to="`/app/events/${event.id}/register`"
-                class="inline-flex w-full items-center justify-center rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-800"
-              >
-                {{ ctaLabel }}
-              </RouterLink>
+        <!-- RIGHT — Sticky action tray -->
+        <aside class="space-y-4 lg:sticky lg:top-6">
 
+          <!-- ── Register card ── -->
+          <div class="rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-sm">
+
+            <!-- Registered state -->
+            <template v-if="isRegistered">
+              <div class="flex items-center gap-3 rounded-xl bg-green-50 px-4 py-3.5">
+                <svg class="h-5 w-5 shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p class="text-sm font-semibold text-green-800">You're registered</p>
+                  <p class="text-xs text-green-700">We'll send details before the session.</p>
+                </div>
+              </div>
               <button
-                v-if="isRegistered"
                 type="button"
                 disabled
-                class="inline-flex w-full items-center justify-center rounded-lg border border-white/10 bg-white/10 px-4 py-2.5 text-sm font-medium text-white/60"
+                class="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-400"
               >
                 Add to calendar (coming soon)
               </button>
-            </div>
+            </template>
+
+            <!-- Payment pending -->
+            <template v-else-if="isPaymentPending">
+              <div class="flex items-center gap-3 rounded-xl bg-amber-50 px-4 py-3.5">
+                <svg class="h-5 w-5 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <div>
+                  <p class="text-sm font-semibold text-amber-800">Payment pending</p>
+                  <p class="text-xs text-amber-700">Complete payment to confirm your place.</p>
+                </div>
+              </div>
+              <RouterLink
+                :to="`/app/events/${event.id}/register`"
+                class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[#e7007e] px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-[#c8006c] transition focus:outline-none focus:ring-4 focus:ring-pink-300"
+              >
+                Complete payment
+              </RouterLink>
+            </template>
+
+            <!-- Default: not yet registered -->
+            <template v-else>
+              <h2 class="text-base font-semibold text-gray-900">Register for this session</h2>
+              <p class="mt-1 text-sm text-gray-500">{{ priceLabel }}</p>
+              <RouterLink
+                :to="`/app/events/${event.id}/register`"
+                class="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[#e7007e] px-4 py-3.5 text-base font-semibold text-white shadow hover:bg-[#c8006c] transition focus:outline-none focus:ring-4 focus:ring-pink-300"
+              >
+                Register now
+              </RouterLink>
+            </template>
           </div>
 
-          <div class="ui-surface bg-brand-primary p-5">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Key details</h2>
-            <dl class="mt-4 space-y-3 text-sm">
-              <div class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Date & time</dt>
-                <dd class="font-medium text-gray-900 dark:text-white text-right">{{ event.dateLabel }} ({{ event.timezoneLabel }})</dd>
+          <!-- ── Key details ── -->
+          <div class="rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-sm">
+            <h2 class="text-xs font-semibold uppercase tracking-wide text-gray-400">Key details</h2>
+            <dl class="mt-3 space-y-2.5 text-sm">
+              <div class="flex items-start justify-between gap-4">
+                <dt class="text-gray-500">Date &amp; time</dt>
+                <dd class="text-right font-medium text-gray-900">{{ event.dateLabel }}</dd>
               </div>
-              <div class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Duration</dt>
-                <dd class="font-medium text-gray-900 dark:text-white text-right">{{ durationLabel }}</dd>
+              <div class="flex items-start justify-between gap-4">
+                <dt class="text-gray-500">Duration</dt>
+                <dd class="text-right font-medium text-gray-900">{{ durationLabel }}</dd>
               </div>
-              <div class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Platform</dt>
-                <dd class="font-medium text-gray-900 dark:text-white text-right">{{ event.platform }}</dd>
+              <div class="flex items-start justify-between gap-4">
+                <dt class="text-gray-500">Platform</dt>
+                <dd class="text-right font-medium text-gray-900">{{ event.platform }}</dd>
               </div>
-              <div v-if="event.joinUrl" class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Join link</dt>
+              <div v-if="event.joinUrl" class="flex items-start justify-between gap-4">
+                <dt class="text-gray-500">Join link</dt>
                 <dd class="text-right">
                   <a
                     :href="event.joinUrl"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="inline-flex items-center justify-center rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-800"
+                    class="font-medium text-[#e7007e] hover:underline"
                   >
-                    {{ joinLabel }}
+                    {{ joinLabel }} →
                   </a>
                 </dd>
               </div>
-              <div class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Provision type</dt>
-                <dd class="font-medium text-gray-900 dark:text-white text-right">{{ event.provisionLabel }}</dd>
+              <div v-if="event.provisionLabel" class="flex items-start justify-between gap-4">
+                <dt class="text-gray-500">Provision</dt>
+                <dd class="text-right font-medium text-gray-900">{{ event.provisionLabel }}</dd>
               </div>
-              <div class="flex items-start justify-between gap-3">
-                <dt class="text-gray-500 dark:text-gray-400">Eligibility</dt>
-                <dd class="font-medium text-gray-900 dark:text-white text-right">{{ event.eligibilityLabel }}</dd>
+              <div v-if="event.eligibilityLabel" class="flex items-start justify-between gap-4">
+                <dt class="text-gray-500">Eligibility</dt>
+                <dd class="text-right font-medium text-gray-900">{{ event.eligibilityLabel }}</dd>
               </div>
             </dl>
-
           </div>
 
-          <div class="ui-surface bg-brand-primary p-5">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Need help?</h2>
-            <p class="mt-3 text-sm text-gray-700 dark:text-gray-300">
-              If you’re unsure whether this session is right for your team, register anyway and add a note — we’ll follow up.
+          <!-- ── Need help? ── -->
+          <div class="rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4">
+            <h2 class="text-sm font-semibold text-gray-600">Need help?</h2>
+            <p class="mt-2 text-sm leading-relaxed text-gray-500">
+              If you're unsure whether this session is right for your team, register anyway and add a note — we'll follow up.
             </p>
-            <div class="mt-3 text-sm text-gray-700 dark:text-gray-300">
-              <span class="font-medium">Tip:</span> If you can’t attend live, we’ll share materials afterwards when available.
-            </div>
+            <p class="mt-2 text-xs text-gray-400">
+              <span class="font-medium text-gray-500">Tip:</span> If you can't attend live, we'll share materials afterwards when available.
+            </p>
           </div>
         </aside>
       </div>
-      </template>
+    </template>
   </div>
 </template>
