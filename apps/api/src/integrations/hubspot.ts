@@ -894,38 +894,65 @@ export type HubSpotContactList = {
 
 /**
  * Returns all HubSpot contact lists (both static and dynamic).
- * Uses the v3 Lists API — requires crm.lists.read scope.
+ * Uses the v3 Lists Search API.
+ *
+ * Note: some HubSpot portals return an empty array for `GET /crm/v3/lists`
+ * even when lists exist. `POST /crm/v3/lists/search` returns the v3 list IDs
+ * that are compatible with the `/crm/v3/lists/{listId}/memberships` endpoint
+ * used by invite sending.
  */
 export async function hubspotGetContactLists(): Promise<HubSpotContactList[]> {
   const token = env.HUBSPOT_PRIVATE_APP_TOKEN
   if (!token) return []
 
-  let after: string | undefined = undefined
+  type HubSpotListSearchResponse = {
+    offset?: number
+    hasMore?: boolean
+    lists?: Array<{
+      listId: string
+      name: string
+      processingType?: 'DYNAMIC' | 'STATIC' | string
+      additionalProperties?: {
+        hs_list_size?: string
+      }
+    }>
+  }
+
   const allLists: HubSpotContactList[] = []
+  let offset = 0
+  let pages = 0
 
   while (true) {
-    const params = new URLSearchParams({ objectTypeId: '0-1', count: '250' })
-    if (after) params.set('after', after)
+    pages += 1
+    if (pages > 50) break
 
-    const res = await hubspotFetch(`/crm/v3/lists?${params.toString()}`, { method: 'GET' })
-    if (!res.ok) break
+    const res = await hubspotFetch(`/crm/v3/lists/search`, {
+      method: 'POST',
+      body: JSON.stringify({
+        objectTypeId: '0-1',
+        limit: 250,
+        offset,
+      }),
+    })
 
-    const data = await res.json() as {
-      lists: Array<{ listId: string; name: string; listType: string; size?: number }>
-      paging?: { next?: { after?: string } }
-    }
+    const data = (await res.json()) as HubSpotListSearchResponse
+    const lists = data.lists ?? []
 
-    for (const l of data.lists ?? []) {
+    for (const l of lists) {
+      const sizeRaw = l.additionalProperties?.hs_list_size
+      const size = sizeRaw ? Number(sizeRaw) : 0
+
       allLists.push({
         listId: Number(l.listId),
         name: l.name,
-        size: l.size ?? 0,
-        dynamic: l.listType === 'DYNAMIC',
+        size: Number.isFinite(size) ? size : 0,
+        dynamic: l.processingType === 'DYNAMIC',
       })
     }
 
-    after = data.paging?.next?.after
-    if (!after) break
+    if (!data.hasMore) break
+    if (typeof data.offset !== 'number') break
+    offset = data.offset
   }
 
   return allLists.sort((a, b) => a.name.localeCompare(b.name))
