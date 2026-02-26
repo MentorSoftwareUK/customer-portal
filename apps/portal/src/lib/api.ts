@@ -1039,6 +1039,19 @@ export type TicketDto = {
   subject: string
   status: TicketStatus
   lastUpdatedLabel: string
+  createdLabel: string
+  priority?: 'Low' | 'Normal' | 'High'
+  timeToCloseMs?: number
+  timeToFirstReplyMs?: number
+}
+
+export type TicketStats = {
+  total: number
+  open: number
+  pending: number
+  closed: number
+  avgResponseMs: number | null
+  avgResolutionMs: number | null
 }
 
 export type TicketMessageDto = {
@@ -1105,20 +1118,20 @@ export async function replyToTicket(id: string, message: string): Promise<{ tick
   return (await res.json()) as { ticket: TicketDetailDto; warning?: string }
 }
 
-export async function listTickets(): Promise<{ tickets: TicketDto[]; warning?: string }> {
+export async function listTickets(): Promise<{ tickets: TicketDto[]; stats: TicketStats; warning?: string }> {
   const res = await apiFetch(`${getApiBaseUrl()}/tickets`, { method: 'GET' })
   if (!res.ok) {
     throw new Error(`Tickets list failed: ${res.status}`)
   }
-  return (await res.json()) as { tickets: TicketDto[]; warning?: string }
+  return (await res.json()) as { tickets: TicketDto[]; stats: TicketStats; warning?: string }
 }
 
-export async function listOrgTickets(): Promise<{ tickets: TicketDto[]; warning?: string }> {
+export async function listOrgTickets(): Promise<{ tickets: TicketDto[]; stats: TicketStats; warning?: string }> {
   const res = await apiFetch(`${getApiBaseUrl()}/tickets/org`, { method: 'GET' })
   if (!res.ok) {
     throw new Error(`Org tickets list failed: ${res.status}`)
   }
-  return (await res.json()) as { tickets: TicketDto[]; warning?: string }
+  return (await res.json()) as { tickets: TicketDto[]; stats: TicketStats; warning?: string }
 }
 
 export type NotificationLevel = 'info' | 'danger' | 'success' | 'warning' | 'dark'

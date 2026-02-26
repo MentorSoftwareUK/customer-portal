@@ -26,6 +26,19 @@ export type TicketDto = {
   subject: string
   status: TicketStatus
   lastUpdatedLabel: string
+  createdLabel: string
+  priority?: 'Low' | 'Normal' | 'High'
+  timeToCloseMs?: number
+  timeToFirstReplyMs?: number
+}
+
+export type TicketStats = {
+  total: number
+  open: number
+  pending: number
+  closed: number
+  avgResponseMs: number | null
+  avgResolutionMs: number | null
 }
 
 export type TicketMessageDto = {
@@ -86,6 +99,29 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
   function stripHtml(input: string) {
     const raw = input ?? ''
     return raw.replace(/<[^>]*>/g, '').replace(/\s+\n/g, '\n').trim()
+  }
+
+  function formatDateLabel(iso: string | null | undefined): string {
+    if (!iso) return '—'
+    const d = new Date(iso)
+    if (!Number.isFinite(d.getTime())) return '—'
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  }
+
+  function computeTicketStats(tickets: TicketDto[]): TicketStats {
+    const open = tickets.filter((t) => t.status === 'Open').length
+    const pending = tickets.filter((t) => t.status === 'Pending').length
+    const closed = tickets.filter((t) => t.status === 'Closed').length
+    const responseTimes = tickets.map((t) => t.timeToFirstReplyMs).filter((v): v is number => v != null && v > 0)
+    const resolutionTimes = tickets.map((t) => t.timeToCloseMs).filter((v): v is number => v != null && v > 0)
+    return {
+      total: tickets.length,
+      open,
+      pending,
+      closed,
+      avgResponseMs: responseTimes.length ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length) : null,
+      avgResolutionMs: resolutionTimes.length ? Math.round(resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length) : null,
+    }
   }
 
   function formatRelativeLabel(iso: string | null | undefined) {
@@ -186,7 +222,7 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
 
     const items = await hubspotBatchReadTickets({
       ids: ticketIds,
-      properties: ['subject', 'hs_pipeline_stage', 'hs_ticket_priority', 'hs_ticket_category', 'hs_lastmodifieddate', 'createdate'],
+      properties: ['subject', 'hs_pipeline_stage', 'hs_ticket_priority', 'hs_ticket_category', 'hs_lastmodifieddate', 'createdate', 'hs_time_to_close', 'hs_time_to_first_agent_reply'],
     })
 
     const tickets: TicketDto[] = items
@@ -196,17 +232,23 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
         const status = (stage && stageMap.get(stage)) || 'Open'
         const subject = p['subject'] || p['hs_ticket_subject'] || '(No subject)'
         const updated = p['hs_lastmodifieddate'] || p['createdate']
+        const ttc = p['hs_time_to_close'] ? Number(p['hs_time_to_close']) : undefined
+        const ttr = p['hs_time_to_first_agent_reply'] ? Number(p['hs_time_to_first_agent_reply']) : undefined
 
         return {
           id: t.id,
           subject,
           status,
           lastUpdatedLabel: formatRelativeLabel(updated),
+          createdLabel: formatDateLabel(p['createdate']),
+          priority: mapPriority(p['hs_ticket_priority']),
+          timeToCloseMs: Number.isFinite(ttc) ? ttc : undefined,
+          timeToFirstReplyMs: Number.isFinite(ttr) ? ttr : undefined,
         }
       })
       .sort((a, b) => a.subject.localeCompare(b.subject))
 
-    const payload = { tickets }
+    const payload = { tickets, stats: computeTicketStats(tickets) }
     cacheSet(key, payload)
     return payload
   })
@@ -241,7 +283,7 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
 
     const items = await hubspotBatchReadTickets({
       ids: uniqueTicketIds,
-      properties: ['subject', 'hs_pipeline_stage', 'hs_ticket_priority', 'hs_ticket_category', 'hs_lastmodifieddate', 'createdate'],
+      properties: ['subject', 'hs_pipeline_stage', 'hs_ticket_priority', 'hs_ticket_category', 'hs_lastmodifieddate', 'createdate', 'hs_time_to_close', 'hs_time_to_first_agent_reply'],
     })
 
     const tickets: TicketDto[] = items
@@ -251,17 +293,23 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
         const status = (stage && stageMap.get(stage)) || 'Open'
         const subject = p['subject'] || p['hs_ticket_subject'] || '(No subject)'
         const updated = p['hs_lastmodifieddate'] || p['createdate']
+        const ttc = p['hs_time_to_close'] ? Number(p['hs_time_to_close']) : undefined
+        const ttr = p['hs_time_to_first_agent_reply'] ? Number(p['hs_time_to_first_agent_reply']) : undefined
 
         return {
           id: t.id,
           subject,
           status,
           lastUpdatedLabel: formatRelativeLabel(updated),
+          createdLabel: formatDateLabel(p['createdate']),
+          priority: mapPriority(p['hs_ticket_priority']),
+          timeToCloseMs: Number.isFinite(ttc) ? ttc : undefined,
+          timeToFirstReplyMs: Number.isFinite(ttr) ? ttr : undefined,
         }
       })
       .sort((a, b) => a.subject.localeCompare(b.subject))
 
-    const payload = { tickets }
+    const payload = { tickets, stats: computeTicketStats(tickets) }
     cacheSet(key, payload)
     return payload
   })
@@ -335,6 +383,7 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
       subject,
       status,
       lastUpdatedLabel: formatRelativeLabel(updated),
+      createdLabel: formatDateLabel(p['createdate']),
       category: p['hs_ticket_category'] ?? undefined,
       priority: mapPriority(p['hs_ticket_priority']) ?? undefined,
       messages,
@@ -384,6 +433,7 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
         subject: created.properties?.subject ?? parsed.data.subject,
         status,
         lastUpdatedLabel: 'Just now',
+        createdLabel: formatDateLabel(new Date().toISOString()),
       },
     }
   })
@@ -455,6 +505,7 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
       subject,
       status,
       lastUpdatedLabel: formatRelativeLabel(updated),
+      createdLabel: formatDateLabel(p['createdate']),
       category: p['hs_ticket_category'] ?? undefined,
       priority: mapPriority(p['hs_ticket_priority']) ?? undefined,
       messages,
