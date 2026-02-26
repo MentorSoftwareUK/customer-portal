@@ -6,7 +6,20 @@ import { initDropdowns } from 'flowbite'
 // @ts-ignore Vue SFC default export is provided by vite/volar
 import QuickFindModal from '../components/QuickFindModal.vue'
 import ToastContainer from './ToastContainer.vue'
-import { authMe, getProfile, listEvents, listMeetings, trackPageView, trackSessionEnd, trackSessionStart, type AuthUser, type ProfileDto } from '../lib/api'
+import {
+  authMe,
+  getProfile,
+  listEvents,
+  listGlobalNotifications,
+  listMeetings,
+  trackPageView,
+  trackSessionEnd,
+  trackSessionStart,
+  type AuthUser,
+  type GlobalNotificationDto,
+  type NotificationLevel,
+  type ProfileDto,
+} from '../lib/api'
 import { clearAllTokens, decodeJwtPayload, getAdminAccessToken, getUserAccessToken } from '../lib/auth'
 import { useFeatureFlags } from '../lib/featureFlags'
 
@@ -52,6 +65,33 @@ interface NotificationItem {
 }
 
 const notifications = ref<NotificationItem[]>([])
+
+const globalNotifications = ref<GlobalNotificationDto[]>([])
+
+function notificationContainerClass(level: NotificationLevel): string {
+  switch (level) {
+    case 'danger':
+      return 'bg-danger-soft text-fg-danger-strong'
+    case 'success':
+      return 'bg-success-soft text-fg-success-strong'
+    case 'warning':
+      return 'bg-warning-soft text-fg-warning-strong'
+    case 'dark':
+      return 'bg-surface text-fg'
+    case 'info':
+    default:
+      return 'bg-brand-softer text-fg-brand-strong'
+  }
+}
+
+async function loadGlobalNotifications() {
+  try {
+    const res = await listGlobalNotifications()
+    globalNotifications.value = res.notifications
+  } catch {
+    globalNotifications.value = []
+  }
+}
 
 async function loadNotifications() {
   if (isAdmin.value) return
@@ -109,6 +149,7 @@ onMounted(async () => {
 
   await loadOnboardingStatus(true)
   await loadNotifications()
+  await loadGlobalNotifications()
 })
 
 onMounted(async () => {
@@ -872,6 +913,63 @@ onUnmounted(() => {
         class="w-full"
         :class="isMeetingsPage ? 'max-w-none' : 'mx-auto max-w-screen-xl px-4 py-3 sm:py-5 lg:px-12'"
       >
+        <div v-if="globalNotifications.length" class="mb-4 space-y-3">
+          <div
+            v-for="n in globalNotifications"
+            :key="n.id"
+            class="flex items-start gap-3 rounded-base p-4 text-sm"
+            :class="notificationContainerClass(n.level)"
+            role="alert"
+          >
+            <svg
+              class="h-5 w-5 flex-shrink-0"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                v-if="n.level === 'success'"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8.5 12.5 11 15l4.5-5.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+              <path
+                v-else-if="n.level === 'warning'"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v4m0 4h.01M10.3 4.3 2.1 18.5a1.5 1.5 0 0 0 1.3 2.3h17.2a1.5 1.5 0 0 0 1.3-2.3L13.7 4.3a1.5 1.5 0 0 0-3.4 0Z"
+              />
+              <path
+                v-else-if="n.level === 'danger'"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m15 9-6 6m0-6 6 6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+              <path
+                v-else
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 11h2v5m-2 0h4m-2.592-8.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+
+            <div class="min-w-0">
+              <p class="font-medium">{{ n.title }}</p>
+              <p class="text-fg-muted">{{ n.message }}</p>
+            </div>
+          </div>
+        </div>
         <router-view />
       </div>
     </main>

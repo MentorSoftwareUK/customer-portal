@@ -11,12 +11,14 @@ import { adminEventsRoutes } from './routes/adminEvents'
 import { adminRegistrationsRoutes } from './routes/adminRegistrations'
 import { adminReportsRoutes } from './routes/adminReports'
 import { adminAnalyticsRoutes } from './routes/adminAnalytics'
+import { adminNotificationsRoutes } from './routes/adminNotifications'
 import { usersRoutes } from './routes/users'
 import { eventsRoutes } from './routes/events'
 import { stripeRoutes } from './routes/stripe'
 import { invoicesRoutes } from './routes/invoices'
 import { ticketsRoutes } from './routes/tickets'
 import { meetingsRoutes } from './routes/meetings'
+import { notificationsRoutes } from './routes/notifications'
 import { knowledgeBaseRoutes } from './routes/knowledgeBase'
 import { videosRoutes } from './routes/videos'
 import { documentsRoutes } from './routes/documents'
@@ -89,11 +91,13 @@ export async function buildServer() {
   await app.register(adminHubspotAuditRoutes, { prefix: '/admin/hubspot-audit' })
   await app.register(adminReportsRoutes, { prefix: '/admin/reports' })
   await app.register(adminAnalyticsRoutes, { prefix: '/admin/analytics' })
+  await app.register(adminNotificationsRoutes, { prefix: '/admin/notifications' })
   await app.register(usersRoutes, { prefix: '/admin/users' })
   await app.register(eventsRoutes, { prefix: '/events' })
   await app.register(stripeRoutes, { prefix: '/stripe' })
   await app.register(invoicesRoutes, { prefix: '/invoices' })
   await app.register(ticketsRoutes, { prefix: '/tickets' })
+  await app.register(notificationsRoutes, { prefix: '/notifications' })
   await app.register(meetingsRoutes, { prefix: '/meetings' })
   await app.register(knowledgeBaseRoutes, { prefix: '/knowledge-base' })
   await app.register(videosRoutes, { prefix: '/videos' })

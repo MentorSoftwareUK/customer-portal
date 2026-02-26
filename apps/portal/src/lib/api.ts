@@ -1119,6 +1119,93 @@ export async function listOrgTickets(): Promise<{ tickets: TicketDto[]; warning?
   return (await res.json()) as { tickets: TicketDto[]; warning?: string }
 }
 
+export type NotificationLevel = 'info' | 'danger' | 'success' | 'warning' | 'dark'
+
+export type GlobalNotificationDto = {
+  id: string
+  level: NotificationLevel
+  title: string
+  message: string
+  enabled: boolean
+  startsAtIso: string | null
+  endsAtIso: string | null
+  createdAtIso: string
+  updatedAtIso: string
+}
+
+export async function listGlobalNotifications(): Promise<{ notifications: GlobalNotificationDto[] }> {
+  const res = await apiFetch(`${getApiBaseUrl()}/notifications`, { method: 'GET' })
+  if (!res.ok) {
+    throw new Error(`Notifications list failed: ${res.status}`)
+  }
+  return (await res.json()) as { notifications: GlobalNotificationDto[] }
+}
+
+export async function adminListNotifications(): Promise<{ notifications: GlobalNotificationDto[] }> {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/notifications`, { method: 'GET' })
+  if (!res.ok) {
+    throw new Error(`Admin notifications list failed: ${res.status}`)
+  }
+  return (await res.json()) as { notifications: GlobalNotificationDto[] }
+}
+
+export type AdminCreateNotificationRequest = {
+  level: NotificationLevel
+  title: string
+  message: string
+  enabled?: boolean
+  startsAtIso?: string | null
+  endsAtIso?: string | null
+}
+
+export async function adminCreateNotification(body: AdminCreateNotificationRequest): Promise<{ notification: GlobalNotificationDto }> {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/notifications`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin notification create failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+
+  return (await res.json()) as { notification: GlobalNotificationDto }
+}
+
+export type AdminPatchNotificationRequest = Partial<AdminCreateNotificationRequest>
+
+export async function adminPatchNotification(
+  id: string,
+  body: AdminPatchNotificationRequest,
+): Promise<{ notification: GlobalNotificationDto }> {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/notifications/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin notification update failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+
+  return (await res.json()) as { notification: GlobalNotificationDto }
+}
+
+export async function adminDeleteNotification(id: string): Promise<{ ok: true }> {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/notifications/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin notification delete failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { ok: true }
+}
+
 export type MeetingTeam = 'Training' | 'Success Team' | 'Renewals'
 
 export type MeetingDto = {

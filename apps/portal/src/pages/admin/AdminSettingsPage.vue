@@ -1,6 +1,20 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { getAdminSettings, patchAdminSettings, type AdminSettings, getHubSpotOAuthStatus, initiateHubSpotOAuth, disconnectHubSpotOAuth, type HubSpotOAuthStatus } from '../../lib/api'
+import {
+  adminCreateNotification,
+  adminDeleteNotification,
+  adminListNotifications,
+  adminPatchNotification,
+  disconnectHubSpotOAuth,
+  getAdminSettings,
+  getHubSpotOAuthStatus,
+  initiateHubSpotOAuth,
+  patchAdminSettings,
+  type AdminSettings,
+  type GlobalNotificationDto,
+  type HubSpotOAuthStatus,
+  type NotificationLevel,
+} from '../../lib/api'
 import { loadFeatureFlags } from '../../lib/featureFlags'
 import { useToast } from '../../lib/toast'
 
@@ -23,6 +37,7 @@ const sections = [
   { id: 'content', label: 'Content gating', description: 'Default access by provision type' },
   { id: 'emails', label: 'Event emails', description: 'Confirmation, reminders, thank-you cadence' },
   { id: 'system', label: 'System safety', description: 'Maintenance mode, demo data, rate limits' },
+  { id: 'notifications', label: 'Notifications', description: 'Global banners shown to all users' },
 ] as const
 
 const activeSection = ref<(typeof sections)[number]['id']>('general')
@@ -33,6 +48,26 @@ const settings = ref<AdminSettings | null>(null)
 const hubspotOAuthStatus = ref<HubSpotOAuthStatus | null>(null)
 const hubspotOAuthLoading = ref(false)
 const hubspotConnectedBanner = ref(false)
+
+const globalNotificationsLoading = ref(false)
+const globalNotificationsError = ref<string | null>(null)
+const globalNotifications = ref<GlobalNotificationDto[]>([])
+
+const notificationForm = ref<{
+  level: NotificationLevel
+  title: string
+  message: string
+  enabled: boolean
+  startsAtLocal: string
+  endsAtLocal: string
+}>({
+  level: 'info',
+  title: '',
+  message: '',
+  enabled: true,
+  startsAtLocal: '',
+  endsAtLocal: '',
+})
 
 const lastSavedSnapshot = ref<string>('')
 
@@ -67,6 +102,78 @@ async function load() {
     error.value = detail || 'Please check your connection and try again.'
   } finally {
     loading.value = false
+  }
+}
+
+function localDateTimeToIsoOrNull(localValue: string): string | null {
+  const v = (localValue ?? '').trim()
+  if (!v) return null
+  const ms = new Date(v).getTime()
+  if (!Number.isFinite(ms)) return null
+  return new Date(ms).toISOString()
+}
+
+async function loadGlobalNotifications() {
+  globalNotificationsLoading.value = true
+  globalNotificationsError.value = null
+  try {
+    const res = await adminListNotifications()
+    globalNotifications.value = res.notifications
+  } catch (e: any) {
+    globalNotificationsError.value = e?.message ? String(e.message) : 'Failed to load notifications'
+    globalNotifications.value = []
+  } finally {
+    globalNotificationsLoading.value = false
+  }
+}
+
+async function createGlobalNotification() {
+  globalNotificationsError.value = null
+  try {
+    await adminCreateNotification({
+      level: notificationForm.value.level,
+      title: notificationForm.value.title,
+      message: notificationForm.value.message,
+      enabled: notificationForm.value.enabled,
+      startsAtIso: localDateTimeToIsoOrNull(notificationForm.value.startsAtLocal),
+      endsAtIso: localDateTimeToIsoOrNull(notificationForm.value.endsAtLocal),
+    })
+
+    notificationForm.value.title = ''
+    notificationForm.value.message = ''
+    notificationForm.value.startsAtLocal = ''
+    notificationForm.value.endsAtLocal = ''
+
+    await loadGlobalNotifications()
+    toast.success('Notification created')
+  } catch (e: any) {
+    const detail = e?.message ? String(e.message) : 'Failed to create notification'
+    globalNotificationsError.value = detail
+    toast.error('Failed to create notification')
+  }
+}
+
+async function toggleGlobalNotificationEnabled(n: GlobalNotificationDto) {
+  globalNotificationsError.value = null
+  try {
+    await adminPatchNotification(n.id, { enabled: !n.enabled })
+    await loadGlobalNotifications()
+  } catch (e: any) {
+    globalNotificationsError.value = e?.message ? String(e.message) : 'Failed to update notification'
+    toast.error('Failed to update notification')
+  }
+}
+
+async function deleteGlobalNotification(n: GlobalNotificationDto) {
+  if (!confirm(`Delete notification "${n.title}"?`)) return
+  globalNotificationsError.value = null
+  try {
+    await adminDeleteNotification(n.id)
+    await loadGlobalNotifications()
+    toast.success('Notification deleted')
+  } catch (e: any) {
+    globalNotificationsError.value = e?.message ? String(e.message) : 'Failed to delete notification'
+    toast.error('Failed to delete notification')
   }
 }
 
@@ -184,6 +291,7 @@ onMounted(async () => {
     window.history.replaceState({}, '', nextUrl)
   }
   await load()
+  await loadGlobalNotifications()
   await nextTick()
   observeSections()
   if (hubspotConnectedBanner.value) {
@@ -830,6 +938,135 @@ function toggleFeature(key: keyof AdminSettings['features']) {
             >
               {{ saving ? 'Saving…' : 'Save changes' }}
             </button>
+          </div>
+        </section>
+
+        <section :id="sections[9].id" class="ui-surface p-5 shadow-sm">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h3 class="text-base font-semibold text-white">Notifications</h3>
+              <p class="text-xs text-white/70">Create banners shown to all portal users.</p>
+            </div>
+          </div>
+
+          <div v-if="globalNotificationsError" class="mt-4 rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+            {{ globalNotificationsError }}
+          </div>
+
+          <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label class="ui-label">Level</label>
+              <select v-model="notificationForm.level" class="ui-input mt-1">
+                <option value="info">Info</option>
+                <option value="success">Success</option>
+                <option value="warning">Warning</option>
+                <option value="danger">Danger</option>
+                <option value="dark">Dark</option>
+              </select>
+            </div>
+
+            <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
+              <span>Enabled</span>
+              <input v-model="notificationForm.enabled" type="checkbox" class="h-5 w-5" />
+            </label>
+
+            <div class="md:col-span-2">
+              <label class="ui-label">Title</label>
+              <input v-model="notificationForm.title" class="ui-input mt-1" type="text" placeholder="Planned maintenance" />
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="ui-label">Message</label>
+              <textarea v-model="notificationForm.message" class="ui-input mt-1" rows="3" placeholder="We'll be offline from 22:00–23:00." />
+            </div>
+
+            <div>
+              <label class="ui-label">Starts at (optional)</label>
+              <input v-model="notificationForm.startsAtLocal" class="ui-input mt-1" type="datetime-local" />
+            </div>
+
+            <div>
+              <label class="ui-label">Ends at (optional)</label>
+              <input v-model="notificationForm.endsAtLocal" class="ui-input mt-1" type="datetime-local" />
+            </div>
+          </div>
+
+          <div class="mt-5 flex items-center justify-between gap-3">
+            <div class="text-xs text-white/60">
+              Notifications appear in the portal AppShell as alert banners.
+            </div>
+            <button
+              type="button"
+              class="rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
+              :disabled="globalNotificationsLoading || !notificationForm.title.trim() || !notificationForm.message.trim()"
+              @click="createGlobalNotification"
+            >
+              {{ globalNotificationsLoading ? 'Working…' : 'Create notification' }}
+            </button>
+          </div>
+
+          <div class="mt-6">
+            <div class="flex items-center justify-between gap-3">
+              <div class="text-sm font-semibold text-white">Existing</div>
+              <button
+                type="button"
+                class="rounded-md bg-white/10 px-3 py-1 text-xs font-semibold text-white/80 hover:bg-white/15"
+                :disabled="globalNotificationsLoading"
+                @click="loadGlobalNotifications"
+              >
+                Refresh
+              </button>
+            </div>
+
+            <div v-if="globalNotificationsLoading" class="mt-3 text-xs text-white/60">Loading…</div>
+
+            <div v-else-if="!globalNotifications.length" class="mt-3 text-xs text-white/60">No notifications yet.</div>
+
+            <div v-else class="mt-3 space-y-2">
+              <div
+                v-for="n in globalNotifications"
+                :key="n.id"
+                class="rounded-lg border border-white/10 bg-white/5 p-3"
+              >
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">{{ n.level }}</span>
+                      <span
+                        class="rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide"
+                        :class="n.enabled ? 'bg-emerald-500/15 text-emerald-200' : 'bg-white/10 text-white/60'"
+                      >
+                        {{ n.enabled ? 'enabled' : 'disabled' }}
+                      </span>
+                    </div>
+                    <div class="mt-1 text-sm font-semibold text-white">{{ n.title }}</div>
+                    <div class="mt-1 text-xs text-white/70">{{ n.message }}</div>
+                    <div v-if="n.startsAtIso || n.endsAtIso" class="mt-2 text-[11px] text-white/50">
+                      <span v-if="n.startsAtIso">Starts: {{ new Date(n.startsAtIso).toLocaleString() }}</span>
+                      <span v-if="n.startsAtIso && n.endsAtIso"> · </span>
+                      <span v-if="n.endsAtIso">Ends: {{ new Date(n.endsAtIso).toLocaleString() }}</span>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      class="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/15"
+                      @click="toggleGlobalNotificationEnabled(n)"
+                    >
+                      {{ n.enabled ? 'Disable' : 'Enable' }}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/15"
+                      @click="deleteGlobalNotification(n)"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </div>

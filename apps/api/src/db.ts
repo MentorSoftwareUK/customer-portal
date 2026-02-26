@@ -67,6 +67,8 @@ export async function ensureIndexes(): Promise<void> {
       database.collection('audit_log').createIndex({ createdAt: -1 }),
       database.collection('email_jobs').createIndex({ status: 1, scheduledFor: 1 }),
       database.collection('email_template_overrides').createIndex({ _id: 1 }, { unique: true }),
+      database.collection('notifications').createIndex({ enabled: 1, startsAtIso: 1, endsAtIso: 1 }),
+      database.collection('notifications').createIndex({ createdAtIso: -1 }),
     ])
   } catch (err) {
     console.error('[mongo] failed to create indexes', err)
