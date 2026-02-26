@@ -182,6 +182,15 @@ onMounted(async () => {
       },
       { rootMargin: '300px 0px' },
     )
+
+    // Re-observe any targets registered before the observer existed.
+    for (const el of previewTargets.values()) {
+      try {
+        previewObserver.observe(el)
+      } catch {
+        // ignore
+      }
+    }
   } catch {
     previewObserver = null
   }
