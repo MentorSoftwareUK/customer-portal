@@ -12,13 +12,10 @@ const isMac = typeof navigator !== 'undefined' && navigator.platform.toLowerCase
 const route = useRoute()
 const router = useRouter()
 const currentPath = computed(() => route.path)
-const currentHash = computed(() => route.hash)
 
 const isActive = (to: string) => {
   return currentPath.value === to || currentPath.value.startsWith(`${to}/`)
 }
-
-const isNotificationsLinkActive = computed(() => currentPath.value === '/admin/settings' && currentHash.value === '#notifications')
 
 const findOpen = ref(false)
 const findSeed = ref('')
@@ -35,6 +32,7 @@ const findItems: QuickFindItem[] = [
   { label: 'Admin: Email', to: '/admin/email', description: 'Email templates and schedules', keywords: ['notifications'] },
   { label: 'Admin: Content', to: '/admin/content', description: 'Knowledge base and documents', keywords: ['kb', 'resources'] },
   { label: 'Admin: Users', to: '/admin/users', description: 'Portal user access', keywords: ['accounts'] },
+  { label: 'Admin: Notifications', to: '/admin/notifications', description: 'Global portal banners', keywords: ['alerts', 'outage', 'maintenance'] },
   { label: 'Admin: Settings', to: '/admin/settings', description: 'System configuration', keywords: ['config'] },
   { label: 'Admin: HubSpot Audit', to: '/admin/hubspot-audit', description: 'Form contact corruption audit', keywords: ['hubspot', 'audit', 'data', 'corruption'] },
   { label: 'Portal dashboard', to: '/app/dashboard', description: 'Back to the portal' },
@@ -274,6 +272,12 @@ onUnmounted(() => {
                 class="rounded-lg bg-white/5 px-3 py-2 text-center text-sm font-medium text-white/90 hover:bg-white/10"
               >
                 Settings
+              </RouterLink>
+              <RouterLink
+                to="/admin/notifications"
+                class="rounded-lg bg-white/5 px-3 py-2 text-center text-sm font-medium text-white/90 hover:bg-white/10"
+              >
+                Notifications
               </RouterLink>
             </div>
           </div>
@@ -518,9 +522,9 @@ onUnmounted(() => {
 
           <li>
             <RouterLink
-              to="/admin/settings#notifications"
+              to="/admin/notifications"
               class="group flex items-center rounded-lg p-2 text-base font-medium"
-              :class="isNotificationsLinkActive ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+              :class="isActive('/admin/notifications') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
             >
               <svg
                 aria-hidden="true"

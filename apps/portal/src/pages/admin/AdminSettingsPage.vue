@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
-  adminCreateNotification,
-  adminDeleteNotification,
   adminListNotifications,
   adminPatchNotification,
   disconnectHubSpotOAuth,
@@ -13,7 +11,6 @@ import {
   type AdminSettings,
   type GlobalNotificationDto,
   type HubSpotOAuthStatus,
-  type NotificationLevel,
 } from '../../lib/api'
 import { loadFeatureFlags } from '../../lib/featureFlags'
 import { useToast } from '../../lib/toast'
@@ -53,22 +50,6 @@ const globalNotificationsLoading = ref(false)
 const globalNotificationsError = ref<string | null>(null)
 const globalNotifications = ref<GlobalNotificationDto[]>([])
 
-const notificationForm = ref<{
-  level: NotificationLevel
-  title: string
-  message: string
-  enabled: boolean
-  startsAtLocal: string
-  endsAtLocal: string
-}>({
-  level: 'info',
-  title: '',
-  message: '',
-  enabled: true,
-  startsAtLocal: '',
-  endsAtLocal: '',
-})
-
 const lastSavedSnapshot = ref<string>('')
 
 const dirty = ref(false)
@@ -105,14 +86,6 @@ async function load() {
   }
 }
 
-function localDateTimeToIsoOrNull(localValue: string): string | null {
-  const v = (localValue ?? '').trim()
-  if (!v) return null
-  const ms = new Date(v).getTime()
-  if (!Number.isFinite(ms)) return null
-  return new Date(ms).toISOString()
-}
-
 async function loadGlobalNotifications() {
   globalNotificationsLoading.value = true
   globalNotificationsError.value = null
@@ -127,54 +100,21 @@ async function loadGlobalNotifications() {
   }
 }
 
-async function createGlobalNotification() {
+async function setGlobalNotificationEnabled(n: GlobalNotificationDto, enabled: boolean) {
   globalNotificationsError.value = null
   try {
-    await adminCreateNotification({
-      level: notificationForm.value.level,
-      title: notificationForm.value.title,
-      message: notificationForm.value.message,
-      enabled: notificationForm.value.enabled,
-      startsAtIso: localDateTimeToIsoOrNull(notificationForm.value.startsAtLocal),
-      endsAtIso: localDateTimeToIsoOrNull(notificationForm.value.endsAtLocal),
-    })
-
-    notificationForm.value.title = ''
-    notificationForm.value.message = ''
-    notificationForm.value.startsAtLocal = ''
-    notificationForm.value.endsAtLocal = ''
-
-    await loadGlobalNotifications()
-    toast.success('Notification created')
-  } catch (e: any) {
-    const detail = e?.message ? String(e.message) : 'Failed to create notification'
-    globalNotificationsError.value = detail
-    toast.error('Failed to create notification')
-  }
-}
-
-async function toggleGlobalNotificationEnabled(n: GlobalNotificationDto) {
-  globalNotificationsError.value = null
-  try {
-    await adminPatchNotification(n.id, { enabled: !n.enabled })
-    await loadGlobalNotifications()
+    await adminPatchNotification(n.id, { enabled })
+    globalNotifications.value = globalNotifications.value.map((x) => (x.id === n.id ? { ...x, enabled } : x))
   } catch (e: any) {
     globalNotificationsError.value = e?.message ? String(e.message) : 'Failed to update notification'
     toast.error('Failed to update notification')
   }
 }
 
-async function deleteGlobalNotification(n: GlobalNotificationDto) {
-  if (!confirm(`Delete notification "${n.title}"?`)) return
-  globalNotificationsError.value = null
-  try {
-    await adminDeleteNotification(n.id)
-    await loadGlobalNotifications()
-    toast.success('Notification deleted')
-  } catch (e: any) {
-    globalNotificationsError.value = e?.message ? String(e.message) : 'Failed to delete notification'
-    toast.error('Failed to delete notification')
-  }
+function onGlobalNotificationEnabledChange(n: GlobalNotificationDto, e: Event) {
+  const target = e.target as HTMLInputElement | null
+  const enabled = Boolean(target?.checked)
+  void setGlobalNotificationEnabled(n, enabled)
 }
 
 async function loadHubSpotOAuthStatus() {
@@ -966,67 +906,21 @@ function toggleFeature(key: keyof AdminSettings['features']) {
           <div class="flex items-center justify-between gap-3">
             <div>
               <h3 class="text-base font-semibold text-white">Notifications</h3>
-              <p class="text-xs text-white/70">Create banners shown to all portal users.</p>
+              <p class="text-xs text-white/70">Enable/disable global banners.</p>
             </div>
+            <RouterLink
+              to="/admin/notifications"
+              class="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/15"
+            >
+              Manage
+            </RouterLink>
           </div>
 
           <div v-if="globalNotificationsError" class="mt-4 rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-white/80">
             {{ globalNotificationsError }}
           </div>
 
-          <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label class="ui-label">Level</label>
-              <select v-model="notificationForm.level" class="ui-input mt-1">
-                <option value="info">Info</option>
-                <option value="success">Success</option>
-                <option value="warning">Warning</option>
-                <option value="danger">Danger</option>
-                <option value="dark">Dark</option>
-              </select>
-            </div>
-
-            <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
-              <span>Enabled</span>
-              <input v-model="notificationForm.enabled" type="checkbox" class="h-5 w-5" />
-            </label>
-
-            <div class="md:col-span-2">
-              <label class="ui-label">Title</label>
-              <input v-model="notificationForm.title" class="ui-input mt-1" type="text" placeholder="Planned maintenance" />
-            </div>
-
-            <div class="md:col-span-2">
-              <label class="ui-label">Message</label>
-              <textarea v-model="notificationForm.message" class="ui-input mt-1" rows="3" placeholder="We'll be offline from 22:00–23:00." />
-            </div>
-
-            <div>
-              <label class="ui-label">Starts at (optional)</label>
-              <input v-model="notificationForm.startsAtLocal" class="ui-input mt-1" type="datetime-local" />
-            </div>
-
-            <div>
-              <label class="ui-label">Ends at (optional)</label>
-              <input v-model="notificationForm.endsAtLocal" class="ui-input mt-1" type="datetime-local" />
-            </div>
-          </div>
-
-          <div class="mt-5 flex items-center justify-between gap-3">
-            <div class="text-xs text-white/60">
-              Notifications appear in the portal AppShell as alert banners.
-            </div>
-            <button
-              type="button"
-              class="rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
-              :disabled="globalNotificationsLoading || !notificationForm.title.trim() || !notificationForm.message.trim()"
-              @click="createGlobalNotification"
-            >
-              {{ globalNotificationsLoading ? 'Working…' : 'Create notification' }}
-            </button>
-          </div>
-
-          <div class="mt-6">
+          <div class="mt-4">
             <div class="flex items-center justify-between gap-3">
               <div class="text-sm font-semibold text-white">Existing</div>
               <button
@@ -1053,12 +947,6 @@ function toggleFeature(key: keyof AdminSettings['features']) {
                   <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
                       <span class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">{{ n.level }}</span>
-                      <span
-                        class="rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide"
-                        :class="n.enabled ? 'bg-emerald-500/15 text-emerald-200' : 'bg-white/10 text-white/60'"
-                      >
-                        {{ n.enabled ? 'enabled' : 'disabled' }}
-                      </span>
                     </div>
                     <div class="mt-1 text-sm font-semibold text-white">{{ n.title }}</div>
                     <div class="mt-1 text-xs text-white/70">{{ n.message }}</div>
@@ -1069,22 +957,15 @@ function toggleFeature(key: keyof AdminSettings['features']) {
                     </div>
                   </div>
 
-                  <div class="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      class="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/15"
-                      @click="toggleGlobalNotificationEnabled(n)"
-                    >
-                      {{ n.enabled ? 'Disable' : 'Enable' }}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/15"
-                      @click="deleteGlobalNotification(n)"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  <label class="flex items-center gap-2 text-xs font-semibold text-white/80">
+                    <input
+                      type="checkbox"
+                      class="h-5 w-5"
+                      :checked="n.enabled"
+                      @change="onGlobalNotificationEnabledChange(n, $event)"
+                    />
+                    Enabled
+                  </label>
                 </div>
               </div>
             </div>

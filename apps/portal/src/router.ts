@@ -28,6 +28,7 @@ const AdminEmailPage = () => import('./pages/admin/AdminEmailPage.vue')
 const AdminContentPage = () => import('./pages/admin/AdminContentPage.vue')
 const AdminUsersPage = () => import('./pages/admin/AdminUsersPage.vue')
 const AdminSettingsPage = () => import('./pages/admin/AdminSettingsPage.vue')
+const AdminNotificationsPage = () => import('./pages/admin/AdminNotificationsPage.vue')
 const AdminLoginPage = () => import('./pages/admin/AdminLoginPage.vue')
 const AdminHubspotAuditPage = () => import('./pages/admin/AdminHubspotAuditPage.vue')
 
@@ -73,6 +74,7 @@ export const routes: RouteRecordRaw[] = [
       { path: 'email', component: AdminEmailPage },
       { path: 'content', component: AdminContentPage },
       { path: 'users', component: AdminUsersPage },
+      { path: 'notifications', component: AdminNotificationsPage },
       { path: 'settings', component: AdminSettingsPage },
       { path: 'hubspot-audit', component: AdminHubspotAuditPage },
     ],
