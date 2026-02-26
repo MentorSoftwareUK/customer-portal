@@ -51,8 +51,9 @@ function youtubeEmbedUrl(youtubeId: string) {
 
 function videoThumb(video: VideoDto) {
   if (video.thumbnailUrl) return video.thumbnailUrl
-  if (!video.youtubeId) return ''
-  return youtubeThumb(video.youtubeId)
+  // Only use YouTube thumbnail for real YouTube videos (no direct videoUrl)
+  if (!video.videoUrl && video.youtubeId) return youtubeThumb(video.youtubeId)
+  return ''
 }
 
 function videoSourceType(url: string | undefined) {
@@ -247,7 +248,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
             >
               <div class="relative">
                 <img
-                  v-if="video.thumbnailUrl || video.youtubeId"
+                  v-if="video.thumbnailUrl || (!video.videoUrl && video.youtubeId)"
                   :src="videoThumb(video)"
                   :alt="video.title"
                   class="w-full h-40 object-cover"
@@ -312,7 +313,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
             >
               <div class="relative">
                 <img
-                  v-if="video.thumbnailUrl || video.youtubeId"
+                  v-if="video.thumbnailUrl || (!video.videoUrl && video.youtubeId)"
                   :src="videoThumb(video)"
                   :alt="video.title"
                   class="w-full h-40 object-cover"
@@ -377,7 +378,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
             >
               <div class="relative">
                 <img
-                  v-if="video.thumbnailUrl || video.youtubeId"
+                  v-if="video.thumbnailUrl || (!video.videoUrl && video.youtubeId)"
                   :src="videoThumb(video)"
                   :alt="video.title"
                   class="w-full h-40 object-cover"

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { env } from '../env'
 import { requireAuth } from '../auth/requireAuth'
 import { getAdminSettings } from '../store/settings'
+import { hubspotListHubDbRows } from '../integrations/hubspot'
 
 export type Provision = 'all' | 'supported-accommodation' | 'childrens-home' | 'over-18'
 
@@ -330,8 +331,77 @@ export const videosRoutes: FastifyPluginAsync = async (app) => {
     return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
   }
 
+  const extractYoutubeId = (value: unknown): string => {
+    const raw = String(value ?? '').trim()
+    if (!raw) return ''
+    const m = raw.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)
+    return m?.[1] ?? raw
+  }
+
+  const parseTags = (value: unknown): string[] => {
+    if (!value) return []
+    const raw = String(value)
+    return raw
+      .split(/[,;]+/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+  }
+
+  // Build VideoDto list from HubDB rows (primary path — has thumbnail URLs).
+  const mapHubDbRows = (
+    rows: Array<{ id: number | string; values: Record<string, unknown>; updatedAt?: string | null; createdAt?: string | null }>,
+    defaultProvision: Provision,
+  ): Array<VideoDto & { _popular: boolean; _ts: number }> => {
+    const getValue = (values: Record<string, unknown>, keys: string[]) => {
+      for (const key of keys) {
+        const v = normalizeValue(values[key])
+        if (v != null && v !== '') return v
+      }
+      return undefined
+    }
+
+    const mapped: Array<VideoDto & { _popular: boolean; _ts: number }> = []
+    for (const row of rows) {
+      const values = row.values ?? {}
+      const youtubeRaw = getValue(values, ['youtube_url', 'youtube_id', 'youtubeId', 'youtube', 'youtubeUrl'])
+      const youtubeId = youtubeRaw ? extractYoutubeId(youtubeRaw) : ''
+      const videoUrl = String(getValue(values, ['video_url', 'videoUrl', 'url', 'file', 'video', 'video_file']) ?? '')
+      const thumbnailUrl = String(getValue(values, ['thumbnail_url', 'thumbnailUrl', 'thumbnail', 'thumb']) ?? '')
+      const title = String(getValue(values, ['title', 'video_title', 'name']) ?? 'Untitled video')
+      const category = String(getValue(values, ['category', 'topic', 'type']) ?? 'Training')
+      const authorName = String(getValue(values, ['author_name', 'author', 'presenter', 'owner']) ?? 'Mentor')
+      const provision = parseProvision(getValue(values, ['provision', 'audience']), defaultProvision)
+      const productVersion = parseProductVersion(getValue(values, ['product_version', 'productVersion', 'version']))
+      const keywords = parseTags(getValue(values, ['keywords', 'tags', 'tag', 'labels']))
+      const popularRaw = getValue(values, ['popular', 'is_popular', 'featured', 'is_featured'])
+      const isPopular = Boolean(popularRaw) && String(popularRaw).toLowerCase() !== 'false'
+      const publishedAt = String(getValue(values, ['published_at', 'publish_date', 'date']) ?? row.updatedAt ?? row.createdAt ?? '')
+      const ts = publishedAt ? new Date(publishedAt).getTime() : 0
+
+      if (!videoUrl && !youtubeId) continue
+
+      const dto: VideoDto & { _popular: boolean; _ts: number } = {
+        youtubeId: youtubeId || `hubdb-${row.id}`,
+        title,
+        category,
+        authorName,
+        timeAgo: relativeTime(publishedAt || null),
+        provision,
+        productVersion,
+        _popular: isPopular,
+        _ts: ts,
+      }
+      if (videoUrl) dto.videoUrl = videoUrl
+      if (thumbnailUrl) dto.thumbnailUrl = thumbnailUrl
+      if (keywords.length) dto.keywords = keywords
+      mapped.push(dto)
+    }
+    return mapped
+  }
+
   app.get('/', async (req) => {
     const hubspotConfigured = Boolean(env.HUBSPOT_PRIVATE_APP_TOKEN)
+    const hubdbTableId = env.HUBSPOT_VIDEOS_HUBDB_TABLE_ID
 
     const parsedQuery = QuerySchema.safeParse(req.query)
     const productVersion = parsedQuery.success ? parsedQuery.data.productVersion : undefined
@@ -357,56 +427,63 @@ export const videosRoutes: FastifyPluginAsync = async (app) => {
     try {
       const settings = await getAdminSettings()
       const defaultProvision = settings.contentGating.videosDefaultProvision ?? 'all'
-      const files = await listHubSpotFiles()
-      const videos = files.filter(isVideoFile)
 
-      const mapped: Array<VideoDto & { _popular: boolean; _ts: number }> = []
-      for (const file of videos) {
-        const videoUrl = extractFileUrl(file)
-        if (!videoUrl) continue
+      let mapped: Array<VideoDto & { _popular: boolean; _ts: number }> = []
 
-        const keywords = collectKeywords(file)
-        const keywordsLower = keywords.map((k) => k.toLowerCase())
-        const haystack = [
-          file.name,
-          file.title,
-          file.path,
-          file.folderPath,
-          file.meta?.description,
-          file.description,
-          keywords.join(','),
-        ]
-          .map((v) => String(v ?? '').toLowerCase())
-          .join(' ')
+      if (hubdbTableId) {
+        // Primary path: HubDB table has thumbnail_url, proper titles, categories etc.
+        const rows = await hubspotListHubDbRows({ tableId: hubdbTableId })
+        mapped = mapHubDbRows(rows, defaultProvision)
+      } else {
+        // Fallback: filemanager (no thumbnails, but still lists videos)
+        const files = await listHubSpotFiles()
+        const videos = files.filter(isVideoFile)
 
-        const provision = parseProvision(haystack, defaultProvision)
-        const productVersion = parseProductVersion(haystack)
-        const isPopular = keywordsLower.includes('popular')
+        for (const file of videos) {
+          const videoUrl = extractFileUrl(file)
+          if (!videoUrl) continue
 
-        const updatedAt = toIso(file.updatedAt)
-        const createdAt = toIso(file.createdAt)
-        const publishedAt = updatedAt ?? createdAt
-        const ts = publishedAt ? new Date(publishedAt).getTime() : 0
+          const keywords = collectKeywords(file)
+          const keywordsLower = keywords.map((k) => k.toLowerCase())
+          const haystack = [
+            file.name,
+            file.title,
+            file.path,
+            file.folderPath,
+            file.meta?.description,
+            file.description,
+            keywords.join(','),
+          ]
+            .map((v) => String(v ?? '').toLowerCase())
+            .join(' ')
 
-        const id = String(file.id ?? file.fileId ?? videoUrl)
-        const dto: VideoDto & { _popular: boolean; _ts: number } = {
-          youtubeId: `hubspot-file-${id}`,
-          title: inferTitle(file),
-          category: inferCategory(file),
-          authorName: inferAuthorName(file),
-          timeAgo: relativeTime(publishedAt),
-          provision,
-          productVersion,
-          videoUrl,
-          _popular: isPopular,
-          _ts: ts,
+          const provision = parseProvision(haystack, defaultProvision)
+          const productVersion = parseProductVersion(haystack)
+          const isPopular = keywordsLower.includes('popular')
+
+          const updatedAt = toIso(file.updatedAt)
+          const createdAt = toIso(file.createdAt)
+          const publishedAt = updatedAt ?? createdAt
+          const ts = publishedAt ? new Date(publishedAt).getTime() : 0
+
+          const id = String(file.id ?? file.fileId ?? videoUrl)
+          const dto: VideoDto & { _popular: boolean; _ts: number } = {
+            youtubeId: `hubspot-file-${id}`,
+            title: inferTitle(file),
+            category: inferCategory(file),
+            authorName: inferAuthorName(file),
+            timeAgo: relativeTime(publishedAt),
+            provision,
+            productVersion,
+            videoUrl,
+            _popular: isPopular,
+            _ts: ts,
+          }
+          if (keywords.length) dto.keywords = keywords
+          const thumbnailUrl = inferThumbnailUrl(file)
+          if (thumbnailUrl) dto.thumbnailUrl = thumbnailUrl
+          mapped.push(dto)
         }
-
-        if (keywords.length) dto.keywords = keywords
-        const thumbnailUrl = inferThumbnailUrl(file)
-        if (thumbnailUrl) dto.thumbnailUrl = thumbnailUrl
-
-        mapped.push(dto)
       }
 
       mapped.sort((a, b) => b._ts - a._ts)
@@ -427,10 +504,7 @@ export const videosRoutes: FastifyPluginAsync = async (app) => {
         .filter(filterForProductVersion)
         .filter(filterForKeyword)
 
-      return {
-        recentVideos,
-        popularVideos,
-      }
+      return { recentVideos, popularVideos }
     } catch (e) {
       return {
         recentVideos: [] as VideoDto[],
