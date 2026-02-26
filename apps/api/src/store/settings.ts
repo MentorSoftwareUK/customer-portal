@@ -27,6 +27,7 @@ export type AdminSettings = {
     meetingsEnabled: boolean
     paymentsEnabled: boolean
     eventRegistrationsEnabled: boolean
+    globalNotificationsEnabled: boolean
   }
   communications: {
     emailFromName: string
@@ -116,6 +117,7 @@ export const AdminSettingsSchema = z.object({
       meetingsEnabled: z.boolean().optional(),
       paymentsEnabled: z.boolean().optional(),
       eventRegistrationsEnabled: z.boolean().optional(),
+      globalNotificationsEnabled: z.boolean().optional(),
     })
     .optional(),
   communications: z
@@ -209,6 +211,7 @@ function defaults(): AdminSettings {
       meetingsEnabled: true,
       paymentsEnabled: true,
       eventRegistrationsEnabled: true,
+      globalNotificationsEnabled: true,
     },
     communications: {
       emailFromName: 'Mentor',

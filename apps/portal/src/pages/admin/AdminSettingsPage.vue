@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
-  adminListNotifications,
-  adminPatchNotification,
   disconnectHubSpotOAuth,
   getAdminSettings,
   getHubSpotOAuthStatus,
   initiateHubSpotOAuth,
   patchAdminSettings,
   type AdminSettings,
-  type GlobalNotificationDto,
   type HubSpotOAuthStatus,
 } from '../../lib/api'
 import { loadFeatureFlags } from '../../lib/featureFlags'
@@ -45,10 +42,6 @@ const settings = ref<AdminSettings | null>(null)
 const hubspotOAuthStatus = ref<HubSpotOAuthStatus | null>(null)
 const hubspotOAuthLoading = ref(false)
 const hubspotConnectedBanner = ref(false)
-
-const globalNotificationsLoading = ref(false)
-const globalNotificationsError = ref<string | null>(null)
-const globalNotifications = ref<GlobalNotificationDto[]>([])
 
 const lastSavedSnapshot = ref<string>('')
 
@@ -86,36 +79,6 @@ async function load() {
   }
 }
 
-async function loadGlobalNotifications() {
-  globalNotificationsLoading.value = true
-  globalNotificationsError.value = null
-  try {
-    const res = await adminListNotifications()
-    globalNotifications.value = res.notifications
-  } catch (e: any) {
-    globalNotificationsError.value = e?.message ? String(e.message) : 'Failed to load notifications'
-    globalNotifications.value = []
-  } finally {
-    globalNotificationsLoading.value = false
-  }
-}
-
-async function setGlobalNotificationEnabled(n: GlobalNotificationDto, enabled: boolean) {
-  globalNotificationsError.value = null
-  try {
-    await adminPatchNotification(n.id, { enabled })
-    globalNotifications.value = globalNotifications.value.map((x) => (x.id === n.id ? { ...x, enabled } : x))
-  } catch (e: any) {
-    globalNotificationsError.value = e?.message ? String(e.message) : 'Failed to update notification'
-    toast.error('Failed to update notification')
-  }
-}
-
-function onGlobalNotificationEnabledChange(n: GlobalNotificationDto, e: Event) {
-  const target = e.target as HTMLInputElement | null
-  const enabled = Boolean(target?.checked)
-  void setGlobalNotificationEnabled(n, enabled)
-}
 
 async function loadHubSpotOAuthStatus() {
   try {
@@ -251,7 +214,6 @@ onMounted(async () => {
     window.history.replaceState({}, '', nextUrl)
   }
   await load()
-  await loadGlobalNotifications()
   await nextTick()
   observeSections()
   scrollToHashSectionIfPresent()
@@ -906,69 +868,15 @@ function toggleFeature(key: keyof AdminSettings['features']) {
           <div class="flex items-center justify-between gap-3">
             <div>
               <h3 class="text-base font-semibold text-white">Notifications</h3>
-              <p class="text-xs text-white/70">Enable/disable global banners.</p>
+              <p class="text-xs text-white/70">Turn global banners on/off for all users.</p>
             </div>
-            <RouterLink
-              to="/admin/notifications"
-              class="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/15"
-            >
-              Manage
-            </RouterLink>
           </div>
 
-          <div v-if="globalNotificationsError" class="mt-4 rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-            {{ globalNotificationsError }}
-          </div>
-
-          <div class="mt-4">
-            <div class="flex items-center justify-between gap-3">
-              <div class="text-sm font-semibold text-white">Existing</div>
-              <button
-                type="button"
-                class="rounded-md bg-white/10 px-3 py-1 text-xs font-semibold text-white/80 hover:bg-white/15"
-                :disabled="globalNotificationsLoading"
-                @click="loadGlobalNotifications"
-              >
-                Refresh
-              </button>
-            </div>
-
-            <div v-if="globalNotificationsLoading" class="mt-3 text-xs text-white/60">Loading…</div>
-
-            <div v-else-if="!globalNotifications.length" class="mt-3 text-xs text-white/60">No notifications yet.</div>
-
-            <div v-else class="mt-3 space-y-2">
-              <div
-                v-for="n in globalNotifications"
-                :key="n.id"
-                class="rounded-lg border border-white/10 bg-white/5 p-3"
-              >
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <span class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">{{ n.level }}</span>
-                    </div>
-                    <div class="mt-1 text-sm font-semibold text-white">{{ n.title }}</div>
-                    <div class="mt-1 text-xs text-white/70">{{ n.message }}</div>
-                    <div v-if="n.startsAtIso || n.endsAtIso" class="mt-2 text-[11px] text-white/50">
-                      <span v-if="n.startsAtIso">Starts: {{ new Date(n.startsAtIso).toLocaleString() }}</span>
-                      <span v-if="n.startsAtIso && n.endsAtIso"> · </span>
-                      <span v-if="n.endsAtIso">Ends: {{ new Date(n.endsAtIso).toLocaleString() }}</span>
-                    </div>
-                  </div>
-
-                  <label class="flex items-center gap-2 text-xs font-semibold text-white/80">
-                    <input
-                      type="checkbox"
-                      class="h-5 w-5"
-                      :checked="n.enabled"
-                      @change="onGlobalNotificationEnabledChange(n, $event)"
-                    />
-                    Enabled
-                  </label>
-                </div>
-              </div>
-            </div>
+          <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
+              <span>Enable global notifications</span>
+              <input v-model="settings.features.globalNotificationsEnabled" type="checkbox" class="h-5 w-5" />
+            </label>
           </div>
         </section>
       </div>

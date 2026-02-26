@@ -788,6 +788,7 @@ export type AdminSettings = {
     meetingsEnabled: boolean
     paymentsEnabled: boolean
     eventRegistrationsEnabled: boolean
+    globalNotificationsEnabled: boolean
   }
   communications: {
     emailFromName: string
@@ -975,6 +976,7 @@ export type FeatureFlags = {
   meetingsEnabled: boolean
   paymentsEnabled: boolean
   eventRegistrationsEnabled: boolean
+  globalNotificationsEnabled: boolean
 }
 
 export async function getFeatureFlags(): Promise<{ features: FeatureFlags }> {

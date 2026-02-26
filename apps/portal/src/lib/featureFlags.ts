@@ -10,6 +10,7 @@ const featureFlags = ref<FeatureFlags>({
   meetingsEnabled: false,
   paymentsEnabled: false,
   eventRegistrationsEnabled: false,
+  globalNotificationsEnabled: false,
 })
 const featureFlagsLoaded = ref(false)
 let inflight: Promise<void> | null = null
@@ -36,6 +37,7 @@ export async function loadFeatureFlags(force = false) {
         meetingsEnabled: false,
         paymentsEnabled: false,
         eventRegistrationsEnabled: false,
+        globalNotificationsEnabled: false,
       }
     } finally {
       featureFlagsLoaded.value = true

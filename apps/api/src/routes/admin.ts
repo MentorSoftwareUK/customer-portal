@@ -51,6 +51,7 @@ const PatchSettingsSchema = z.object({
       meetingsEnabled: z.boolean().optional(),
       paymentsEnabled: z.boolean().optional(),
       eventRegistrationsEnabled: z.boolean().optional(),
+      globalNotificationsEnabled: z.boolean().optional(),
     })
     .optional(),
   communications: z

@@ -85,6 +85,16 @@ function notificationContainerClass(level: NotificationLevel): string {
 }
 
 async function loadGlobalNotifications() {
+  if (!featureFlagsLoaded.value) {
+    globalNotifications.value = []
+    return
+  }
+
+  if (!featureFlags.value.globalNotificationsEnabled) {
+    globalNotifications.value = []
+    return
+  }
+
   try {
     const res = await listGlobalNotifications()
     globalNotifications.value = res.notifications
@@ -147,6 +157,7 @@ onMounted(async () => {
     user.value = null
   }
 
+  await loadFeatureFlags()
   await loadOnboardingStatus(true)
   await loadNotifications()
   await loadGlobalNotifications()
