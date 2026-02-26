@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { listOrgTickets, type TicketDto } from '../lib/api'
 import { useFeatureFlags } from '../lib/featureFlags'
@@ -9,6 +9,13 @@ const tickets = ref<TicketDto[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const warning = ref<string | null>(null)
+
+const stats = computed(() => ({
+  total: tickets.value.length,
+  open: tickets.value.filter((t) => t.status === 'Open').length,
+  pending: tickets.value.filter((t) => t.status === 'Pending').length,
+  closed: tickets.value.filter((t) => t.status === 'Closed').length,
+}))
 const router = useRouter()
 const { featureFlags, loadFeatureFlags } = useFeatureFlags()
 
@@ -70,6 +77,26 @@ onMounted(async () => {
         </button>
       </template>
     </PageHeader>
+
+    <!-- Stat cards -->
+    <div v-if="!loading && !error && tickets.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-[#14192d] rounded-lg p-5 border border-white/10">
+        <div class="text-3xl font-bold text-white">{{ stats.total }}</div>
+        <div class="mt-1 text-sm text-gray-400">Total</div>
+      </div>
+      <div class="bg-[#14192d] rounded-lg p-5 border border-white/10">
+        <div class="text-3xl font-bold text-amber-300">{{ stats.open }}</div>
+        <div class="mt-1 text-sm text-gray-400">Open</div>
+      </div>
+      <div class="bg-[#14192d] rounded-lg p-5 border border-white/10">
+        <div class="text-3xl font-bold text-blue-300">{{ stats.pending }}</div>
+        <div class="mt-1 text-sm text-gray-400">Pending</div>
+      </div>
+      <div class="bg-[#14192d] rounded-lg p-5 border border-white/10">
+        <div class="text-3xl font-bold text-green-300">{{ stats.closed }}</div>
+        <div class="mt-1 text-sm text-gray-400">Closed</div>
+      </div>
+    </div>
 
     <div class="ui-surface relative shadow-md sm:rounded-lg overflow-hidden">
       <div v-if="error" class="border-b border-red-200 bg-red-50 p-4 text-sm text-red-800">
