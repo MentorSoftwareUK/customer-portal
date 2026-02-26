@@ -5,7 +5,20 @@
  * Mentor brand but with a cleaner, more modern layout than previous designs.
  */
 
+import { env } from '../env'
+
 // ─── Shared helpers ──────────────────────────────────────────────────────────
+
+function portalAssetUrl(assetPath: string) {
+  const base = (env.PORTAL_BASE_URL || '').trim().replace(/\/$/, '')
+  const path = assetPath.startsWith('/') ? assetPath : `/${assetPath}`
+  if (!base) return path
+  return `${base}${path}`
+}
+
+function mentorIconUrl() {
+  return portalAssetUrl('/New-Mentor-Icon@2x.png')
+}
 
 function googleCalendarUrl(params: {
   title: string
@@ -62,6 +75,8 @@ function brandedHeader(params: { eventTitle: string; hostName?: string | null })
     ? `Exclusive webinar with ${params.hostName}`
     : 'Mentor Webinar'
 
+  const iconUrl = mentorIconUrl()
+
   return `
         <!-- header -->
         <tr>
@@ -84,13 +99,17 @@ function brandedHeader(params: { eventTitle: string; hostName?: string | null })
                 </td>
                 <!-- logo + title -->
                 <td style="text-align:center;padding:20px 0 24px;">
-                  <!-- Mentor M badge -->
+                  <!-- Mentor logo -->
                   <table cellpadding="0" cellspacing="0" border="0" align="center">
                     <tr>
                       <td align="center">
-                        <div style="display:inline-block;width:52px;height:52px;border-radius:50%;background:#ffffff;border:2.5px solid #e7007e;text-align:center;line-height:52px;box-shadow:0 2px 8px rgba(231,0,126,0.2);">
-                          <span style="color:#e7007e;font-size:22px;font-weight:900;font-family:'Segoe UI',Arial,sans-serif;">M</span>
-                        </div>
+                        <img
+                          src="${escAttr(iconUrl)}"
+                          width="52"
+                          height="52"
+                          alt="Mentor"
+                          style="display:block;width:52px;height:52px;border-radius:50%;background:#ffffff;border:2.5px solid #e7007e;box-shadow:0 2px 8px rgba(231,0,126,0.2);"
+                        />
                       </td>
                     </tr>
                     <tr>

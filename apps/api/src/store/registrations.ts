@@ -59,7 +59,7 @@ export async function updateRegistrationById(id: string, patch: Partial<Registra
     { $set: patch },
     { returnDocument: 'after', projection: { _id: 0 } },
   )
-  return updated.value ?? null
+  return updated ?? null
 }
 
 export async function getRegistrationById(id: string) {

@@ -16,6 +16,8 @@ import {
   buildReminderHtml,
   buildThankYouHtml,
 } from '../integrations/emailTemplates'
+import { getEmailTemplateOverride } from '../store/emailTemplateOverrides'
+import { renderTemplate } from '../email/renderTemplate'
 
 function subjectFor(job: EmailJob, eventTitle: string) {
   switch (job.type) {
@@ -158,6 +160,28 @@ export async function runEmailWorkerOnce(logger: FastifyBaseLogger) {
       }
 
       const subject = subjectFor(job, evt.title)
+      const templateVars = {
+        recipientName,
+        eventTitle: evt.title,
+        eventDateLabel: evt.dateLabel,
+        timezoneLabel: evt.timezoneLabel,
+        platform: evt.platform,
+        hostName: evt.hostName ?? null,
+        joinUrl: evt.joinUrl ?? null,
+        webinarRecordingUrl: evt.webinarRecordingUrl ?? null,
+        webinarSlides: evt.webinarSlides ?? null,
+        blogPostUrl: (evt as any).blogPostUrl ?? null,
+        startAt: evt.startAt,
+        durationMins: evt.durationMins,
+        description: evt.description ?? null,
+        registerUrl: `${env.PORTAL_BASE_URL}/app/events/${evt.id}`,
+      }
+
+      const override = await getEmailTemplateOverride(job.type)
+      const overrideSubject = override?.subject ? renderTemplate(override.subject, templateVars, 'subject') : null
+      const overrideText = override?.text ? renderTemplate(override.text, templateVars, 'text') : null
+      const overrideHtml = override?.html ? renderTemplate(override.html, templateVars, 'html') : null
+
       const sharedParams = {
         job,
         recipientName,
@@ -171,10 +195,12 @@ export async function runEmailWorkerOnce(logger: FastifyBaseLogger) {
         webinarSlides: evt.webinarSlides ?? null,
         blogPostUrl: (evt as any).blogPostUrl ?? null,
       }
-      const text = buildText(sharedParams)
+      const text = overrideText ?? buildText(sharedParams)
       let html: string | undefined
       try {
-        if (job.type === 'event_invite') {
+        if (overrideHtml) {
+          html = overrideHtml
+        } else if (job.type === 'event_invite') {
           const registerUrl = `${env.PORTAL_BASE_URL}/app/events/${evt.id}`
           html = buildInviteHtml({
             recipientName,
@@ -224,7 +250,7 @@ export async function runEmailWorkerOnce(logger: FastifyBaseLogger) {
         logger.warn({ htmlErr }, 'Failed to build HTML email; falling back to plain text')
       }
 
-      await sendTextEmail({ to: job.to, subject, text, html })
+      await sendTextEmail({ to: job.to, subject: overrideSubject ?? subject, text, html })
       await markEmailJobSent({ id: job.id, nowIso })
     } catch (err: any) {
       const message = err?.message ? String(err.message) : String(err)

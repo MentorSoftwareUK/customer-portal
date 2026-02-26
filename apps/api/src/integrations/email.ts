@@ -121,6 +121,9 @@ export async function sendTextEmail(params: { to: string; subject: string; text:
 }
 
 function buildOtpEmailHtml(code: string, ttlMins: number): string {
+  const base = (env.PORTAL_BASE_URL || '').trim().replace(/\/$/, '')
+  const logoUrl = `${base}/New-Mentor-Icon@2x.png`.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -138,7 +141,13 @@ function buildOtpEmailHtml(code: string, ttlMins: number): string {
           <tr>
             <td style="background:#14192d;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center">
               <!-- Logo mark -->
-              <div style="display:inline-block;width:52px;height:52px;border-radius:50%;background:#e7007e;line-height:52px;text-align:center;font-size:24px;font-weight:700;color:#ffffff;font-family:Poppins,Arial,sans-serif;margin-bottom:12px">M</div>
+              <img
+                src="${logoUrl}"
+                width="52"
+                height="52"
+                alt="Mentor"
+                style="display:block;width:52px;height:52px;border-radius:50%;background:#ffffff;border:2.5px solid #e7007e;box-shadow:0 2px 8px rgba(231,0,126,0.2);margin:0 auto 12px;"
+              />
               <p style="margin:0;font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.3px">Mentor</p>
               <p style="margin:4px 0 0;font-size:12px;font-weight:400;color:#9ca3af">Customer Portal</p>
             </td>

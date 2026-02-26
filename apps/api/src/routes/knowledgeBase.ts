@@ -291,14 +291,14 @@ export const knowledgeBaseRoutes: FastifyPluginAsync = async (app) => {
         throw new Error(`Content Search API failed: ${searchRes.status}`)
       }
 
-      const searchData: { total: number; results: Array<{ 
+      const searchData = (await searchRes.json()) as { total: number; results: Array<{ 
         id: number
         title: string
         description: string
         category: string
         url: string
         tags: string[]
-      }> } = await searchRes.json()
+      }> }
 
       const mapped = searchData.results.map((article) => {
         const tags = article.tags || []

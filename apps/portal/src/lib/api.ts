@@ -881,6 +881,91 @@ export async function patchAdminSettings(body: PatchAdminSettingsRequest): Promi
   return (await res.json()) as { settings: AdminSettings }
 }
 
+export type AdminEmailTemplateKey = 'event_invite' | 'event_confirmation' | 'event_reminder' | 'event_thank_you'
+
+export type AdminEmailTemplateOverride = {
+  key: AdminEmailTemplateKey
+  subject: string | null
+  html: string | null
+  text: string | null
+  updatedAtIso: string
+}
+
+export type AdminEmailTemplateListItem = {
+  key: AdminEmailTemplateKey
+  label: string
+  description: string
+  placeholders: string[]
+  override: AdminEmailTemplateOverride | null
+}
+
+export async function listAdminEmailTemplates(): Promise<{ templates: AdminEmailTemplateListItem[] }> {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/email/templates`, { method: 'GET' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin email templates fetch failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { templates: AdminEmailTemplateListItem[] }
+}
+
+export type AdminEmailTemplatePreviewResponse = {
+  key: AdminEmailTemplateKey
+  label: string
+  description: string
+  placeholders: string[]
+  vars: Record<string, any>
+  default: { subject: string; html: string }
+  override: (AdminEmailTemplateOverride & { rendered: { subject: string | null; text: string | null; html: string | null } | null }) | null
+  effective: { subject: string; text: string | null; html: string; source: 'default' | 'override' }
+}
+
+export async function getAdminEmailTemplatePreview(key: AdminEmailTemplateKey): Promise<AdminEmailTemplatePreviewResponse> {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/email/templates/${key}/preview`, { method: 'GET' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin email template preview failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as AdminEmailTemplatePreviewResponse
+}
+
+export async function upsertAdminEmailTemplate(
+  key: AdminEmailTemplateKey,
+  body: { subject?: string | null; html?: string | null; text?: string | null },
+): Promise<{ override: AdminEmailTemplateOverride | null }> {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/email/templates/${key}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin email template update failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { override: AdminEmailTemplateOverride | null }
+}
+
+export async function deleteAdminEmailTemplate(key: AdminEmailTemplateKey): Promise<{ ok: true }> {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/email/templates/${key}`, { method: 'DELETE' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin email template delete failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { ok: true }
+}
+
+export async function sendAdminEmailTemplateTest(key: AdminEmailTemplateKey, to?: string): Promise<{ ok: true; to: string; smtpConfigured: boolean }> {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/email/templates/${key}/test-send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(to ? { to } : {}),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin email template test-send failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { ok: true; to: string; smtpConfigured: boolean }
+}
+
 export type FeatureFlags = {
   invoicesEnabled: boolean
   ticketsEnabled: boolean
