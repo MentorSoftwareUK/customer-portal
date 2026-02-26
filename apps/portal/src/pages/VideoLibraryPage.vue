@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ComponentPublicInstance } from 'vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { listVideos, type VideoDto } from '../lib/api'
 import { provisionFilterLabel, readProvisionFilter, type ProvisionFilter, writeProvisionFilter } from '../lib/provision'
@@ -33,6 +34,79 @@ const warning = ref<string | undefined>(undefined)
 const lightboxOpen = ref(false)
 const activeVideo = ref<VideoDto | null>(null)
 let previousBodyOverflow: string | null = null
+
+const PREVIEW_MAX_IN_FLIGHT = 3
+const previewEnabled = ref<Record<string, true>>({})
+const previewDone = ref<Record<string, true>>({})
+const previewQueue = ref<string[]>([])
+const previewInFlight = ref(0)
+let previewObserver: IntersectionObserver | null = null
+const previewTargets = new Map<string, Element>()
+
+function videoKey(video: VideoDto) {
+  return video.youtubeId || video.videoUrl || video.title
+}
+
+function isPreviewCandidate(video: VideoDto) {
+  return Boolean(video.videoUrl) && !video.thumbnailUrl
+}
+
+function isPreviewEnabled(video: VideoDto) {
+  const key = videoKey(video)
+  return Boolean(previewEnabled.value[key])
+}
+
+function enqueuePreview(key: string) {
+  if (previewEnabled.value[key] || previewDone.value[key]) return
+  if (previewQueue.value.includes(key)) return
+  previewQueue.value.push(key)
+  processPreviewQueue()
+}
+
+function processPreviewQueue() {
+  while (previewInFlight.value < PREVIEW_MAX_IN_FLIGHT && previewQueue.value.length > 0) {
+    const next = previewQueue.value.shift()
+    if (!next) break
+    if (previewEnabled.value[next] || previewDone.value[next]) continue
+    previewEnabled.value = { ...previewEnabled.value, [next]: true }
+    previewInFlight.value += 1
+  }
+}
+
+function markPreviewDone(key: string) {
+  if (previewDone.value[key]) return
+  previewDone.value = { ...previewDone.value, [key]: true }
+  if (previewInFlight.value > 0) previewInFlight.value -= 1
+  processPreviewQueue()
+}
+
+function normalizeRefTarget(target: Element | ComponentPublicInstance | null): Element | null {
+  if (!target) return null
+  if (target instanceof Element) return target
+  const maybeEl = (target as ComponentPublicInstance).$el
+  return maybeEl instanceof Element ? maybeEl : null
+}
+
+function registerPreviewTarget(target: Element | ComponentPublicInstance | null, video: VideoDto) {
+  const el = normalizeRefTarget(target)
+  const key = videoKey(video)
+  const shouldObserve = isPreviewCandidate(video) && !previewDone.value[key]
+
+  const existing = previewTargets.get(key)
+  if (existing && (!el || existing !== el)) {
+    previewObserver?.unobserve(existing)
+    previewTargets.delete(key)
+  }
+
+  if (!el || !shouldObserve) return
+  try {
+    ;(el as HTMLElement).dataset.previewKey = key
+  } catch {
+    // ignore
+  }
+  previewTargets.set(key, el)
+  previewObserver?.observe(el)
+}
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -84,6 +158,22 @@ function onKeydown(e: KeyboardEvent) {
 
 onMounted(async () => {
   window.addEventListener('keydown', onKeydown)
+
+  try {
+    previewObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          const key = (entry.target as HTMLElement | null)?.dataset?.previewKey
+          if (key) enqueuePreview(key)
+        }
+      },
+      { rootMargin: '300px 0px' },
+    )
+  } catch {
+    previewObserver = null
+  }
+
   loading.value = true
   loadError.value = null
   try {
@@ -114,6 +204,13 @@ watch(lightboxOpen, (open) => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
+  try {
+    previewObserver?.disconnect()
+  } catch {
+    // ignore
+  }
+  previewObserver = null
+  previewTargets.clear()
   try {
     document.body.style.overflow = previousBodyOverflow ?? ''
     previousBodyOverflow = null
@@ -247,11 +344,21 @@ const isSearching = computed(() => query.value.trim().length > 0)
               :key="`latest-${video.youtubeId}`"
               type="button"
               class="group w-72 shrink-0 snap-start text-left ui-surface-muted overflow-hidden hover:shadow-md"
+              :ref="(el) => registerPreviewTarget(el, video)"
               @click="openLightbox(video)"
             >
               <div class="relative">
                 <template v-if="video.videoUrl && !video.thumbnailUrl">
-                  <video class="w-full h-40 object-cover" muted playsinline preload="metadata">
+                  <div v-if="!isPreviewEnabled(video)" class="w-full h-40 bg-gray-900/20 dark:bg-gray-700/30" />
+                  <video
+                    v-else
+                    class="w-full h-40 object-cover"
+                    muted
+                    playsinline
+                    preload="metadata"
+                    @loadeddata="markPreviewDone(videoKey(video))"
+                    @error="markPreviewDone(videoKey(video))"
+                  >
                     <source :src="videoPreviewUrl(video.videoUrl)" :type="videoSourceType(video.videoUrl)" />
                   </video>
                 </template>
@@ -306,11 +413,21 @@ const isSearching = computed(() => query.value.trim().length > 0)
               :key="`featured-${video.youtubeId}`"
               type="button"
               class="group w-72 shrink-0 snap-start text-left ui-surface-muted overflow-hidden hover:shadow-md"
+              :ref="(el) => registerPreviewTarget(el, video)"
               @click="openLightbox(video)"
             >
               <div class="relative">
                 <template v-if="video.videoUrl && !video.thumbnailUrl">
-                  <video class="w-full h-40 object-cover" muted playsinline preload="metadata">
+                  <div v-if="!isPreviewEnabled(video)" class="w-full h-40 bg-gray-900/20 dark:bg-gray-700/30" />
+                  <video
+                    v-else
+                    class="w-full h-40 object-cover"
+                    muted
+                    playsinline
+                    preload="metadata"
+                    @loadeddata="markPreviewDone(videoKey(video))"
+                    @error="markPreviewDone(videoKey(video))"
+                  >
                     <source :src="videoPreviewUrl(video.videoUrl)" :type="videoSourceType(video.videoUrl)" />
                   </video>
                 </template>
@@ -365,11 +482,21 @@ const isSearching = computed(() => query.value.trim().length > 0)
               :key="`all-${video.youtubeId}`"
               type="button"
               class="group block w-full text-left ui-surface-muted overflow-hidden hover:shadow-md"
+              :ref="(el) => registerPreviewTarget(el, video)"
               @click="openLightbox(video)"
             >
               <div class="relative">
                 <template v-if="video.videoUrl && !video.thumbnailUrl">
-                  <video class="w-full h-40 object-cover" muted playsinline preload="metadata">
+                  <div v-if="!isPreviewEnabled(video)" class="w-full h-40 bg-gray-900/20 dark:bg-gray-700/30" />
+                  <video
+                    v-else
+                    class="w-full h-40 object-cover"
+                    muted
+                    playsinline
+                    preload="metadata"
+                    @loadeddata="markPreviewDone(videoKey(video))"
+                    @error="markPreviewDone(videoKey(video))"
+                  >
                     <source :src="videoPreviewUrl(video.videoUrl)" :type="videoSourceType(video.videoUrl)" />
                   </video>
                 </template>
