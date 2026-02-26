@@ -16,6 +16,7 @@ const error = ref<string | null>(null)
 const notifications = ref<GlobalNotificationDto[]>([])
 
 const creating = ref(false)
+const removing = ref(false)
 const form = ref<{
   level: NotificationLevel
   title: string
@@ -29,6 +30,9 @@ const form = ref<{
   startsAtLocal: '',
   endsAtLocal: '',
 })
+
+const removeModalOpen = ref(false)
+const removeTarget = ref<GlobalNotificationDto | null>(null)
 
 const canCreate = computed(() => form.value.title.trim().length > 0 && form.value.message.trim().length > 0)
 
@@ -83,16 +87,33 @@ async function create() {
   }
 }
 
-async function del(n: GlobalNotificationDto) {
-  if (!confirm(`Remove notification "${n.title}"?`)) return
+function openRemoveModal(n: GlobalNotificationDto) {
+  removeTarget.value = n
+  removeModalOpen.value = true
+}
+
+function closeRemoveModal() {
+  if (removing.value) return
+  removeModalOpen.value = false
+  removeTarget.value = null
+}
+
+async function confirmRemove() {
+  const n = removeTarget.value
+  if (!n) return
+
   error.value = null
+  removing.value = true
   try {
     await adminDeleteNotification(n.id)
     notifications.value = notifications.value.filter((x) => x.id !== n.id)
     toast.success('Notification removed')
+    closeRemoveModal()
   } catch (e: any) {
     error.value = e?.message ? String(e.message) : 'Failed to delete notification'
     toast.error('Failed to remove notification')
+  } finally {
+    removing.value = false
   }
 }
 
@@ -204,12 +225,69 @@ onMounted(load)
               <button
                 type="button"
                 class="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/15"
-                @click="del(n)"
+                @click="openRemoveModal(n)"
               >
                 Remove
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flowbite-style confirmation modal -->
+    <div
+      v-if="removeModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4"
+      role="dialog"
+      aria-modal="true"
+      @click.self="closeRemoveModal"
+    >
+      <div class="w-full max-w-md rounded-lg bg-white shadow dark:bg-gray-800">
+        <div class="flex items-start justify-between rounded-t border-b p-4 dark:border-gray-600">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Remove notification</h3>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">This will stop showing the banner to users.</p>
+          </div>
+          <button
+            type="button"
+            class="ml-2 inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white"
+            :disabled="removing"
+            @click="closeRemoveModal"
+            aria-label="Close modal"
+          >
+            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-2 p-4">
+          <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ removeTarget?.title }}</div>
+          <div class="text-sm text-gray-700 dark:text-gray-300">{{ removeTarget?.message }}</div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 rounded-b border-t p-4 dark:border-gray-600">
+          <button
+            type="button"
+            class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+            :disabled="removing"
+            @click="closeRemoveModal"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+            :disabled="removing"
+            @click="confirmRemove"
+          >
+            {{ removing ? 'Removing…' : 'Remove' }}
+          </button>
         </div>
       </div>
     </div>
