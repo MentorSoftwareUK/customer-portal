@@ -271,6 +271,26 @@ function scrollToSection(id: (typeof sections)[number]['id']) {
   const el = document.getElementById(id)
   if (!el) return
   el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  try {
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}#${id}`)
+    }
+  } catch {
+    // ignore
+  }
+}
+
+function scrollToHashSectionIfPresent() {
+  try {
+    if (typeof window === 'undefined') return
+    const hash = (window.location.hash || '').replace(/^#/, '')
+    if (!hash) return
+    const match = (sections as ReadonlyArray<{ id: string }>).find((s) => s.id === hash)
+    if (!match) return
+    scrollToSection(match.id as any)
+  } catch {
+    // ignore
+  }
 }
 
 watch(
@@ -294,6 +314,7 @@ onMounted(async () => {
   await loadGlobalNotifications()
   await nextTick()
   observeSections()
+  scrollToHashSectionIfPresent()
   if (hubspotConnectedBanner.value) {
     await loadHubSpotOAuthStatus()
     setTimeout(() => void loadHubSpotOAuthStatus(), 1000)

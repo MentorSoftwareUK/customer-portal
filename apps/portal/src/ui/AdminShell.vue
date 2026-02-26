@@ -12,10 +12,13 @@ const isMac = typeof navigator !== 'undefined' && navigator.platform.toLowerCase
 const route = useRoute()
 const router = useRouter()
 const currentPath = computed(() => route.path)
+const currentHash = computed(() => route.hash)
 
 const isActive = (to: string) => {
   return currentPath.value === to || currentPath.value.startsWith(`${to}/`)
 }
+
+const isNotificationsLinkActive = computed(() => currentPath.value === '/admin/settings' && currentHash.value === '#notifications')
 
 const findOpen = ref(false)
 const findSeed = ref('')
@@ -510,6 +513,27 @@ onUnmounted(() => {
                 ></path>
               </svg>
               <span class="ml-3">System settings</span>
+            </RouterLink>
+          </li>
+
+          <li>
+            <RouterLink
+              to="/admin/settings#notifications"
+              class="group flex items-center rounded-lg p-2 text-base font-medium"
+              :class="isNotificationsLinkActive ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+            >
+              <svg
+                aria-hidden="true"
+                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"
+                ></path>
+              </svg>
+              <span class="ml-3">Notifications</span>
             </RouterLink>
           </li>
         </ul>
