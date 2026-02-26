@@ -142,6 +142,18 @@ function videoPreviewUrl(url: string | undefined) {
   return `${url}#t=0.1`
 }
 
+function onPreviewLoadedMetadata(event: Event, key: string) {
+  const target = event.target
+  if (!(target instanceof HTMLVideoElement)) return
+  try {
+    const duration = target.duration
+    const targetTime = Number.isFinite(duration) && duration > 0 ? Math.min(0.1, duration / 2) : 0.1
+    if (Number.isFinite(targetTime) && targetTime >= 0) target.currentTime = targetTime
+  } catch {
+    markPreviewDone(key)
+  }
+}
+
 function openLightbox(video: VideoDto) {
   activeVideo.value = video
   lightboxOpen.value = true
@@ -356,7 +368,8 @@ const isSearching = computed(() => query.value.trim().length > 0)
                     muted
                     playsinline
                     preload="metadata"
-                    @loadeddata="markPreviewDone(videoKey(video))"
+                    @loadedmetadata="onPreviewLoadedMetadata($event, videoKey(video))"
+                    @seeked="markPreviewDone(videoKey(video))"
                     @error="markPreviewDone(videoKey(video))"
                   >
                     <source :src="videoPreviewUrl(video.videoUrl)" :type="videoSourceType(video.videoUrl)" />
@@ -425,7 +438,8 @@ const isSearching = computed(() => query.value.trim().length > 0)
                     muted
                     playsinline
                     preload="metadata"
-                    @loadeddata="markPreviewDone(videoKey(video))"
+                    @loadedmetadata="onPreviewLoadedMetadata($event, videoKey(video))"
+                    @seeked="markPreviewDone(videoKey(video))"
                     @error="markPreviewDone(videoKey(video))"
                   >
                     <source :src="videoPreviewUrl(video.videoUrl)" :type="videoSourceType(video.videoUrl)" />
@@ -494,7 +508,8 @@ const isSearching = computed(() => query.value.trim().length > 0)
                     muted
                     playsinline
                     preload="metadata"
-                    @loadeddata="markPreviewDone(videoKey(video))"
+                    @loadedmetadata="onPreviewLoadedMetadata($event, videoKey(video))"
+                    @seeked="markPreviewDone(videoKey(video))"
                     @error="markPreviewDone(videoKey(video))"
                   >
                     <source :src="videoPreviewUrl(video.videoUrl)" :type="videoSourceType(video.videoUrl)" />
