@@ -105,15 +105,15 @@ onMounted(async () => {
       :meta="loading ? 'Loading…' : `${tickets.length} ticket${tickets.length === 1 ? '' : 's'}`"
     >
       <template #actions>
-        <RouterLink to="/app/tickets" class="ui-btn-secondary">My tickets</RouterLink>
-        <button type="button" class="ui-btn-secondary" :disabled="loading" @click="refreshTickets">Refresh</button>
+        <RouterLink to="/app/tickets" class="ui-btn-secondary bg-white/10 text-white border-white/10 hover:bg-white/15">My tickets</RouterLink>
+        <button type="button" class="ui-btn-secondary bg-white/10 text-white border-white/10 hover:bg-white/15" :disabled="loading" @click="refreshTickets">Refresh</button>
       </template>
     </PageHeader>
 
     <!-- Stat cards with animated fill bars -->
-    <div v-if="!loading && !error" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div v-if="!loading && !error" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <!-- Total -->
-      <div class="bg-[#14192d] rounded-xl p-5 border border-white/10 col-span-2 lg:col-span-1 xl:col-span-1">
+      <div class="bg-[#14192d] rounded-xl p-5 border border-white/10 sm:col-span-2 lg:col-span-1">
         <div class="text-xs font-medium uppercase tracking-wider text-white/40 mb-2">Total</div>
         <div class="text-4xl font-bold text-white">{{ stats.total }}</div>
         <div class="mt-3 flex gap-1 h-1.5">
