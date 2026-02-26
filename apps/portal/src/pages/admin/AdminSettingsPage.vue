@@ -589,11 +589,11 @@ function toggleFeature(key: keyof AdminSettings['features']) {
           <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
               <span>Passwordless login</span>
-              <input v-model="settings.auth.allowPasswordless" type="checkbox" class="h-5 w-5" />
+              <input v-model="settings.auth.allowPasswordless" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
             </label>
             <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
               <span>Allow non-customer registration</span>
-              <input v-model="settings.auth.allowNonCustomerRegistration" type="checkbox" class="h-5 w-5" />
+              <input v-model="settings.auth.allowNonCustomerRegistration" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
             </label>
             <div>
               <label class="ui-label">Password minimum length</label>
@@ -601,11 +601,11 @@ function toggleFeature(key: keyof AdminSettings['features']) {
             </div>
             <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
               <span>Google OAuth</span>
-              <input v-model="settings.auth.allowOAuthGoogle" type="checkbox" class="h-5 w-5" />
+              <input v-model="settings.auth.allowOAuthGoogle" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
             </label>
             <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
               <span>Microsoft OAuth</span>
-              <input v-model="settings.auth.allowOAuthMicrosoft" type="checkbox" class="h-5 w-5" />
+              <input v-model="settings.auth.allowOAuthMicrosoft" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
             </label>
           </div>
         </section>
@@ -769,7 +769,7 @@ function toggleFeature(key: keyof AdminSettings['features']) {
                 <div class="text-sm font-medium text-white">Master switch</div>
                 <div class="text-xs text-white/70">Disable to pause all event emails.</div>
               </div>
-              <input v-model="settings.eventEmails.enabled" type="checkbox" class="h-5 w-5" />
+              <input v-model="settings.eventEmails.enabled" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -779,7 +779,7 @@ function toggleFeature(key: keyof AdminSettings['features']) {
                     <div class="text-sm font-medium text-white">Confirmation</div>
                     <div class="text-xs text-white/70">Sent after registration/payment.</div>
                   </div>
-                  <input v-model="settings.eventEmails.confirmationEnabled" type="checkbox" class="h-5 w-5" />
+                  <input v-model="settings.eventEmails.confirmationEnabled" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
                 </div>
               </div>
 
@@ -789,7 +789,7 @@ function toggleFeature(key: keyof AdminSettings['features']) {
                     <div class="text-sm font-medium text-white">Reminder</div>
                     <div class="text-xs text-white/70">Sent before the event.</div>
                   </div>
-                  <input v-model="settings.eventEmails.reminderEnabled" type="checkbox" class="h-5 w-5" />
+                  <input v-model="settings.eventEmails.reminderEnabled" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
                 </div>
                 <div class="mt-3">
                   <label class="text-xs font-medium text-white">Lead time (hours)</label>
@@ -809,7 +809,7 @@ function toggleFeature(key: keyof AdminSettings['features']) {
                     <div class="text-sm font-medium text-white">Thank you</div>
                     <div class="text-xs text-white/70">Sent after the event.</div>
                   </div>
-                  <input v-model="settings.eventEmails.thankYouEnabled" type="checkbox" class="h-5 w-5" />
+                  <input v-model="settings.eventEmails.thankYouEnabled" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
                 </div>
                 <div class="mt-3">
                   <label class="text-xs font-medium text-white">Delay (hours after event start)</label>
@@ -836,11 +836,11 @@ function toggleFeature(key: keyof AdminSettings['features']) {
           <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
               <span>Maintenance mode</span>
-              <input v-model="settings.system.maintenanceModeEnabled" type="checkbox" class="h-5 w-5" />
+              <input v-model="settings.system.maintenanceModeEnabled" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
             </label>
             <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
               <span>Demo data enabled</span>
-              <input v-model="settings.system.demoDataEnabled" type="checkbox" class="h-5 w-5" />
+              <input v-model="settings.system.demoDataEnabled" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
             </label>
             <div>
               <label class="ui-label">Maintenance message</label>
@@ -875,7 +875,7 @@ function toggleFeature(key: keyof AdminSettings['features']) {
           <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
             <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
               <span>Enable global notifications</span>
-              <input v-model="settings.features.globalNotificationsEnabled" type="checkbox" class="h-5 w-5" />
+              <input v-model="settings.features.globalNotificationsEnabled" type="checkbox" class="h-5 w-5 rounded border border-white/30 bg-white/10 accent-primary-400" />
             </label>
           </div>
         </section>

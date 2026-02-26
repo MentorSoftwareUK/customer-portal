@@ -4,7 +4,6 @@ import {
   adminCreateNotification,
   adminDeleteNotification,
   adminListNotifications,
-  adminPatchNotification,
   type GlobalNotificationDto,
   type NotificationLevel,
 } from '../../lib/api'
@@ -21,14 +20,12 @@ const form = ref<{
   level: NotificationLevel
   title: string
   message: string
-  enabled: boolean
   startsAtLocal: string
   endsAtLocal: string
 }>({
   level: 'info',
   title: '',
   message: '',
-  enabled: true,
   startsAtLocal: '',
   endsAtLocal: '',
 })
@@ -66,7 +63,7 @@ async function create() {
       level: form.value.level,
       title: form.value.title,
       message: form.value.message,
-      enabled: form.value.enabled,
+      enabled: true,
       startsAtIso: localDateTimeToIsoOrNull(form.value.startsAtLocal),
       endsAtIso: localDateTimeToIsoOrNull(form.value.endsAtLocal),
     })
@@ -86,33 +83,16 @@ async function create() {
   }
 }
 
-async function setEnabled(n: GlobalNotificationDto, enabled: boolean) {
-  error.value = null
-  try {
-    await adminPatchNotification(n.id, { enabled })
-    notifications.value = notifications.value.map((x) => (x.id === n.id ? { ...x, enabled } : x))
-  } catch (e: any) {
-    error.value = e?.message ? String(e.message) : 'Failed to update notification'
-    toast.error('Failed to update notification')
-  }
-}
-
-function onEnabledChange(n: GlobalNotificationDto, e: Event) {
-  const target = e.target as HTMLInputElement | null
-  const enabled = Boolean(target?.checked)
-  void setEnabled(n, enabled)
-}
-
 async function del(n: GlobalNotificationDto) {
-  if (!confirm(`Delete notification "${n.title}"?`)) return
+  if (!confirm(`Remove notification "${n.title}"?`)) return
   error.value = null
   try {
     await adminDeleteNotification(n.id)
     notifications.value = notifications.value.filter((x) => x.id !== n.id)
-    toast.success('Notification deleted')
+    toast.success('Notification removed')
   } catch (e: any) {
     error.value = e?.message ? String(e.message) : 'Failed to delete notification'
-    toast.error('Failed to delete notification')
+    toast.error('Failed to remove notification')
   }
 }
 
@@ -152,11 +132,6 @@ onMounted(load)
           </select>
         </div>
 
-        <label class="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
-          <span>Enabled</span>
-          <input v-model="form.enabled" type="checkbox" class="h-5 w-5" />
-        </label>
-
         <div class="md:col-span-2">
           <label class="ui-label">Title</label>
           <input v-model="form.title" class="ui-input mt-1" type="text" placeholder="Planned maintenance" />
@@ -194,7 +169,7 @@ onMounted(load)
       <div class="flex items-center justify-between gap-3">
         <div>
           <h3 class="text-base font-semibold text-white">Existing notifications</h3>
-          <p class="text-xs text-white/70">Enable/disable or delete banners.</p>
+          <p class="text-xs text-white/70">Remove banners.</p>
         </div>
         <button
           type="button"
@@ -226,22 +201,12 @@ onMounted(load)
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
-              <label class="flex items-center gap-2 text-xs font-semibold text-white/80">
-                <input
-                  type="checkbox"
-                  class="h-5 w-5"
-                  :checked="n.enabled"
-                  @change="onEnabledChange(n, $event)"
-                />
-                Enabled
-              </label>
-
               <button
                 type="button"
                 class="rounded-md bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 hover:bg-white/15"
                 @click="del(n)"
               >
-                Delete
+                Remove
               </button>
             </div>
           </div>
