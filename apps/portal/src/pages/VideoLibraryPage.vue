@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { ComponentPublicInstance } from 'vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { listVideos, type VideoDto } from '../lib/api'
 import { provisionFilterLabel, readProvisionFilter, type ProvisionFilter, writeProvisionFilter } from '../lib/provision'
@@ -35,79 +34,6 @@ const lightboxOpen = ref(false)
 const activeVideo = ref<VideoDto | null>(null)
 let previousBodyOverflow: string | null = null
 
-const PREVIEW_MAX_IN_FLIGHT = 3
-const previewEnabled = ref<Record<string, true>>({})
-const previewDone = ref<Record<string, true>>({})
-const previewQueue = ref<string[]>([])
-const previewInFlight = ref(0)
-let previewObserver: IntersectionObserver | null = null
-const previewTargets = new Map<string, Element>()
-
-function videoKey(video: VideoDto) {
-  return video.youtubeId || video.videoUrl || video.title
-}
-
-function isPreviewCandidate(video: VideoDto) {
-  return Boolean(video.videoUrl) && !video.thumbnailUrl
-}
-
-function isPreviewEnabled(video: VideoDto) {
-  const key = videoKey(video)
-  return Boolean(previewEnabled.value[key])
-}
-
-function enqueuePreview(key: string) {
-  if (previewEnabled.value[key] || previewDone.value[key]) return
-  if (previewQueue.value.includes(key)) return
-  previewQueue.value.push(key)
-  processPreviewQueue()
-}
-
-function processPreviewQueue() {
-  while (previewInFlight.value < PREVIEW_MAX_IN_FLIGHT && previewQueue.value.length > 0) {
-    const next = previewQueue.value.shift()
-    if (!next) break
-    if (previewEnabled.value[next] || previewDone.value[next]) continue
-    previewEnabled.value = { ...previewEnabled.value, [next]: true }
-    previewInFlight.value += 1
-  }
-}
-
-function markPreviewDone(key: string) {
-  if (previewDone.value[key]) return
-  previewDone.value = { ...previewDone.value, [key]: true }
-  if (previewInFlight.value > 0) previewInFlight.value -= 1
-  processPreviewQueue()
-}
-
-function normalizeRefTarget(target: Element | ComponentPublicInstance | null): Element | null {
-  if (!target) return null
-  if (target instanceof Element) return target
-  const maybeEl = (target as ComponentPublicInstance).$el
-  return maybeEl instanceof Element ? maybeEl : null
-}
-
-function registerPreviewTarget(target: Element | ComponentPublicInstance | null, video: VideoDto) {
-  const el = normalizeRefTarget(target)
-  const key = videoKey(video)
-  const shouldObserve = isPreviewCandidate(video) && !previewDone.value[key]
-
-  const existing = previewTargets.get(key)
-  if (existing && (!el || existing !== el)) {
-    previewObserver?.unobserve(existing)
-    previewTargets.delete(key)
-  }
-
-  if (!el || !shouldObserve) return
-  try {
-    ;(el as HTMLElement).dataset.previewKey = key
-  } catch {
-    // ignore
-  }
-  previewTargets.set(key, el)
-  previewObserver?.observe(el)
-}
-
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean)
   const first = parts[0]?.[0] ?? ''
@@ -125,7 +51,8 @@ function youtubeEmbedUrl(youtubeId: string) {
 
 function videoThumb(video: VideoDto) {
   if (video.thumbnailUrl) return video.thumbnailUrl
-  return video.videoUrl ? '' : youtubeThumb(video.youtubeId)
+  if (!video.youtubeId) return ''
+  return youtubeThumb(video.youtubeId)
 }
 
 function videoSourceType(url: string | undefined) {
@@ -134,24 +61,6 @@ function videoSourceType(url: string | undefined) {
   if (clean.endsWith('.webm')) return 'video/webm'
   if (clean.endsWith('.mp4')) return 'video/mp4'
   return undefined
-}
-
-function videoPreviewUrl(url: string | undefined) {
-  if (!url) return ''
-  if (url.includes('#t=')) return url
-  return `${url}#t=0.1`
-}
-
-function onPreviewLoadedMetadata(event: Event, key: string) {
-  const target = event.target
-  if (!(target instanceof HTMLVideoElement)) return
-  try {
-    const duration = target.duration
-    const targetTime = Number.isFinite(duration) && duration > 0 ? Math.min(0.1, duration / 2) : 0.1
-    if (Number.isFinite(targetTime) && targetTime >= 0) target.currentTime = targetTime
-  } catch {
-    markPreviewDone(key)
-  }
 }
 
 function openLightbox(video: VideoDto) {
@@ -170,30 +79,6 @@ function onKeydown(e: KeyboardEvent) {
 
 onMounted(async () => {
   window.addEventListener('keydown', onKeydown)
-
-  try {
-    previewObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue
-          const key = (entry.target as HTMLElement | null)?.dataset?.previewKey
-          if (key) enqueuePreview(key)
-        }
-      },
-      { rootMargin: '300px 0px' },
-    )
-
-    // Re-observe any targets registered before the observer existed.
-    for (const el of previewTargets.values()) {
-      try {
-        previewObserver.observe(el)
-      } catch {
-        // ignore
-      }
-    }
-  } catch {
-    previewObserver = null
-  }
 
   loading.value = true
   loadError.value = null
@@ -225,13 +110,6 @@ watch(lightboxOpen, (open) => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
-  try {
-    previewObserver?.disconnect()
-  } catch {
-    // ignore
-  }
-  previewObserver = null
-  previewTargets.clear()
   try {
     document.body.style.overflow = previousBodyOverflow ?? ''
     previousBodyOverflow = null
@@ -365,32 +243,27 @@ const isSearching = computed(() => query.value.trim().length > 0)
               :key="`latest-${video.youtubeId}`"
               type="button"
               class="group w-72 shrink-0 snap-start text-left ui-surface-muted overflow-hidden hover:shadow-md"
-              :ref="(el) => registerPreviewTarget(el, video)"
               @click="openLightbox(video)"
             >
               <div class="relative">
-                <template v-if="video.videoUrl && !video.thumbnailUrl">
-                  <div v-if="!isPreviewEnabled(video)" class="w-full h-40 bg-gray-900/20 dark:bg-gray-700/30" />
-                  <video
-                    v-else
-                    class="w-full h-40 object-cover"
-                    muted
-                    playsinline
-                    preload="metadata"
-                    @loadedmetadata="onPreviewLoadedMetadata($event, videoKey(video))"
-                    @seeked="markPreviewDone(videoKey(video))"
-                    @error="markPreviewDone(videoKey(video))"
-                  >
-                    <source :src="videoPreviewUrl(video.videoUrl)" :type="videoSourceType(video.videoUrl)" />
-                  </video>
-                </template>
                 <img
-                  v-else
+                  v-if="video.thumbnailUrl || video.youtubeId"
                   :src="videoThumb(video)"
                   :alt="video.title"
                   class="w-full h-40 object-cover"
                   loading="lazy"
                 >
+                <div
+                  v-else
+                  class="w-full h-40 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900"
+                  aria-hidden="true"
+                >
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
+                    <svg class="h-6 w-6 translate-x-0.5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                    </svg>
+                  </div>
+                </div>
                 <div class="absolute top-3 left-3">
                   <span class="bg-gray-900/80 text-white text-xs font-medium px-2.5 py-1 rounded">
                     {{ video.category }}
@@ -435,32 +308,27 @@ const isSearching = computed(() => query.value.trim().length > 0)
               :key="`featured-${video.youtubeId}`"
               type="button"
               class="group w-72 shrink-0 snap-start text-left ui-surface-muted overflow-hidden hover:shadow-md"
-              :ref="(el) => registerPreviewTarget(el, video)"
               @click="openLightbox(video)"
             >
               <div class="relative">
-                <template v-if="video.videoUrl && !video.thumbnailUrl">
-                  <div v-if="!isPreviewEnabled(video)" class="w-full h-40 bg-gray-900/20 dark:bg-gray-700/30" />
-                  <video
-                    v-else
-                    class="w-full h-40 object-cover"
-                    muted
-                    playsinline
-                    preload="metadata"
-                    @loadedmetadata="onPreviewLoadedMetadata($event, videoKey(video))"
-                    @seeked="markPreviewDone(videoKey(video))"
-                    @error="markPreviewDone(videoKey(video))"
-                  >
-                    <source :src="videoPreviewUrl(video.videoUrl)" :type="videoSourceType(video.videoUrl)" />
-                  </video>
-                </template>
                 <img
-                  v-else
+                  v-if="video.thumbnailUrl || video.youtubeId"
                   :src="videoThumb(video)"
                   :alt="video.title"
                   class="w-full h-40 object-cover"
                   loading="lazy"
                 >
+                <div
+                  v-else
+                  class="w-full h-40 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900"
+                  aria-hidden="true"
+                >
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
+                    <svg class="h-6 w-6 translate-x-0.5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                    </svg>
+                  </div>
+                </div>
                 <div class="absolute top-3 left-3">
                   <span class="bg-gray-900/80 text-white text-xs font-medium px-2.5 py-1 rounded">
                     {{ video.category }}
@@ -505,32 +373,27 @@ const isSearching = computed(() => query.value.trim().length > 0)
               :key="`all-${video.youtubeId}`"
               type="button"
               class="group block w-full text-left ui-surface-muted overflow-hidden hover:shadow-md"
-              :ref="(el) => registerPreviewTarget(el, video)"
               @click="openLightbox(video)"
             >
               <div class="relative">
-                <template v-if="video.videoUrl && !video.thumbnailUrl">
-                  <div v-if="!isPreviewEnabled(video)" class="w-full h-40 bg-gray-900/20 dark:bg-gray-700/30" />
-                  <video
-                    v-else
-                    class="w-full h-40 object-cover"
-                    muted
-                    playsinline
-                    preload="metadata"
-                    @loadedmetadata="onPreviewLoadedMetadata($event, videoKey(video))"
-                    @seeked="markPreviewDone(videoKey(video))"
-                    @error="markPreviewDone(videoKey(video))"
-                  >
-                    <source :src="videoPreviewUrl(video.videoUrl)" :type="videoSourceType(video.videoUrl)" />
-                  </video>
-                </template>
                 <img
-                  v-else
+                  v-if="video.thumbnailUrl || video.youtubeId"
                   :src="videoThumb(video)"
                   :alt="video.title"
                   class="w-full h-40 object-cover"
                   loading="lazy"
                 >
+                <div
+                  v-else
+                  class="w-full h-40 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900"
+                  aria-hidden="true"
+                >
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
+                    <svg class="h-6 w-6 translate-x-0.5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                    </svg>
+                  </div>
+                </div>
                 <div class="absolute top-3 left-3">
                   <span class="bg-gray-900/80 text-white text-xs font-medium px-2.5 py-1 rounded">
                     {{ video.category }}
