@@ -38,7 +38,12 @@ export const videosRoutes: FastifyPluginAsync = async (app) => {
     name?: string
     title?: string
     extension?: string
+    ext?: string
     url?: string
+    friendly_url?: string
+    default_hosting_url?: string
+    cdnUrl?: string
+    cloudKey?: string
     publicUrl?: string
     public_url?: string
     path?: string
@@ -50,17 +55,22 @@ export const videosRoutes: FastifyPluginAsync = async (app) => {
     type?: string
     createdAt?: string | number
     updatedAt?: string | number
+    previewUrl?: string
+    preview_url?: string
+    thumbnailUrl?: string
+    thumbnail_url?: string
+    thumbUrl?: string
+    thumb_url?: string
     meta?: {
       description?: string
       keywords?: string[] | string
       thumbnailUrl?: string
       thumbnail_url?: string
       previewUrl?: string
+      preview_url?: string
     }
     description?: string
     tags?: string[] | string
-    thumbnailUrl?: string
-    previewUrl?: string
     createdByName?: string
     createdByUser?: string
   }
@@ -205,10 +215,42 @@ export const videosRoutes: FastifyPluginAsync = async (app) => {
     return 'Just now'
   }
 
+  const isLikelyPublicUrl = (value: string) => {
+    if (!value.startsWith('http://') && !value.startsWith('https://')) return false
+    try {
+      const u = new URL(value)
+      if (u.hostname === 'api.hubapi.com') return false
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  const firstPublicUrl = (candidates: Array<unknown>) => {
+    for (const candidate of candidates) {
+      const normalized = normalizeValue(candidate)
+      if (!normalized) continue
+      const url = String(normalized)
+      if (isLikelyPublicUrl(url)) return url
+    }
+    return null
+  }
+
   const extractFileUrl = (file: HubSpotFile) => {
-    const raw = normalizeValue(file.url) ?? normalizeValue(file.publicUrl) ?? normalizeValue(file.public_url) ?? null
-    if (raw) return String(raw)
-    if (file.defaultHost && file.path) return `https://${file.defaultHost}${file.path}`
+    const best = firstPublicUrl([
+      file.default_hosting_url,
+      (file as any).defaultHostingUrl,
+      file.friendly_url,
+      file.publicUrl,
+      file.public_url,
+      file.cdnUrl,
+      file.url,
+    ])
+    if (best) return best
+    if (file.defaultHost && file.path) {
+      const fallback = `https://${file.defaultHost}${file.path}`
+      return isLikelyPublicUrl(fallback) ? fallback : null
+    }
     return null
   }
 
@@ -222,7 +264,7 @@ export const videosRoutes: FastifyPluginAsync = async (app) => {
     const mime = String(file.mimeType ?? file.mimetype ?? '').toLowerCase()
     if (mime.startsWith('video/')) return true
     const name = String(file.name ?? file.title ?? '').toLowerCase()
-    const extension = String(file.extension ?? '').toLowerCase()
+    const extension = String(file.extension ?? file.ext ?? '').toLowerCase()
     const fileType = String(file.fileType ?? file.type ?? '').toLowerCase()
     const url = String(extractFileUrl(file) ?? '').toLowerCase()
     if (fileType.includes('video')) return true
@@ -256,13 +298,19 @@ export const videosRoutes: FastifyPluginAsync = async (app) => {
   }
 
   const inferThumbnailUrl = (file: HubSpotFile) => {
-    const url =
-      (normalizeValue(file.thumbnailUrl) as string | undefined)
-      ?? (normalizeValue(file.meta?.thumbnailUrl) as string | undefined)
-      ?? (normalizeValue(file.meta?.thumbnail_url) as string | undefined)
-      ?? (normalizeValue(file.previewUrl) as string | undefined)
-      ?? (normalizeValue(file.meta?.previewUrl) as string | undefined)
-    return url ? String(url) : undefined
+    const url = firstPublicUrl([
+      file.thumbnail_url,
+      file.thumbnailUrl,
+      file.thumb_url,
+      file.thumbUrl,
+      file.preview_url,
+      file.previewUrl,
+      file.meta?.thumbnail_url,
+      file.meta?.thumbnailUrl,
+      file.meta?.preview_url,
+      file.meta?.previewUrl,
+    ])
+    return url ?? undefined
   }
 
   const inferAuthorName = (file: HubSpotFile) => {
