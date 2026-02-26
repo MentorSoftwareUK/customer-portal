@@ -607,6 +607,32 @@ export async function hubspotGetPrimaryCompanyIdForContact(contactId: string): P
   return typeof first === 'number' ? String(first) : null
 }
 
+export async function hubspotListCompanyIdsForContact(contactId: string): Promise<string[]> {
+  const ids: string[] = []
+  let after: string | undefined
+
+  for (let i = 0; i < 20; i++) {
+    const qs = new URLSearchParams()
+    qs.set('limit', '500')
+    if (after) qs.set('after', after)
+
+    const res = await hubspotFetch(
+      `/crm/v4/objects/contacts/${encodeURIComponent(contactId)}/associations/companies?${qs.toString()}`,
+      { method: 'GET' },
+    )
+    const data = (await res.json()) as AssociationV4Response
+    for (const r of data.results ?? []) {
+      if (typeof r.toObjectId === 'number') ids.push(String(r.toObjectId))
+    }
+
+    const nextAfter = data.paging?.next?.after
+    if (!nextAfter) break
+    after = nextAfter
+  }
+
+  return Array.from(new Set(ids))
+}
+
 export async function hubspotListContactIdsForCompany(companyId: string): Promise<string[]> {
   const ids: string[] = []
   let after: string | undefined
@@ -632,6 +658,266 @@ export async function hubspotListContactIdsForCompany(companyId: string): Promis
   }
 
   return ids
+}
+
+// ---------------------------------------------------------------------------
+// Tickets (Service Hub)
+// ---------------------------------------------------------------------------
+
+const ticketPipelineCache: { pipelines: HubSpotPipeline[] | null; ts: number } = { pipelines: null, ts: 0 }
+const TICKET_PIPELINE_CACHE_TTL_MS = 15 * 60_000
+
+export async function hubspotListTicketPipelines(): Promise<HubSpotPipeline[]> {
+  const now = Date.now()
+  if (ticketPipelineCache.pipelines && now - ticketPipelineCache.ts < TICKET_PIPELINE_CACHE_TTL_MS) {
+    return ticketPipelineCache.pipelines
+  }
+
+  const res = await hubspotFetch(`/crm/v3/pipelines/tickets`, { method: 'GET' })
+  const data = (await res.json()) as { results?: HubSpotPipeline[] }
+  ticketPipelineCache.pipelines = data.results ?? []
+  ticketPipelineCache.ts = now
+  return ticketPipelineCache.pipelines
+}
+
+type AssocV3Response = {
+  results: Array<{ id: string; type?: string }>
+  paging?: { next?: { after?: string } }
+}
+
+export async function hubspotListTicketIdsForContact(contactId: string): Promise<string[]> {
+  const ids: string[] = []
+  let after: string | undefined
+
+  for (let i = 0; i < 30; i++) {
+    const qs = new URLSearchParams()
+    qs.set('limit', '500')
+    if (after) qs.set('after', after)
+
+    const res = await hubspotFetch(
+      `/crm/v3/objects/contacts/${encodeURIComponent(contactId)}/associations/tickets?${qs.toString()}`,
+      { method: 'GET' },
+    )
+    const data = (await res.json()) as AssocV3Response
+    for (const r of data.results ?? []) {
+      if (r?.id) ids.push(String(r.id))
+    }
+
+    const nextAfter = data.paging?.next?.after
+    if (!nextAfter) break
+    after = nextAfter
+  }
+
+  return Array.from(new Set(ids))
+}
+
+export async function hubspotListTicketIdsForCompany(companyId: string): Promise<string[]> {
+  const ids: string[] = []
+  let after: string | undefined
+
+  for (let i = 0; i < 30; i++) {
+    const qs = new URLSearchParams()
+    qs.set('limit', '500')
+    if (after) qs.set('after', after)
+
+    const res = await hubspotFetch(
+      `/crm/v3/objects/companies/${encodeURIComponent(companyId)}/associations/tickets?${qs.toString()}`,
+      { method: 'GET' },
+    )
+    const data = (await res.json()) as AssocV3Response
+    for (const r of data.results ?? []) {
+      if (r?.id) ids.push(String(r.id))
+    }
+
+    const nextAfter = data.paging?.next?.after
+    if (!nextAfter) break
+    after = nextAfter
+  }
+
+  return Array.from(new Set(ids))
+}
+
+export async function hubspotBatchReadTickets(params: { ids: string[]; properties: string[] }) {
+  if (params.ids.length === 0) return []
+  const res = await hubspotFetch(`/crm/v3/objects/tickets/batch/read`, {
+    method: 'POST',
+    body: JSON.stringify({
+      properties: params.properties,
+      inputs: params.ids.map((id) => ({ id })),
+    }),
+  })
+  const data = (await res.json()) as BatchReadResponse
+  return data.results ?? []
+}
+
+export async function hubspotGetTicketById(params: { id: string; properties: string[] }) {
+  const qs = new URLSearchParams()
+  if (params.properties.length) qs.set('properties', params.properties.join(','))
+
+  const res = await hubspotFetch(`/crm/v3/objects/tickets/${encodeURIComponent(params.id)}?${qs.toString()}`, {
+    method: 'GET',
+  })
+  return (await res.json()) as { id: string; properties: Record<string, string | null>; createdAt?: string; updatedAt?: string }
+}
+
+export async function hubspotListContactIdsForTicket(ticketId: string): Promise<string[]> {
+  const ids: string[] = []
+  let after: string | undefined
+
+  for (let i = 0; i < 10; i++) {
+    const qs = new URLSearchParams()
+    qs.set('limit', '500')
+    if (after) qs.set('after', after)
+
+    const res = await hubspotFetch(
+      `/crm/v3/objects/tickets/${encodeURIComponent(ticketId)}/associations/contacts?${qs.toString()}`,
+      { method: 'GET' },
+    )
+    const data = (await res.json()) as AssocV3Response
+    for (const r of data.results ?? []) {
+      if (r?.id) ids.push(String(r.id))
+    }
+
+    const nextAfter = data.paging?.next?.after
+    if (!nextAfter) break
+    after = nextAfter
+  }
+
+  return Array.from(new Set(ids))
+}
+
+export async function hubspotListCompanyIdsForTicket(ticketId: string): Promise<string[]> {
+  const ids: string[] = []
+  let after: string | undefined
+
+  for (let i = 0; i < 10; i++) {
+    const qs = new URLSearchParams()
+    qs.set('limit', '500')
+    if (after) qs.set('after', after)
+
+    const res = await hubspotFetch(
+      `/crm/v3/objects/tickets/${encodeURIComponent(ticketId)}/associations/companies?${qs.toString()}`,
+      { method: 'GET' },
+    )
+    const data = (await res.json()) as AssocV3Response
+    for (const r of data.results ?? []) {
+      if (r?.id) ids.push(String(r.id))
+    }
+
+    const nextAfter = data.paging?.next?.after
+    if (!nextAfter) break
+    after = nextAfter
+  }
+
+  return Array.from(new Set(ids))
+}
+
+type HubSpotEngagementNote = {
+  engagement: {
+    id: number
+    type: string
+    createdAt: number
+    lastUpdated?: number
+    timestamp?: number
+    source?: string
+  }
+  metadata?: {
+    body?: string
+  }
+}
+
+type HubSpotEngagementsPagedResponse = {
+  results: HubSpotEngagementNote[]
+  hasMore: boolean
+  offset: number
+}
+
+export async function hubspotListTicketEngagementNotes(ticketId: string): Promise<HubSpotEngagementNote[]> {
+  const out: HubSpotEngagementNote[] = []
+  let offset = 0
+
+  for (let i = 0; i < 20; i++) {
+    const qs = new URLSearchParams()
+    qs.set('limit', '100')
+    qs.set('offset', String(offset))
+
+    const res = await hubspotFetch(
+      `/engagements/v1/engagements/associated/ticket/${encodeURIComponent(ticketId)}/paged?${qs.toString()}`,
+      { method: 'GET' },
+    )
+    const data = (await res.json()) as HubSpotEngagementsPagedResponse
+    out.push(...(data.results ?? []).filter((r) => (r.engagement?.type ?? '').toUpperCase() === 'NOTE'))
+
+    if (!data.hasMore) break
+    offset = data.offset ?? 0
+    if (!offset) break
+  }
+
+  return out
+}
+
+export async function hubspotCreateTicket(params: {
+  properties: Record<string, string | null>
+  contactId: string | null
+  companyId: string | null
+}): Promise<{ id: string; properties: Record<string, string | null> }> {
+  const res = await hubspotFetch(`/crm/v3/objects/tickets`, {
+    method: 'POST',
+    body: JSON.stringify({ properties: params.properties }),
+  })
+
+  const ticket = (await res.json()) as { id: string; properties: Record<string, string | null> }
+
+  // Best-effort associations
+  if (params.contactId) {
+    try {
+      const assocTypeId = await resolveAssociationTypeId('tickets', 'contacts')
+      await hubspotAssociateV4({
+        fromObjectType: 'tickets',
+        fromObjectId: ticket.id,
+        toObjectType: 'contacts',
+        toObjectId: params.contactId,
+        associationTypeId: assocTypeId,
+      })
+    } catch {
+      // ignore
+    }
+  }
+
+  if (params.companyId) {
+    try {
+      const assocTypeId = await resolveAssociationTypeId('tickets', 'companies')
+      await hubspotAssociateV4({
+        fromObjectType: 'tickets',
+        fromObjectId: ticket.id,
+        toObjectType: 'companies',
+        toObjectId: params.companyId,
+        associationTypeId: assocTypeId,
+      })
+    } catch {
+      // ignore
+    }
+  }
+
+  return ticket
+}
+
+export async function hubspotCreateNoteEngagementForTicket(params: {
+  ticketId: string
+  body: string
+}): Promise<{ engagementId: number } | null> {
+  const res = await hubspotFetch(`/engagements/v1/engagements`, {
+    method: 'POST',
+    body: JSON.stringify({
+      engagement: { type: 'NOTE' },
+      associations: { ticketIds: [Number(params.ticketId)] },
+      metadata: { body: params.body },
+    }),
+  })
+
+  const data = (await res.json()) as { engagement?: { id?: number } }
+  const id = data.engagement?.id
+  return typeof id === 'number' ? { engagementId: id } : null
 }
 
 type BatchReadResponse = {

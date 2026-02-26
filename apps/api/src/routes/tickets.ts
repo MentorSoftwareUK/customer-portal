@@ -3,9 +3,44 @@ import { z } from 'zod'
 import { env } from '../env'
 import { requireAuth } from '../auth/requireAuth'
 import { getFeatureFlags } from '../store/settings'
-import { createTicketStore, getTicketStore, listTicketsStore, replyToTicketStore } from '../store/tickets'
+import {
+  hubspotBatchReadTickets,
+  hubspotCreateNoteEngagementForTicket,
+  hubspotCreateTicket,
+  hubspotFindContactByEmail,
+  hubspotGetPrimaryCompanyIdForContact,
+  hubspotGetTicketById,
+  hubspotListCompanyIdsForContact,
+  hubspotListCompanyIdsForTicket,
+  hubspotListContactIdsForTicket,
+  hubspotListTicketEngagementNotes,
+  hubspotListTicketIdsForCompany,
+  hubspotListTicketIdsForContact,
+  hubspotListTicketPipelines,
+} from '../integrations/hubspot'
 
-export type { TicketStatus, TicketDto, TicketMessageDto, TicketDetailDto } from '../store/tickets'
+export type TicketStatus = 'Open' | 'Pending' | 'Closed'
+
+export type TicketDto = {
+  id: string
+  subject: string
+  status: TicketStatus
+  lastUpdatedLabel: string
+}
+
+export type TicketMessageDto = {
+  id: string
+  direction: 'customer' | 'support'
+  body: string
+  timeLabel: string
+}
+
+export type TicketDetailDto = TicketDto & {
+  category?: string
+  priority?: 'Low' | 'Normal' | 'High'
+  messages: TicketMessageDto[]
+  canReply?: boolean
+}
 
 const CreateTicketBodySchema = z.object({
   subject: z.string().trim().min(3),
@@ -27,35 +62,290 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
     }
   })
 
-  app.get('/', async () => {
-    const hubspotConfigured = Boolean(env.HUBSPOT_PRIVATE_APP_TOKEN)
+  const cache = new Map<string, { expiresAt: number; value: unknown }>()
+  const CACHE_TTL_MS = env.TICKETS_CACHE_TTL_MS
 
-    return {
-      tickets: listTicketsStore(),
-      warning: hubspotConfigured
-        ? undefined
-        : 'HubSpot is not configured. No tickets available.',
+  function cacheGet<T>(key: string): T | null {
+    const hit = cache.get(key)
+    if (!hit) return null
+    if (Date.now() > hit.expiresAt) {
+      cache.delete(key)
+      return null
     }
+    return hit.value as T
+  }
+
+  function cacheSet(key: string, value: unknown, ttlMs = CACHE_TTL_MS) {
+    cache.set(key, { value, expiresAt: Date.now() + ttlMs })
+  }
+
+  function invalidateAllTicketCaches() {
+    cache.clear()
+  }
+
+  function stripHtml(input: string) {
+    const raw = input ?? ''
+    return raw.replace(/<[^>]*>/g, '').replace(/\s+\n/g, '\n').trim()
+  }
+
+  function formatRelativeLabel(iso: string | null | undefined) {
+    if (!iso) return 'Unknown'
+    const t = new Date(iso).getTime()
+    if (!Number.isFinite(t)) return 'Unknown'
+    const delta = Date.now() - t
+    const mins = Math.floor(delta / 60_000)
+    if (mins < 1) return 'Just now'
+    if (mins < 60) return `${mins}m ago`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    return `${days}d ago`
+  }
+
+  let stageStatusCache: { ts: number; map: Map<string, TicketStatus> } | null = null
+
+  async function getStageStatusMap(): Promise<Map<string, TicketStatus>> {
+    const now = Date.now()
+    if (stageStatusCache && now - stageStatusCache.ts < 15 * 60_000) return stageStatusCache.map
+
+    const pipelines = await hubspotListTicketPipelines()
+    const map = new Map<string, TicketStatus>()
+    for (const p of pipelines ?? []) {
+      for (const s of p.stages ?? []) {
+        const label = (s.label ?? '').trim().toLowerCase()
+        if (!label) continue
+        if (label.includes('closed') || label.includes('resolved') || label.includes('complete')) {
+          map.set(s.id, 'Closed')
+          continue
+        }
+        if (label.includes('pending') || label.includes('waiting') || label.includes('on hold')) {
+          map.set(s.id, 'Pending')
+          continue
+        }
+        map.set(s.id, 'Open')
+      }
+    }
+
+    // Fallback for portals with numeric stage ids where stage labels are unknown.
+    map.set('4', map.get('4') ?? 'Closed')
+
+    stageStatusCache = { ts: now, map }
+    return map
+  }
+
+  function mapPriority(raw: string | null | undefined): 'Low' | 'Normal' | 'High' | undefined {
+    const v = (raw ?? '').trim().toLowerCase()
+    if (!v) return undefined
+    if (v === 'low') return 'Low'
+    if (v === 'high') return 'High'
+    // HubSpot often uses MEDIUM
+    if (v === 'medium' || v === 'normal') return 'Normal'
+    return 'Normal'
+  }
+
+  async function resolveContactId(req: any): Promise<string | null> {
+    const auth = req.auth as { email: string; hubspotContactId: string | null } | undefined
+    if (auth?.hubspotContactId) return auth.hubspotContactId
+    const email = auth?.email
+    if (!email) return null
+    try {
+      const contact = await hubspotFindContactByEmail({ email, properties: ['email'] })
+      return contact?.id ?? null
+    } catch {
+      return null
+    }
+  }
+
+  async function getAllowedCompanyIdsForViewer(opts: {
+    contactId: string
+    canEditCompany: boolean
+  }): Promise<string[]> {
+    if (opts.canEditCompany) {
+      const ids = await hubspotListCompanyIdsForContact(opts.contactId)
+      return ids.filter(Boolean)
+    }
+    const primary = await hubspotGetPrimaryCompanyIdForContact(opts.contactId)
+    return primary ? [primary] : []
+  }
+
+  // My tickets (tickets associated to the logged-in contact)
+  app.get('/', async (req) => {
+    if (!env.HUBSPOT_PRIVATE_APP_TOKEN) {
+      return { tickets: [], warning: 'HubSpot is not configured. No tickets available.' }
+    }
+
+    const contactId = await resolveContactId(req as any)
+    if (!contactId) return { tickets: [] }
+
+    const key = `mine:${contactId}`
+    const cached = cacheGet<{ tickets: TicketDto[] }>(key)
+    if (cached) return cached
+
+    const ticketIds = await hubspotListTicketIdsForContact(contactId)
+    const stageMap = await getStageStatusMap()
+
+    const items = await hubspotBatchReadTickets({
+      ids: ticketIds,
+      properties: ['subject', 'hs_pipeline_stage', 'hs_ticket_priority', 'hs_ticket_category', 'hs_lastmodifieddate', 'createdate'],
+    })
+
+    const tickets: TicketDto[] = items
+      .map((t) => {
+        const p = t.properties ?? {}
+        const stage = p['hs_pipeline_stage']
+        const status = (stage && stageMap.get(stage)) || 'Open'
+        const subject = p['subject'] || p['hs_ticket_subject'] || '(No subject)'
+        const updated = p['hs_lastmodifieddate'] || p['createdate']
+
+        return {
+          id: t.id,
+          subject,
+          status,
+          lastUpdatedLabel: formatRelativeLabel(updated),
+        }
+      })
+      .sort((a, b) => a.subject.localeCompare(b.subject))
+
+    const payload = { tickets }
+    cacheSet(key, payload)
+    return payload
+  })
+
+  // Org tickets (tickets for the user's organisation / associated companies)
+  app.get('/org', async (req) => {
+    if (!env.HUBSPOT_PRIVATE_APP_TOKEN) {
+      return { tickets: [], warning: 'HubSpot is not configured. No tickets available.' }
+    }
+
+    const auth = (req as any).auth as { canEditCompany: boolean } | undefined
+    const contactId = await resolveContactId(req as any)
+    if (!contactId) return { tickets: [] }
+
+    const allowedCompanyIds = await getAllowedCompanyIdsForViewer({
+      contactId,
+      canEditCompany: Boolean(auth?.canEditCompany),
+    })
+    if (allowedCompanyIds.length === 0) return { tickets: [] }
+
+    const key = `org:${contactId}:${allowedCompanyIds.slice().sort().join(',')}`
+    const cached = cacheGet<{ tickets: TicketDto[] }>(key)
+    if (cached) return cached
+
+    const stageMap = await getStageStatusMap()
+    const allTicketIds: string[] = []
+    for (const companyId of allowedCompanyIds) {
+      const ids = await hubspotListTicketIdsForCompany(companyId)
+      allTicketIds.push(...ids)
+    }
+    const uniqueTicketIds = Array.from(new Set(allTicketIds))
+
+    const items = await hubspotBatchReadTickets({
+      ids: uniqueTicketIds,
+      properties: ['subject', 'hs_pipeline_stage', 'hs_ticket_priority', 'hs_ticket_category', 'hs_lastmodifieddate', 'createdate'],
+    })
+
+    const tickets: TicketDto[] = items
+      .map((t) => {
+        const p = t.properties ?? {}
+        const stage = p['hs_pipeline_stage']
+        const status = (stage && stageMap.get(stage)) || 'Open'
+        const subject = p['subject'] || p['hs_ticket_subject'] || '(No subject)'
+        const updated = p['hs_lastmodifieddate'] || p['createdate']
+
+        return {
+          id: t.id,
+          subject,
+          status,
+          lastUpdatedLabel: formatRelativeLabel(updated),
+        }
+      })
+      .sort((a, b) => a.subject.localeCompare(b.subject))
+
+    const payload = { tickets }
+    cacheSet(key, payload)
+    return payload
   })
 
   app.get('/:id', async (req, reply) => {
-    const hubspotConfigured = Boolean(env.HUBSPOT_PRIVATE_APP_TOKEN)
-    const id = String((req.params as { id?: string }).id ?? '')
-    const ticket = getTicketStore(id)
-    if (!ticket) {
-      return reply.status(404).send({ error: 'not_found' })
+    if (!env.HUBSPOT_PRIVATE_APP_TOKEN) {
+      return reply.status(503).send({ error: 'hubspot_not_configured' })
     }
 
-    return {
-      ticket,
-      warning: hubspotConfigured
-        ? 'HubSpot ticket details are not wired yet.'
-        : 'HubSpot is not configured.',
+    const id = String((req.params as { id?: string }).id ?? '').trim()
+    if (!id) return reply.status(400).send({ error: 'invalid_request' })
+
+    const contactId = await resolveContactId(req as any)
+    if (!contactId) return reply.status(404).send({ error: 'not_found' })
+
+    const key = `detail:${contactId}:${id}`
+    const cached = cacheGet<{ ticket: TicketDetailDto }>(key)
+    if (cached) return cached
+
+    const auth = (req as any).auth as { canEditCompany: boolean } | undefined
+
+    const allowedCompanyIds = await getAllowedCompanyIdsForViewer({
+      contactId,
+      canEditCompany: Boolean(auth?.canEditCompany),
+    })
+
+    const [ticketCompanies, ticketContacts] = await Promise.all([
+      hubspotListCompanyIdsForTicket(id),
+      hubspotListContactIdsForTicket(id),
+    ])
+
+    const canReply = ticketContacts.includes(contactId)
+    const canView = canReply || ticketCompanies.some((c) => allowedCompanyIds.includes(c))
+    if (!canView) return reply.status(404).send({ error: 'not_found' })
+
+    const stageMap = await getStageStatusMap()
+
+    const hsTicket = await hubspotGetTicketById({
+      id,
+      properties: ['subject', 'hs_pipeline_stage', 'hs_ticket_priority', 'hs_ticket_category', 'hs_lastmodifieddate', 'createdate'],
+    })
+    const p = hsTicket.properties ?? {}
+    const stage = p['hs_pipeline_stage']
+    const status = (stage && stageMap.get(stage)) || 'Open'
+    const subject = p['subject'] || p['hs_ticket_subject'] || '(No subject)'
+    const updated = p['hs_lastmodifieddate'] || p['createdate']
+
+    const notes = await hubspotListTicketEngagementNotes(id)
+    const messages: TicketMessageDto[] = (notes ?? [])
+      .map((n) => {
+        const bodyRaw = n.metadata?.body ?? ''
+        const body = stripHtml(bodyRaw)
+        const ts = n.engagement?.timestamp ?? n.engagement?.createdAt
+        const tsMs = typeof ts === 'number' ? ts : Number.NaN
+        const timeIso = Number.isFinite(tsMs) ? new Date(tsMs).toISOString() : null
+        const source = (n.engagement?.source ?? '').toUpperCase()
+
+        return {
+          id: String(n.engagement?.id ?? Math.random()),
+          direction: source.includes('INTEGRATION') || source.includes('API') ? 'customer' : 'support',
+          body,
+          timeLabel: formatRelativeLabel(timeIso),
+          _tsMs: Number.isFinite(tsMs) ? tsMs : 0,
+        } as TicketMessageDto & { _tsMs: number }
+      })
+      .sort((a, b) => a._tsMs - b._tsMs)
+      .map(({ _tsMs, ...rest }) => rest)
+
+    const ticket: TicketDetailDto = {
+      id: hsTicket.id,
+      subject,
+      status,
+      lastUpdatedLabel: formatRelativeLabel(updated),
+      category: p['hs_ticket_category'] ?? undefined,
+      priority: mapPriority(p['hs_ticket_priority']) ?? undefined,
+      messages,
+      canReply,
     }
+
+    const payload = { ticket }
+    cacheSet(key, payload)
+    return payload
   })
 
-  // Phase 1: accept and store a ticket in-memory.
-  // Later: create a real ticket in HubSpot Service Hub.
   app.post('/', async (req, reply) => {
     const parsed = CreateTicketBodySchema.safeParse(req.body)
     if (!parsed.success) {
@@ -65,19 +355,36 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
       })
     }
 
-    const hubspotConfigured = Boolean(env.HUBSPOT_PRIVATE_APP_TOKEN)
-    const ticket = createTicketStore({
+    if (!env.HUBSPOT_PRIVATE_APP_TOKEN) {
+      return reply.status(503).send({ error: 'hubspot_not_configured' })
+    }
+
+    const contactId = await resolveContactId(req as any)
+    if (!contactId) return reply.status(400).send({ error: 'no_hubspot_contact' })
+
+    const companyId = await hubspotGetPrimaryCompanyIdForContact(contactId)
+
+    const priorityMap: Record<string, string> = { Low: 'LOW', Normal: 'MEDIUM', High: 'HIGH' }
+    const properties: Record<string, string | null> = {
       subject: parsed.data.subject,
-      description: parsed.data.description,
-      category: parsed.data.category,
-      priority: parsed.data.priority,
-    })
+      hs_ticket_category: parsed.data.category ?? null,
+      hs_ticket_priority: parsed.data.priority ? (priorityMap[parsed.data.priority] ?? parsed.data.priority) : null,
+    }
+
+    const created = await hubspotCreateTicket({ properties, contactId, companyId })
+    await hubspotCreateNoteEngagementForTicket({ ticketId: created.id, body: parsed.data.description })
+    invalidateAllTicketCaches()
+
+    const stageMap = await getStageStatusMap()
+    const status = stageMap.get(created.properties?.hs_pipeline_stage ?? '') ?? 'Open'
 
     return {
-      ticket,
-      warning: hubspotConfigured
-        ? 'HubSpot ticket creation is not wired yet.'
-        : 'HubSpot is not configured.',
+      ticket: {
+        id: created.id,
+        subject: created.properties?.subject ?? parsed.data.subject,
+        status,
+        lastUpdatedLabel: 'Just now',
+      },
     }
   })
 
@@ -94,18 +401,66 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
       })
     }
 
-    const hubspotConfigured = Boolean(env.HUBSPOT_PRIVATE_APP_TOKEN)
     const id = String((req.params as { id?: string }).id ?? '')
-    const ticket = replyToTicketStore(id, parsed.data.message)
-    if (!ticket) {
-      return reply.status(404).send({ error: 'not_found' })
+
+    if (!env.HUBSPOT_PRIVATE_APP_TOKEN) {
+      return reply.status(503).send({ error: 'hubspot_not_configured' })
     }
 
-    return {
-      ticket,
-      warning: hubspotConfigured
-        ? 'HubSpot ticket replies are not wired yet.'
-        : 'HubSpot is not configured.',
+    const contactId = await resolveContactId(req as any)
+    if (!contactId) return reply.status(404).send({ error: 'not_found' })
+
+    const ticketContacts = await hubspotListContactIdsForTicket(id)
+    if (!ticketContacts.includes(contactId)) {
+      return reply.status(403).send({ error: 'forbidden', message: 'You can only reply to your own tickets.' })
     }
+
+    await hubspotCreateNoteEngagementForTicket({ ticketId: id, body: parsed.data.message })
+    invalidateAllTicketCaches()
+
+    const stageMap = await getStageStatusMap()
+    const hsTicket = await hubspotGetTicketById({
+      id,
+      properties: ['subject', 'hs_pipeline_stage', 'hs_ticket_priority', 'hs_ticket_category', 'hs_lastmodifieddate', 'createdate'],
+    })
+    const p = hsTicket.properties ?? {}
+    const stage = p['hs_pipeline_stage']
+    const status = (stage && stageMap.get(stage)) || 'Open'
+    const subject = p['subject'] || p['hs_ticket_subject'] || '(No subject)'
+    const updated = p['hs_lastmodifieddate'] || p['createdate']
+
+    const notes = await hubspotListTicketEngagementNotes(id)
+    const messages: TicketMessageDto[] = (notes ?? [])
+      .map((n) => {
+        const bodyRaw = n.metadata?.body ?? ''
+        const body = stripHtml(bodyRaw)
+        const ts = n.engagement?.timestamp ?? n.engagement?.createdAt
+        const tsMs = typeof ts === 'number' ? ts : Number.NaN
+        const timeIso = Number.isFinite(tsMs) ? new Date(tsMs).toISOString() : null
+        const source = (n.engagement?.source ?? '').toUpperCase()
+
+        return {
+          id: String(n.engagement?.id ?? Math.random()),
+          direction: source.includes('INTEGRATION') || source.includes('API') ? 'customer' : 'support',
+          body,
+          timeLabel: formatRelativeLabel(timeIso),
+          _tsMs: Number.isFinite(tsMs) ? tsMs : 0,
+        } as TicketMessageDto & { _tsMs: number }
+      })
+      .sort((a, b) => a._tsMs - b._tsMs)
+      .map(({ _tsMs, ...rest }) => rest)
+
+    const ticket: TicketDetailDto = {
+      id: hsTicket.id,
+      subject,
+      status,
+      lastUpdatedLabel: formatRelativeLabel(updated),
+      category: p['hs_ticket_category'] ?? undefined,
+      priority: mapPriority(p['hs_ticket_priority']) ?? undefined,
+      messages,
+      canReply: true,
+    }
+
+    return { ticket }
   })
 }

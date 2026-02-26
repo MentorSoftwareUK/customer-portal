@@ -124,6 +124,13 @@ onMounted(load)
           <div class="mt-4 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
             <div class="text-sm font-semibold text-gray-900 dark:text-white">Reply</div>
 
+            <div
+              v-if="ticket.canReply === false"
+              class="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900/20 dark:text-gray-200"
+            >
+              Replies can only be sent by the person who opened this ticket.
+            </div>
+
             <div v-if="replyError" class="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-200">
               {{ replyError }}
             </div>
@@ -133,13 +140,14 @@ onMounted(load)
               rows="4"
               class="mt-3 ui-input"
               placeholder="Type your reply…"
+              :disabled="ticket.canReply === false"
             />
 
             <div class="mt-3 flex items-center justify-end">
               <button
                 type="button"
                 class="ui-btn-primary"
-                :disabled="replying || !replyText.trim()"
+                :disabled="ticket.canReply === false || replying || !replyText.trim()"
                 @click="submitReply"
               >
                 <span v-if="replying">Sending…</span>

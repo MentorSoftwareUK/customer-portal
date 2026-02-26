@@ -11,6 +11,7 @@ const EventDetailPage = () => import('./pages/EventDetailPage.vue')
 const EventRegisterPage = () => import('./pages/EventRegisterPage.vue')
 const MeetingsPage = () => import('./pages/MeetingsPage.vue')
 const TicketsPage = () => import('./pages/TicketsPage.vue')
+const OrgTicketsPage = () => import('./pages/OrgTicketsPage.vue')
 const TicketDetailPage = () => import('./pages/TicketDetailPage.vue')
 const KnowledgeBasePage = () => import('./pages/KnowledgeBasePage.vue')
 const KnowledgeBaseArticlePage = () => import('./pages/KnowledgeBaseArticlePage.vue')
@@ -49,6 +50,7 @@ export const routes: RouteRecordRaw[] = [
 
       { path: 'meetings', component: MeetingsPage },
       { path: 'tickets', component: TicketsPage },
+      { path: 'tickets/org', component: OrgTicketsPage },
       { path: 'tickets/:id', component: TicketDetailPage },
       { path: 'knowledge-base', component: KnowledgeBasePage },
       { path: 'knowledge-base/article', component: KnowledgeBaseArticlePage },

@@ -97,6 +97,13 @@ onMounted(async () => {
       :meta="loading ? 'Loading…' : `${tickets.length} ticket${tickets.length === 1 ? '' : 's'}`"
     >
       <template #actions>
+        <RouterLink
+          to="/app/tickets/org"
+          class="ui-btn-secondary"
+        >
+          Org tickets
+        </RouterLink>
+
         <button
           type="button"
           class="ui-btn-primary"

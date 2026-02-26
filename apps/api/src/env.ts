@@ -107,6 +107,11 @@ const EnvSchema = z.object({
   // HubSpot HTTP timeout (ms) to keep login fast when HubSpot is slow.
   HUBSPOT_TIMEOUT_MS: z.preprocess(emptyStringToUndefined, z.coerce.number().int().positive()).default(5_000),
 
+  // Tickets
+  // API response caching to keep HubSpot load reasonable.
+  // Requirement: ~2–5 minutes.
+  TICKETS_CACHE_TTL_MS: z.coerce.number().int().positive().default(3 * 60_000),
+
   // HubSpot mapping: product version gating (e.g. v2 vs v3)
   // Example:
   //  HUBSPOT_PRODUCT_VERSION_PROPERTY=mentor_product_version

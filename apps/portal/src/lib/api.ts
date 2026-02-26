@@ -1050,6 +1050,7 @@ export type TicketDetailDto = TicketDto & {
   category?: string
   priority?: 'Low' | 'Normal' | 'High'
   messages: TicketMessageDto[]
+  canReply?: boolean
 }
 
 export type CreateTicketRequest = {
@@ -1106,6 +1107,14 @@ export async function listTickets(): Promise<{ tickets: TicketDto[]; warning?: s
   const res = await apiFetch(`${getApiBaseUrl()}/tickets`, { method: 'GET' })
   if (!res.ok) {
     throw new Error(`Tickets list failed: ${res.status}`)
+  }
+  return (await res.json()) as { tickets: TicketDto[]; warning?: string }
+}
+
+export async function listOrgTickets(): Promise<{ tickets: TicketDto[]; warning?: string }> {
+  const res = await apiFetch(`${getApiBaseUrl()}/tickets/org`, { method: 'GET' })
+  if (!res.ok) {
+    throw new Error(`Org tickets list failed: ${res.status}`)
   }
   return (await res.json()) as { tickets: TicketDto[]; warning?: string }
 }
