@@ -380,9 +380,11 @@ watch(
 
 onMounted(() => {
   const saved = localStorage.getItem('mentor-theme')
-  if (saved === 'dark') {
+  // Default to dark mode — only opt out if user explicitly chose light
+  if (saved !== 'light') {
     isDark.value = true
     document.documentElement.classList.add('dark')
+    if (!saved) localStorage.setItem('mentor-theme', 'dark')
   }
 })
 
