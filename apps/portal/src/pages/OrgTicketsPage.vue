@@ -100,13 +100,13 @@ onMounted(async () => {
 <template>
   <div class="space-y-6">
     <PageHeader
-      title="Org tickets"
+      title="All tickets"
       subtitle="Tickets associated with your organisation."
       :meta="loading ? 'Loading…' : `${tickets.length} ticket${tickets.length === 1 ? '' : 's'}`"
     >
       <template #actions>
-        <RouterLink to="/app/tickets" class="ui-btn-secondary bg-white/10 text-white border-white/10 hover:bg-white/15">My tickets</RouterLink>
-        <button type="button" class="ui-btn-secondary bg-white/10 text-white border-white/10 hover:bg-white/15" :disabled="loading" @click="refreshTickets">Refresh</button>
+        <RouterLink to="/app/tickets" class="ui-btn-secondary">My tickets</RouterLink>
+        <button type="button" class="ui-btn-secondary" :disabled="loading" @click="refreshTickets">Refresh</button>
       </template>
     </PageHeader>
 
@@ -214,7 +214,7 @@ onMounted(async () => {
             </template>
             <!-- Empty -->
             <tr v-else-if="!tickets.length">
-              <td colspan="7" class="px-4 py-8 text-center text-sm text-white/40">No org tickets found.</td>
+              <td colspan="7" class="px-4 py-8 text-center text-sm text-white/40">No tickets found.</td>
             </tr>
             <!-- Rows -->
             <tr

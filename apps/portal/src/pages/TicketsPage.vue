@@ -144,14 +144,14 @@ onMounted(async () => {
       :meta="loading ? 'Loading…' : `${tickets.length} ticket${tickets.length === 1 ? '' : 's'}`"
     >
       <template #actions>
-        <RouterLink to="/app/tickets/org" class="ui-btn-secondary bg-white/10 text-white border-white/10 hover:bg-white/15">Org tickets</RouterLink>
+        <RouterLink to="/app/tickets/org" class="ui-btn-secondary">All tickets</RouterLink>
         <button type="button" class="ui-btn-primary" @click="showNewTicket = !showNewTicket">
           <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
             <path clip-rule="evenodd" fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
           </svg>
           New ticket
         </button>
-        <button type="button" class="ui-btn-secondary bg-white/10 text-white border-white/10 hover:bg-white/15" :disabled="loading" @click="refreshTickets">Refresh</button>
+        <button type="button" class="ui-btn-secondary" :disabled="loading" @click="refreshTickets">Refresh</button>
       </template>
     </PageHeader>
 
@@ -257,7 +257,7 @@ onMounted(async () => {
         <div v-if="createError" class="md:col-span-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{{ createError }}</div>
         <div v-if="createSuccess" class="md:col-span-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{{ createSuccess }}</div>
         <div class="md:col-span-2 flex items-center justify-end gap-2">
-          <button type="button" class="ui-btn-secondary bg-white/10 text-white border-white/10 hover:bg-white/15" :disabled="creating" @click="showNewTicket = false">Cancel</button>
+          <button type="button" class="ui-btn-secondary" :disabled="creating" @click="showNewTicket = false">Cancel</button>
           <button type="button" class="ui-btn-primary" :disabled="!canCreate" @click="submitTicket">
             <span v-if="creating">Creating…</span>
             <span v-else>Create ticket</span>
