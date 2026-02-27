@@ -155,8 +155,22 @@ onMounted(async () => {
       </template>
     </PageHeader>
 
+    <!-- Stat card skeletons -->
+    <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
+      <div class="bg-[#14192d] rounded-xl p-5 border border-white/10 sm:col-span-2 lg:col-span-1">
+        <div class="h-2.5 w-10 rounded-full bg-white/10 mb-3" />
+        <div class="h-9 w-16 rounded-lg bg-white/10" />
+        <div class="mt-3 h-1.5 rounded-full bg-white/10" />
+      </div>
+      <div v-for="i in 5" :key="i" class="bg-[#14192d] rounded-xl p-5 border border-white/10">
+        <div class="h-2.5 w-12 rounded-full bg-white/10 mb-3" />
+        <div class="h-8 w-14 rounded-lg bg-white/10" />
+        <div class="mt-3 h-1.5 rounded-full bg-white/10" />
+      </div>
+    </div>
+
     <!-- Stat cards with animated fill bars -->
-    <div v-if="!loading && !error" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div v-else-if="!error" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <!-- Total -->
       <div class="bg-[#14192d] rounded-xl p-5 border border-white/10 sm:col-span-2 lg:col-span-1">
         <div class="text-xs font-medium uppercase tracking-wider text-white/40 mb-2">Total</div>

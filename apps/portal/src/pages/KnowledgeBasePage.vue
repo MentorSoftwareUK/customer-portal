@@ -110,11 +110,26 @@ function openArticle(article: KnowledgeBaseArticleDto) {
       {{ loadError }}
     </div>
 
-    <div v-else-if="loading" role="status" class="rounded-lg border border-white/10 bg-white/5 p-6 animate-pulse">
+    <div v-else-if="loading" class="grid gap-6 lg:grid-cols-[280px,1fr] animate-pulse">
+      <!-- Sidebar skeleton -->
+      <aside class="space-y-4">
+        <div class="rounded-xl border border-white/10 bg-[#14192d] p-4">
+          <div class="h-2.5 w-28 rounded-full bg-white/10 mb-4" />
+          <div class="space-y-2.5">
+            <div v-for="i in 6" :key="i" class="h-3 rounded-full bg-white/10" :class="i % 3 === 0 ? 'w-2/3' : 'w-4/5'" />
+          </div>
+        </div>
+      </aside>
+      <!-- Article list skeleton -->
       <div class="space-y-3">
-        <div class="h-3 w-44 rounded-full bg-white/10" />
-        <div class="h-2.5 w-72 rounded-full bg-white/10" />
-        <div class="h-2.5 w-60 rounded-full bg-white/10" />
+        <div class="h-9 w-full rounded-lg bg-white/5 border border-white/10" />
+        <div v-for="i in 8" :key="i" class="rounded-xl border border-white/10 bg-[#14192d] px-4 py-3.5 flex items-center gap-3">
+          <div class="h-4 w-4 rounded bg-white/10 shrink-0" />
+          <div class="flex-1 space-y-1.5">
+            <div class="h-3 rounded-full bg-white/10" :class="i % 2 === 0 ? 'w-1/2' : 'w-3/4'" />
+            <div class="h-2.5 w-1/3 rounded-full bg-white/10" />
+          </div>
+        </div>
       </div>
       <span class="sr-only">Loading...</span>
     </div>

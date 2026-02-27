@@ -140,16 +140,24 @@ const isSearching = computed(() => query.value.trim().length > 0)
         {{ loadError }}
       </div>
 
-      <div v-else-if="loading" role="status" class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 animate-pulse">
-        <div class="space-y-3">
-          <div class="h-3 w-32 rounded-full bg-gray-200 dark:bg-gray-700" />
-          <div class="h-2.5 w-72 rounded-full bg-gray-200 dark:bg-gray-700" />
-          <div class="h-2.5 w-64 rounded-full bg-gray-200 dark:bg-gray-700" />
+      <div v-else-if="loading" class="space-y-6 animate-pulse">
+        <div class="h-10 w-full rounded-xl bg-white/5 border border-white/10" />
+        <div>
+          <div class="h-3 w-24 rounded-full bg-white/10 mb-4" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="i in 6" :key="i" class="bg-[#14192d] border border-white/10 rounded-xl overflow-hidden">
+              <div class="aspect-video bg-white/5" />
+              <div class="p-3 space-y-2">
+                <div class="h-3 w-3/4 rounded-full bg-white/10" />
+                <div class="h-2.5 w-1/2 rounded-full bg-white/10" />
+              </div>
+            </div>
+          </div>
         </div>
         <span class="sr-only">Loading...</span>
       </div>
 
-      <div class="flex flex-col gap-3">
+      <div v-if="!loading && !loadError" class="flex flex-col gap-3">
         <div>
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Video library</h2>
         </div>
