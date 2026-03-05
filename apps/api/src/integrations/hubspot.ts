@@ -1317,3 +1317,103 @@ export async function hubspotGetContactsInList(
 
   return contacts
 }
+
+/**
+ * Search all tickets in HubSpot, paginating through all results.
+ * Returns an array of ticket objects with the requested properties.
+ */
+export async function hubspotSearchAllTickets(params: {
+  properties: string[]
+  filterGroups?: Array<{ filters: Array<{ propertyName: string; operator: string; value: string }> }>
+  limit?: number
+}): Promise<Array<{ id: string; properties: Record<string, string | null> }>> {
+  const all: Array<{ id: string; properties: Record<string, string | null> }> = []
+  let after: string | undefined
+  const pageSize = Math.min(params.limit ?? 100, 100)
+
+  for (let page = 0; page < 50; page++) {
+    const body: Record<string, unknown> = {
+      properties: params.properties,
+      limit: pageSize,
+    }
+    if (params.filterGroups) body.filterGroups = params.filterGroups
+    if (after) body.after = after
+
+    const res = await hubspotFetch('/crm/v3/objects/tickets/search', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+
+    const data = (await res.json()) as {
+      total: number
+      results: Array<{ id: string; properties: Record<string, string | null> }>
+      paging?: { next?: { after?: string } }
+    }
+
+    for (const r of data.results ?? []) {
+      all.push(r)
+    }
+
+    const nextAfter = data.paging?.next?.after
+    if (!nextAfter) break
+    after = nextAfter
+  }
+
+  return all
+}
+
+/**
+ * Search all companies in HubSpot that match one of the "live customer" true values.
+ * Returns company IDs.
+ */
+export async function hubspotSearchLiveCustomerCompanyIds(params: {
+  propertyName: string
+  trueValues: string[]
+}): Promise<string[]> {
+  if (!params.propertyName || params.trueValues.length === 0) return []
+
+  const ids: string[] = []
+
+  // HubSpot search supports IN operator for multi-value matching
+  for (const val of params.trueValues) {
+    let after: string | undefined
+    for (let page = 0; page < 20; page++) {
+      const body: Record<string, unknown> = {
+        filterGroups: [
+          {
+            filters: [
+              {
+                propertyName: params.propertyName,
+                operator: 'EQ',
+                value: val,
+              },
+            ],
+          },
+        ],
+        properties: [params.propertyName],
+        limit: 100,
+      }
+      if (after) body.after = after
+
+      const res = await hubspotFetch('/crm/v3/objects/companies/search', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      })
+
+      const data = (await res.json()) as {
+        results: Array<{ id: string }>
+        paging?: { next?: { after?: string } }
+      }
+
+      for (const r of data.results ?? []) {
+        if (r?.id) ids.push(r.id)
+      }
+
+      const nextAfter = data.paging?.next?.after
+      if (!nextAfter) break
+      after = nextAfter
+    }
+  }
+
+  return Array.from(new Set(ids))
+}

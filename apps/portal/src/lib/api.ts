@@ -474,6 +474,22 @@ export async function adminGetTicketMetrics() {
   return (await res.json()) as { metrics: AdminTicketMetrics }
 }
 
+export type AdminTicketStats = {
+  liveCustomerTicketCount: number
+  activeTicketCount: number
+  avgResponseTimeMs: number | null
+  ticketTypeVolume: Array<{ type: string; count: number }>
+}
+
+export async function adminGetTicketStats() {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/ticket-stats`, { method: 'GET' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin ticket stats failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { stats: AdminTicketStats }
+}
+
 export async function trackSessionStart(path?: string) {
   const res = await apiFetch(`${getApiBaseUrl()}/activity/session/start`, {
     method: 'POST',
