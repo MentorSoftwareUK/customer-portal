@@ -1427,3 +1427,64 @@ export async function hubspotSearchLiveCustomerCompanyIds(params: {
 
   return Array.from(new Set(ids))
 }
+
+/* ------------------------------------------------------------------ */
+/*  Batch-read ticket → company associations (v4 API)                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Given an array of ticket IDs, returns a Map<ticketId, companyId[]>
+ * using the HubSpot v4 batch associations endpoint.  Requests are
+ * chunked into groups of 100 (API limit) with a rateLimitPause
+ * between each chunk.
+ */
+export async function hubspotBatchReadTicketCompanyAssociations(
+  ticketIds: string[],
+): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>()
+  if (ticketIds.length === 0) return map
+
+  const CHUNK = 100
+  for (let i = 0; i < ticketIds.length; i += CHUNK) {
+    if (i > 0) await rateLimitPause()
+
+    const chunk = ticketIds.slice(i, i + CHUNK)
+    const res = await hubspotFetch(
+      '/crm/v4/associations/tickets/companies/batch/read',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          inputs: chunk.map((id) => ({ id })),
+        }),
+        timeout: 15_000,
+      },
+    )
+
+    if (!res.ok) {
+      console.error(
+        `[hubspot] batch associations read failed (${res.status})`,
+        await res.text().catch(() => ''),
+      )
+      continue // skip chunk rather than fail entirely
+    }
+
+    const data = (await res.json()) as {
+      results: Array<{
+        from: { id: string }
+        to: Array<{ toObjectId: number | string }>
+      }>
+    }
+
+    for (const result of data.results ?? []) {
+      const ticketId = result.from?.id
+      if (!ticketId) continue
+      const companyIds = (result.to ?? []).map((t) => String(t.toObjectId))
+      if (companyIds.length > 0) {
+        map.set(ticketId, companyIds)
+      }
+    }
+  }
+
+  return map
+}

@@ -1,0 +1,419 @@
+[dotenv@17.2.3] injecting env (47) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[dotenv@17.2.3] injecting env (1) from apps/api/.env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+{
+  "totalFiles": 200,
+  "videoCandidates": 49,
+  "sample": [
+    {
+      "id": 253576051911,
+      "name": "MentorVideoClip_03",
+      "title": "MentorVideoClip_03",
+      "ext": "mp4",
+      "type": "MOVIE",
+      "url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_03.mp4",
+      "friendly_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_03.mp4",
+      "default_hosting_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_03.mp4",
+      "meta": {
+        "allows_anonymous_access": true,
+        "duration": 29954,
+        "title": "MentorVideoClip_03",
+        "sensitive": false,
+        "ai_generated": false,
+        "search_tags": [
+          "mentor",
+          "education",
+          "software",
+          "guidance",
+          "entrepreneurship"
+        ],
+        "content_description": "The video features an interview with Dean Bennett, the co-founder of Mentor Software. He is seated comfortably, likely in a casual setting with a cozy sofa and natural light filtering through a window behind him. Bennett is dressed in a black polo shirt with the Mentor logo, exuding a professional yet approachable demeanor. \n\nThroughout the frames, he expresses his thoughts about mentorship, emphasizing its importance in helping, nurturing, and teaching individuals. His facial expressions are engaged and thoughtful, reflecting his passion for the subject. As he speaks, he gestures occasionally, enhancing his points with a sense of enthusiasm.\n\nThe background is subtly blurred, keeping the focus on Bennett and allowing the conversation's gravity to resonate. The overall atmosphere of the video is warm and inviting, underscoring the theme of mentorship and personal growth. The visual elements work together to create a compelling narrative about the values and mission of Mentor Software.",
+        "is_advanced_video": false,
+        "indexable": true
+      }
+    },
+    {
+      "id": 253576093892,
+      "name": "MentorVideoClip_01_V3 (2)",
+      "title": "MentorVideoClip_01_V3 (2)",
+      "ext": "mp4",
+      "type": "MOVIE",
+      "url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_01_V3%20(2).mp4",
+      "friendly_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_01_V3%20(2).mp4",
+      "default_hosting_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_01_V3%20(2).mp4",
+      "meta": {
+        "allows_anonymous_access": true,
+        "duration": 51541,
+        "title": "MentorVideoClip_01_V3 (2)",
+        "sensitive": false,
+        "ai_generated": false,
+        "search_tags": [
+          "mentorship",
+          "AI integration",
+          "software development",
+          "childcare",
+          "entrepreneurship"
+        ],
+        "content_description": "The video features Ranjit Singh Bains, co-founder of Mentor Software, seated comfortably in a well-lit room with large windows that allow natural light to filter in. The setting is relaxed, with a modern couch adorned with pillows. Ranjit wears a black polo shirt featuring the Mentor logo and speaks animatedly, using hand gestures to emphasize his points. \n\nThroughout the frames, he conveys enthusiasm and pride as he discusses his journey and the evolution of Mentor Software. His expressions shift between thoughtful reflection and excitement, particularly when mentioning the future potential of their projects, including the integration of AI. The overall atmosphere is one of optimism and determination, highlighting Ranjit’s passion for his work and his commitment to making a positive impact in the childcare industry.",
+        "is_advanced_video": false,
+        "indexable": true
+      }
+    },
+    {
+      "id": 253602002121,
+      "name": "MentorVideoClip_06",
+      "title": "MentorVideoClip_06",
+      "ext": "mp4",
+      "type": "MOVIE",
+      "url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_06.mp4",
+      "friendly_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_06.mp4",
+      "default_hosting_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_06.mp4",
+      "meta": {
+        "allows_anonymous_access": true,
+        "duration": 27748,
+        "title": "MentorVideoClip_06",
+        "sensitive": false,
+        "ai_generated": false,
+        "search_tags": [
+          "inspection process",
+          "Mentor Software",
+          "navigation ease",
+          "user feedback",
+          "Ranjit Singh Bains"
+        ],
+        "content_description": "The video features Ranjit Singh Bains, co-founder of Mentor Software, speaking in a well-lit, comfortable indoor setting, likely a living room or office. He is dressed in a black polo shirt with the Mentor logo, exuding a professional yet approachable demeanor. \n\nThroughout the frames, he employs expressive hand gestures to emphasize his points, discussing the ease of navigation within a system used by inspectors. His facial expressions convey confidence and engagement as he articulates the benefits of the software, highlighting its alignment with regulatory practices. The background includes a large window, allowing natural light to filter in, with a view of trees outside, suggesting a calm and inviting atmosphere. \n\nThe visuals consistently focus on him, capturing a range of expressions from thoughtful contemplation to animated discussion, reflecting his passion for the subject and the positive feedback received from users of the software. The overall tone is informative and conversa",
+        "is_advanced_video": false,
+        "indexable": true
+      }
+    },
+    {
+      "id": 253602002125,
+      "name": "MentorVideoClip_05",
+      "title": "MentorVideoClip_05",
+      "ext": "mp4",
+      "type": "MOVIE",
+      "url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_05.mp4",
+      "friendly_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_05.mp4",
+      "default_hosting_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/Nuture%20videos/MentorVideoClip_05.mp4",
+      "meta": {
+        "allows_anonymous_access": true,
+        "duration": 38615,
+        "title": "MentorVideoClip_05",
+        "sensitive": false,
+        "ai_generated": false,
+        "search_tags": [
+          "mentorship",
+          "software",
+          "regulatory compliance",
+          "operational efficiency",
+          "purpose-driven design"
+        ],
+        "content_description": "The video features Ranjit Singh Bains, the co-founder of Mentor Software, speaking in a well-lit, cozy setting with large windows that provide a view of the outdoors. He is casually dressed in a black polo shirt with the Mentor logo. Throughout the video, Ranjit gestures expressively with his hands, emphasizing his points as he discusses the purpose and functionality of systems in a professional context.\n\nThe visuals capture him from various angles, with close-ups of his face and hands, allowing viewers to observe his animated expressions and gestures. He engages the audience confidently, as he articulates the importance of understanding the outcomes and regulatory implications of different functions within systems. His demeanor is thoughtful, reflecting a deep consideration of the topic at hand, while the natural light streaming through the windows adds a warm, inviting atmosphere to the scene. The overall impression is one of expertise and clarity, as he aims to convey meaningful ins",
+        "is_advanced_video": false,
+        "indexable": true
+      }
+    },
+    {
+      "id": 264764308719,
+      "name": "V3 - 0.0 Loggin In",
+      "title": "V3 - 0.0 Loggin In",
+      "ext": "webm",
+      "type": "MOVIE",
+      "url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.0%20Loggin%20In.webm",
+      "friendly_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.0%20Loggin%20In.webm",
+      "default_hosting_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.0%20Loggin%20In.webm",
+      "meta": {
+        "allows_anonymous_access": true,
+        "duration": 21150,
+        "title": "V3 - 0.0 Loggin In",
+        "sensitive": false,
+        "ai_generated": false,
+        "search_tags": [
+          "password",
+          "onboarding",
+          "login",
+          "Mentor software",
+          "email"
+        ],
+        "content_description": "The video showcases the login process for the \"Mentor\" software, featuring a series of screens that guide the user through entering their credentials. \n\n1. **Login Screen**: The initial screens display a clean, user-friendly login interface with fields for email and password. The branding of \"M Mentor\" is prominent, with a purple and white color scheme.\n\n2. **Onboarding Steps**: After successful login, the user is presented with an onboarding dashboard. This screen outlines various onboarding steps, including account confirmation, terms and conditions, organizational setup, and more. Each step has a corresponding \"Start\" button, encouraging user interaction.\n\n3. **Visual Elements**: The screens are visually consistent, maintaining a simple design that focuses on usability. The presence of loading indicators signifies transitions between steps, ensuring the user is aware of ongoing processes.\n\nOverall, the visuals emphasize a straightforward and intuitive user experience, guiding the us",
+        "is_advanced_video": false,
+        "indexable": true
+      }
+    },
+    {
+      "id": 264764308723,
+      "name": "V3 - 0.1 Credentials",
+      "title": "V3 - 0.1 Credentials",
+      "ext": "webm",
+      "type": "MOVIE",
+      "url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.1%20Credentials.webm",
+      "friendly_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.1%20Credentials.webm",
+      "default_hosting_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.1%20Credentials.webm",
+      "meta": {
+        "allows_anonymous_access": true,
+        "duration": 47800,
+        "video_data": {
+          "format_name": null,
+          "format_long_name": null,
+          "duration": 0,
+          "bitrate": 0,
+          "source_cloud_key": null,
+          "source_version": null,
+          "source_bitrate": null,
+          "source_size": null,
+          "hosting_infos": [
+            {
+              "provider": "HUBSPOT_VIDEO_2",
+              "id": 0,
+              "status": "ENABLED"
+            }
+          ],
+          "streams": []
+        },
+        "title": "V3 - 0.1 Credentials",
+        "sensitive": false,
+        "ai_generated": false,
+        "search_tags": [
+          "user setup",
+          "credentials",
+          "password reset",
+          "onboarding",
+          "multi-factor authentication"
+        ],
+        "content_description": "The video presents a step-by-step onboarding process for a software platform called Mentor. The initial frames display a user interface with a welcome message and a list of onboarding steps, including sections for Credentials, Terms and Conditions, Organization, Homes, Roles and Permissions, and Staff.\n\nAs the video progresses, the user focuses on the \"Credentials\" section, where they are prompted to reset their password and set a PIN. The interface shows input fields for entering and confirming the password and PIN. Instructions guide the user to ensure that the password meets security criteria.\n\nSubsequent frames introduce the multi-factor authentication (MFA) setup, where the user is instructed to download an authentication app and scan a QR code. The user is also required to enter a verification code to complete the setup.\n\nOverall, the visuals emphasize a structured, user-friendly approach to onboarding, with clear navigation and prompts for necessary actions to secure the account",
+        "is_advanced_video": true,
+        "indexable": true
+      }
+    },
+    {
+      "id": 264764308727,
+      "name": "V3 - 0.2 Terms and Conditions",
+      "title": "V3 - 0.2 Terms and Conditions",
+      "ext": "webm",
+      "type": "MOVIE",
+      "url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.2%20Terms%20and%20Conditions.webm",
+      "friendly_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.2%20Terms%20and%20Conditions.webm",
+      "default_hosting_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.2%20Terms%20and%20Conditions.webm",
+      "meta": {
+        "allows_anonymous_access": true,
+        "duration": 35801,
+        "video_data": {
+          "format_name": null,
+          "format_long_name": null,
+          "duration": 0,
+          "bitrate": 0,
+          "source_cloud_key": null,
+          "source_version": null,
+          "source_bitrate": null,
+          "source_size": null,
+          "hosting_infos": [
+            {
+              "provider": "HUBSPOT_VIDEO_2",
+              "id": 0,
+              "status": "ENABLED"
+            }
+          ],
+          "streams": []
+        },
+        "title": "V3 - 0.2 Terms and Conditions",
+        "sensitive": false,
+        "ai_generated": false,
+        "search_tags": [
+          "Terms and Conditions",
+          "User Agreement",
+          "Mentor Software",
+          "Onboarding Process",
+          "MFA Setup"
+        ],
+        "content_description": "The video showcases a step-by-step onboarding process for a software application called Mentor. \n\n1. **Initial Setup Screens**: The visuals begin with a dashboard displaying the onboarding steps. The user is welcomed with a message including their name. The left panel lists several steps, such as \"Credentials,\" \"Terms and Conditions,\" and others, with the currently active step highlighted.\n\n2. **MFA Setup**: The first few frames focus on the \"Credentials\" section, detailing Multi-Factor Authentication (MFA) setup. Instructions are provided on how to use authentication apps, featuring a QR code for scanning. A field for entering a verification code is also visible.\n\n3. **Transition to Terms and Conditions**: The visuals transition to the \"Terms and Conditions\" section. The text outlines various legal agreements, responsibilities, and privacy policies related to using the software. There are checkboxes for agreement.\n\n4. **Completion Confirmation**: The final frames illustrate the user c",
+        "is_advanced_video": true,
+        "indexable": true
+      }
+    },
+    {
+      "id": 264764309693,
+      "name": "V3 - 0.4 Homes",
+      "title": "V3 - 0.4 Homes",
+      "ext": "webm",
+      "type": "MOVIE",
+      "url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.4%20Homes.webm",
+      "friendly_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.4%20Homes.webm",
+      "default_hosting_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.4%20Homes.webm",
+      "meta": {
+        "allows_anonymous_access": true,
+        "duration": 90972,
+        "video_data": {
+          "format_name": null,
+          "format_long_name": null,
+          "duration": 0,
+          "bitrate": 0,
+          "source_cloud_key": null,
+          "source_version": null,
+          "source_bitrate": null,
+          "source_size": null,
+          "hosting_infos": [
+            {
+              "provider": "HUBSPOT_VIDEO_2",
+              "id": 0,
+              "status": "ENABLED"
+            }
+          ],
+          "streams": []
+        },
+        "title": "V3 - 0.4 Homes",
+        "sensitive": false,
+        "ai_generated": false,
+        "search_tags": [
+          "childrens services",
+          "software tutorial",
+          "homes",
+          "onboarding",
+          "data entry"
+        ],
+        "content_description": "The video showcases a user interface for a software application designed for managing homes within an organization, likely related to care services. The visuals primarily consist of a clean, structured dashboard with a sidebar navigation menu and a main content area.\n\n1. **Dashboard Overview**: The top section includes a welcome message and highlights the current step in the onboarding process, which is the \"Homes\" section. The sidebar presents various steps, such as \"Credentials,\" \"Terms and Conditions,\" \"Organization,\" \"Homes,\" \"Roles and Permissions,\" and \"Staff.\"\n\n2. **Home Addition Form**: The central panel is dedicated to adding new homes. It features fields for essential details like the home name, type, contact information (email and phone), the date of the last Ofsted inspection, and a unique reference number (URN). The input fields are designed for straightforward data entry.\n\n3. **Homes List**: To the right, there’s a section that displays the homes already added, categorize",
+        "is_advanced_video": true,
+        "indexable": true
+      }
+    },
+    {
+      "id": 264764309697,
+      "name": "V3 - 1.1 Initial Login",
+      "title": "V3 - 1.1 Initial Login",
+      "ext": "webm",
+      "type": "MOVIE",
+      "url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%201.1%20Initial%20Login.webm",
+      "friendly_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%201.1%20Initial%20Login.webm",
+      "default_hosting_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%201.1%20Initial%20Login.webm",
+      "meta": {
+        "allows_anonymous_access": true,
+        "duration": 108475,
+        "video_data": {
+          "format_name": null,
+          "format_long_name": null,
+          "duration": 0,
+          "bitrate": 0,
+          "source_cloud_key": null,
+          "source_version": null,
+          "source_bitrate": null,
+          "source_size": null,
+          "hosting_infos": [
+            {
+              "provider": "HUBSPOT_VIDEO_2",
+              "id": 0,
+              "status": "ENABLED"
+            }
+          ],
+          "streams": []
+        },
+        "sensitive": false,
+        "ai_generated": false,
+        "content_description": "Upon receiving the email from Mentor Software, you then have access to the system. Navigate to the link from the email. You'll be presented with a login page. Enter the email address used and the password that it generated for you. We then click Login. Clicking Login will then ask you to populate your credentials. You want to click Start. We will then update our password. (keyboard clacking) It'll advise you if it doesn't match or if it does match. We also then want to set our PIN, which is what we use to digitally sign off our records. (keyboard clacking) Once that has been set, you can set up multi-factor authentication, or we can just click Save. Once that has been completed, we will then need to confirm the terms and conditions. We click Start. We then read and review the terms and conditions, confirm that we agree. This will then pop... generate a green Save button. Once we click Save, we're then gonna be told that everything is ready to go, and we can now start using the app. If",
+        "is_advanced_video": true,
+        "indexable": true
+      }
+    },
+    {
+      "id": 264792074459,
+      "name": "V3 - 0.6.1 Staff email",
+      "title": "V3 - 0.6.1 Staff email",
+      "ext": "webm",
+      "type": "MOVIE",
+      "url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.6.1%20Staff%20email.webm",
+      "friendly_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.6.1%20Staff%20email.webm",
+      "default_hosting_url": "https://145032754.fs1.hubspotusercontent-eu1.net/hubfs/145032754/V3%20-%200.6.1%20Staff%20email.webm",
+      "meta": {
+        "allows_anonymous_access": true,
+        "duration": 29853,
+        "video_data": {
+          "format_name": null,
+          "format_long_name": null,
+          "duration": 0,
+          "bitrate": 0,
+          "source_cloud_key": null,
+          "source_version": null,
+          "source_bitrate": null,
+          "source_size": null,
+          "hosting_infos": [
+            {
+              "provider": "HUBSPOT_VIDEO_2",
+              "id": 0,
+              "status": "ENABLED"
+            }
+          ],
+          "streams": []
+        },
+        "title": "V3 - 0.6.1 Staff email",
+        "sensitive": false,
+        "ai_generated": false,
+        "search_tags": [
+          "User Setup",
+          "Software Access",
+          "Password Reset",
+          "Mentorship",
+          "Email Notification"
+        ],
+        "content_description": "The video appears to focus on the process of onboarding new staff members within a software system called Mentor Software. \n\nThe visuals prominently feature the Mentor logo, which consists of a bold \"M\" within a circular pink outline, set against a dark blue background. This logo is consistently displayed in various frames, emphasizing its importance in the branding.\n\nAs the frames progress, the viewer sees an email interface that provides critical onboarding information. The email is structured to inform the new staff member about their account setup, detailing the username, a temporary password, and a link to access the system. Key instructions prompt the new user to log in and reset their password upon first access. \n\nOverall, the visuals are clear and professional, effectively conveying the necessary information for new staff onboarding in a straightforward manner. The use of color and branding elements creates a cohesive look throughout the video.",
+        "is_advanced_video": true,
+        "indexable": true
+      }
+    }
+  ],
+  "firstDetail": {
+    "id": 253576051911,
+    "name": "MentorVideoClip_03",
+    "title": "MentorVideoClip_03",
+    "keys": [
+      "archived",
+      "cdn_purge_embargo_time",
+      "cloud_key",
+      "cloud_key_hash",
+      "composite_access",
+      "created",
+      "created_by",
+      "default_hosting_url",
+      "deleted_at",
+      "deleted_by",
+      "encoding",
+      "expires_at",
+      "extended_metadata",
+      "extension",
+      "file_hash",
+      "folder_id",
+      "friendly_url",
+      "height",
+      "hidden",
+      "id",
+      "is_indexable",
+      "meta",
+      "name",
+      "owners",
+      "portal_id",
+      "replaceable",
+      "s3_url",
+      "size",
+      "source_group",
+      "teams",
+      "title",
+      "type",
+      "updated",
+      "url",
+      "width"
+    ],
+    "meta": {
+      "allows_anonymous_access": true,
+      "duration": 29954,
+      "title": "MentorVideoClip_03",
+      "sensitive": false,
+      "ai_generated": false,
+      "search_tags": [
+        "mentor",
+        "education",
+        "software",
+        "guidance",
+        "entrepreneurship"
+      ],
+      "content_description": "The video features an interview with Dean Bennett, the co-founder of Mentor Software. He is seated comfortably, likely in a casual setting with a cozy sofa and natural light filtering through a window behind him. Bennett is dressed in a black polo shirt with the Mentor logo, exuding a professional yet approachable demeanor. \n\nThroughout the frames, he expresses his thoughts about mentorship, emphasizing its importance in helping, nurturing, and teaching individuals. His facial expressions are engaged and thoughtful, reflecting his passion for the subject. As he speaks, he gestures occasionally, enhancing his points with a sense of enthusiasm.\n\nThe background is subtly blurred, keeping the focus on Bennett and allowing the conversation's gravity to resonate. The overall atmosphere of the video is warm and inviting, underscoring the theme of mentorship and personal growth. The visual elements work together to create a compelling narrative about the values and mission of Mentor Software.",
+      "is_advanced_video": false,
+      "indexable": true
+    }
+  }
+}

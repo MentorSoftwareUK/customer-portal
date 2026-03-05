@@ -4,7 +4,7 @@ import { env } from '../env'
 import {
   hubspotSearchAllTickets,
   hubspotSearchLiveCustomerCompanyIds,
-  hubspotListTicketIdsForCompany,
+  hubspotBatchReadTicketCompanyAssociations,
   hubspotListTicketPipelines,
 } from '../integrations/hubspot'
 
@@ -20,11 +20,6 @@ type TicketStatus = 'Open' | 'Pending' | 'Closed'
 // Cache for the stats (expensive cross-object query)
 let statsCache: { ts: number; data: AdminTicketStatsDto } | null = null
 const STATS_CACHE_TTL_MS = 5 * 60_000 // 5 minutes
-
-/** Pause for `ms` milliseconds — used to stay under HubSpot's per-second rate limit. */
-function sleep(ms: number) {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms))
-}
 
 export const adminTicketStatsRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', async (req, reply) => {
@@ -43,7 +38,7 @@ export const adminTicketStatsRoutes: FastifyPluginAsync = async (app) => {
     }
 
     try {
-      // 1. Build stage → status map from pipelines
+      // 1. Build stage → status map from pipelines (uses internal cache, fast)
       const pipelines = await hubspotListTicketPipelines()
       const stageMap = new Map<string, TicketStatus>()
       for (const p of pipelines ?? []) {
@@ -63,10 +58,7 @@ export const adminTicketStatsRoutes: FastifyPluginAsync = async (app) => {
       }
       stageMap.set('4', stageMap.get('4') ?? 'Closed')
 
-      // Throttle before the next search call
-      await sleep(350)
-
-      // 2. Fetch all tickets with relevant properties
+      // 2. Fetch all tickets with relevant properties (paginated, throttled internally)
       const allTickets = await hubspotSearchAllTickets({
         properties: [
           'subject',
@@ -80,7 +72,7 @@ export const adminTicketStatsRoutes: FastifyPluginAsync = async (app) => {
         ],
       })
 
-      // 3. Compute active tickets (Open or Pending)
+      // 3. Compute active tickets, response times, categories (local, instant)
       let activeTicketCount = 0
       const responseTimes: number[] = []
       const categoryMap = new Map<string, number>()
@@ -94,13 +86,11 @@ export const adminTicketStatsRoutes: FastifyPluginAsync = async (app) => {
           activeTicketCount++
         }
 
-        // Response time
         const ttr = p['hs_time_to_first_agent_reply'] ? Number(p['hs_time_to_first_agent_reply']) : NaN
         if (Number.isFinite(ttr) && ttr > 0) {
           responseTimes.push(ttr)
         }
 
-        // Category / type
         const category = (p['hs_ticket_category'] ?? '').trim() || 'Uncategorised'
         categoryMap.set(category, (categoryMap.get(category) ?? 0) + 1)
       }
@@ -113,49 +103,40 @@ export const adminTicketStatsRoutes: FastifyPluginAsync = async (app) => {
         .map(([type, count]) => ({ type, count }))
         .sort((a, b) => b.count - a.count)
 
-      // 4. Live customer ticket count
+      // 4. Live customer ticket count — uses batch associations (few API calls)
+      //    instead of per-company lookups which caused rate limiting.
       let liveCustomerTicketCount = 0
       const liveProp = env.HUBSPOT_LIVE_CUSTOMER_PROPERTY
       const liveTrueRaw = env.HUBSPOT_LIVE_CUSTOMER_TRUE_VALUES
       const liveTrue = liveTrueRaw
-        ? liveTrueRaw
-            .split(',')
-            .map((v) => v.trim().toLowerCase())
-            .filter(Boolean)
+        ? liveTrueRaw.split(',').map((v) => v.trim().toLowerCase()).filter(Boolean)
         : []
 
-      if (liveProp && liveTrue.length > 0) {
+      if (liveProp && liveTrue.length > 0 && allTickets.length > 0) {
         try {
-          await sleep(350)
+          // 4a. Get all live company IDs (1 search call per true value, throttled)
           const liveCompanyIds = await hubspotSearchLiveCustomerCompanyIds({
             propertyName: liveProp,
             trueValues: liveTrue,
           })
 
           if (liveCompanyIds.length > 0) {
-            // Get ticket IDs for live companies — throttled to avoid HubSpot rate limits.
-            // Process in small batches of 3 with a pause between each batch.
-            const liveTicketIdSet = new Set<string>()
-            const batchSize = 3
-            for (let i = 0; i < liveCompanyIds.length; i += batchSize) {
-              if (i > 0) await sleep(350)
-              const batch = liveCompanyIds.slice(i, i + batchSize)
-              const results = await Promise.all(
-                batch.map((companyId) => hubspotListTicketIdsForCompany(companyId)),
-              )
-              for (const ticketIds of results) {
-                for (const tid of ticketIds) liveTicketIdSet.add(tid)
+            const liveCompanyIdSet = new Set(liveCompanyIds)
+
+            // 4b. Batch-read ticket→company associations for all tickets.
+            //     This is 1 API call per 100 tickets — far fewer than per-company lookups.
+            const ticketIds = allTickets.map((t) => t.id)
+            const ticketCompanyMap = await hubspotBatchReadTicketCompanyAssociations(ticketIds)
+
+            // 4c. Count tickets whose associated companies include a live company
+            for (const [_ticketId, companyIds] of ticketCompanyMap) {
+              if (companyIds.some((cid) => liveCompanyIdSet.has(cid))) {
+                liveCustomerTicketCount++
               }
-            }
-            // Count how many of our total tickets are live customer tickets
-            const allTicketIdSet = new Set(allTickets.map((t) => t.id))
-            for (const tid of liveTicketIdSet) {
-              if (allTicketIdSet.has(tid)) liveCustomerTicketCount++
             }
           }
         } catch (e) {
           console.warn('[admin-ticket-stats] Failed to compute live customer ticket count:', e)
-          // Continue without live customer data
         }
       }
 
