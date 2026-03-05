@@ -21,6 +21,11 @@ type TicketStatus = 'Open' | 'Pending' | 'Closed'
 let statsCache: { ts: number; data: AdminTicketStatsDto } | null = null
 const STATS_CACHE_TTL_MS = 5 * 60_000 // 5 minutes
 
+/** Pause for `ms` milliseconds — used to stay under HubSpot's per-second rate limit. */
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms))
+}
+
 export const adminTicketStatsRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', async (req, reply) => {
     const ok = await requireAdmin(req, reply)
@@ -57,6 +62,9 @@ export const adminTicketStatsRoutes: FastifyPluginAsync = async (app) => {
         }
       }
       stageMap.set('4', stageMap.get('4') ?? 'Closed')
+
+      // Throttle before the next search call
+      await sleep(350)
 
       // 2. Fetch all tickets with relevant properties
       const allTickets = await hubspotSearchAllTickets({
@@ -118,17 +126,26 @@ export const adminTicketStatsRoutes: FastifyPluginAsync = async (app) => {
 
       if (liveProp && liveTrue.length > 0) {
         try {
+          await sleep(350)
           const liveCompanyIds = await hubspotSearchLiveCustomerCompanyIds({
             propertyName: liveProp,
             trueValues: liveTrue,
           })
 
           if (liveCompanyIds.length > 0) {
-            // Get ticket IDs for all live companies
+            // Get ticket IDs for live companies — throttled to avoid HubSpot rate limits.
+            // Process in small batches of 3 with a pause between each batch.
             const liveTicketIdSet = new Set<string>()
-            for (const companyId of liveCompanyIds) {
-              const ticketIds = await hubspotListTicketIdsForCompany(companyId)
-              for (const tid of ticketIds) liveTicketIdSet.add(tid)
+            const batchSize = 3
+            for (let i = 0; i < liveCompanyIds.length; i += batchSize) {
+              if (i > 0) await sleep(350)
+              const batch = liveCompanyIds.slice(i, i + batchSize)
+              const results = await Promise.all(
+                batch.map((companyId) => hubspotListTicketIdsForCompany(companyId)),
+              )
+              for (const ticketIds of results) {
+                for (const tid of ticketIds) liveTicketIdSet.add(tid)
+              }
             }
             // Count how many of our total tickets are live customer tickets
             const allTicketIdSet = new Set(allTickets.map((t) => t.id))

@@ -1318,9 +1318,14 @@ export async function hubspotGetContactsInList(
   return contacts
 }
 
+/** Small delay helper to stay under HubSpot's per-second rate limit. */
+function rateLimitPause(ms = 350): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 /**
  * Search all tickets in HubSpot, paginating through all results.
- * Returns an array of ticket objects with the requested properties.
+ * Includes a short pause between pages to avoid HubSpot's per-second rate limit.
  */
 export async function hubspotSearchAllTickets(params: {
   properties: string[]
@@ -1332,6 +1337,8 @@ export async function hubspotSearchAllTickets(params: {
   const pageSize = Math.min(params.limit ?? 100, 100)
 
   for (let page = 0; page < 50; page++) {
+    if (page > 0) await rateLimitPause()
+
     const body: Record<string, unknown> = {
       properties: params.properties,
       limit: pageSize,
@@ -1374,10 +1381,13 @@ export async function hubspotSearchLiveCustomerCompanyIds(params: {
 
   const ids: string[] = []
 
-  // HubSpot search supports IN operator for multi-value matching
+  // Search per true-value with throttling to avoid HubSpot rate limits.
+  let callCount = 0
   for (const val of params.trueValues) {
     let after: string | undefined
     for (let page = 0; page < 20; page++) {
+      if (callCount > 0) await rateLimitPause()
+      callCount++
       const body: Record<string, unknown> = {
         filterGroups: [
           {
