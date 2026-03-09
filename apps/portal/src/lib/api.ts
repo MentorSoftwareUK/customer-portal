@@ -490,6 +490,23 @@ export async function adminGetTicketStats() {
   return (await res.json()) as { stats: AdminTicketStats }
 }
 
+export type AdminDashboardStats = {
+  liveCompanyCount: number
+  liveUserCount: number
+  totalHomes: number
+  totalChildrensHomes: number
+  totalSupportedAccommodation: number
+}
+
+export async function adminGetDashboardStats() {
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/dashboard-stats`, { method: 'GET' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin dashboard stats failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { stats: AdminDashboardStats }
+}
+
 export async function trackSessionStart(path?: string) {
   const res = await apiFetch(`${getApiBaseUrl()}/activity/session/start`, {
     method: 'POST',

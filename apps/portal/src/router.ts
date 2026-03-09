@@ -32,6 +32,7 @@ const AdminNotificationsPage = () => import('./pages/admin/AdminNotificationsPag
 const AdminLoginPage = () => import('./pages/admin/AdminLoginPage.vue')
 const AdminHubspotAuditPage = () => import('./pages/admin/AdminHubspotAuditPage.vue')
 const AdminTicketStatsPage = () => import('./pages/admin/AdminTicketStatsPage.vue')
+const AdminDashboardPage = () => import('./pages/admin/AdminDashboardPage.vue')
 
 export const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/login' },
@@ -68,7 +69,8 @@ export const routes: RouteRecordRaw[] = [
     path: '/admin',
     component: AdminShell,
     children: [
-      { path: '', redirect: '/admin/events' },
+      { path: '', redirect: '/admin/dashboard' },
+      { path: 'dashboard', component: AdminDashboardPage },
       { path: 'events', component: AdminEventsPage },
       { path: 'events/:id', component: AdminEventDetailPage },
       { path: 'reports', component: AdminReportsPage },

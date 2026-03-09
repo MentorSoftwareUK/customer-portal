@@ -27,6 +27,7 @@ type QuickFindItem = {
 }
 
 const findItems: QuickFindItem[] = [
+  { label: 'Admin: Dashboard', to: '/admin/dashboard', description: 'Customer overview stats', keywords: ['home', 'stats', 'companies', 'homes'] },
   { label: 'Admin: Events', to: '/admin/events', description: 'Manage events and pricing', keywords: ['sessions', 'webinars'] },
   { label: 'Admin: Reports', to: '/admin/reports', description: 'Event performance snapshots', keywords: ['analytics', 'metrics'] },
   { label: 'Admin: Email', to: '/admin/email', description: 'Email templates and schedules', keywords: ['notifications'] },
@@ -145,7 +146,7 @@ onUnmounted(() => {
             <span class="sr-only">Toggle sidebar</span>
           </button>
 
-          <RouterLink to="/admin/events" class="mr-4 flex h-full items-center">
+          <RouterLink to="/admin/dashboard" class="mr-4 flex h-full items-center">
             <img src="/logo.png" alt="Mentor" class="h-12 w-auto rounded object-contain" />
           </RouterLink>
         </div>
@@ -362,6 +363,27 @@ onUnmounted(() => {
         </form>
 
         <ul class="space-y-2">
+          <li>
+            <RouterLink
+              to="/admin/dashboard"
+              class="group flex items-center rounded-lg p-2 text-base font-medium"
+              :class="isActive('/admin/dashboard') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+            >
+              <svg
+                aria-hidden="true"
+                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"
+                ></path>
+              </svg>
+              <span class="ml-3">Dashboard</span>
+            </RouterLink>
+          </li>
+
           <li>
             <RouterLink
               to="/admin/events"
