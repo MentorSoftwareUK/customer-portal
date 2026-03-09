@@ -514,12 +514,19 @@ export type SalesFunnelStage = {
   order: number
 }
 
+export type SalesFunnelPerForm = {
+  formName: string
+  submissions: number
+  mqls: number
+}
+
 export type SalesFunnel = {
   month: string
-  submissions: number
+  formSubmissions: number
   leads: number
   sql: number
   demos: number
+  perForm: SalesFunnelPerForm[]
   byStage: SalesFunnelStage[]
 }
 
