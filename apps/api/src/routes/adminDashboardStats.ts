@@ -69,6 +69,7 @@ export const adminDashboardStatsRoutes: FastifyPluginAsync = async (app) => {
       let liveUserCount = 0
 
       const companyProperties = [
+        'number_of_homes',
         'number_of_homes__ch_',
         'number_of_homes__sa_',
         'number_of_homes__18__',
@@ -102,9 +103,13 @@ export const adminDashboardStatsRoutes: FastifyPluginAsync = async (app) => {
           const soloCh = Number(company.properties['number_of_homes__solo_ch_']) || 0
           const contacts = Number(company.properties['num_associated_contacts']) || 0
 
+          // number_of_homes is a string type; parse it, fall back to subcategory sum
+          const homesRaw = parseFloat(String(company.properties['number_of_homes'] ?? '')) || 0
+          const subcategorySum = ch + sa + over18 + mbu + soloCh
+
           totalChildrensHomes += ch
           totalSupportedAccommodation += sa
-          totalHomes += ch + sa + over18 + mbu + soloCh
+          totalHomes += homesRaw > 0 ? homesRaw : subcategorySum
           liveUserCount += contacts
         }
 
