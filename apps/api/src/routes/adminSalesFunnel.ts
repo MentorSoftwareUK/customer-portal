@@ -12,6 +12,8 @@ export type SalesFunnelDto = {
   formSubmissions: number
   /** Leads created in the lead pipeline (excl. disqualified). */
   leads: number
+  /** Disqualified leads count. */
+  disqualified: number
   /** Leads that reached SQL stage or beyond (Discovery Call Made+). */
   sql: number
   /** Leads that reached Demo Completed or beyond. */
@@ -333,6 +335,7 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
         (l) => l.properties.hs_pipeline_stage !== 'unqualified-stage-id',
       )
       const leads = activeLeads.length
+      const disqualified = monthLeads.length - leads
 
       const sql = activeLeads.filter(
         (l) => stageOrder(l.properties.hs_pipeline_stage ?? '') >= SQL_THRESHOLD_ORDER,
@@ -362,6 +365,7 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
         month: monthParam,
         formSubmissions: totalFormSubmissions,
         leads,
+        disqualified,
         sql,
         demos,
         perForm,

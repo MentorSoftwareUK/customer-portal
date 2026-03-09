@@ -62,14 +62,15 @@ async function loadFunnel() {
   }
 }
 
-/** Computed funnel bars (widths relative to form submissions) */
+/** Computed funnel bars (widths relative to total leads in pipeline) */
 const funnelBars = computed(() => {
   if (!funnel.value) return []
   const f = funnel.value
-  const max = Math.max(f.formSubmissions, 1)
+  const total = f.leads + f.disqualified
+  const max = Math.max(total, 1)
   return [
-    { label: 'Form submissions', value: f.formSubmissions, pct: 100, color: 'bg-indigo-500' },
-    { label: 'MQLs (leads)', value: f.leads, pct: Math.round((f.leads / max) * 100), color: 'bg-sky-500' },
+    { label: 'Leads created', value: total, pct: 100, color: 'bg-indigo-500' },
+    { label: 'Active leads', value: f.leads, pct: Math.round((f.leads / max) * 100), color: 'bg-sky-500' },
     { label: 'SQL', value: f.sql, pct: Math.round((f.sql / max) * 100), color: 'bg-emerald-500' },
     { label: 'Demos', value: f.demos, pct: Math.round((f.demos / max) * 100), color: 'bg-amber-500' },
   ]
@@ -205,12 +206,12 @@ onMounted(() => {
         <!-- Conversion rates -->
         <div class="mt-4 flex flex-wrap gap-3">
           <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center">
-            <div class="text-lg font-semibold text-white">{{ funnel.formSubmissions > 0 ? Math.round((funnel.leads / funnel.formSubmissions) * 100) : 0 }}%</div>
-            <div class="text-[10px] uppercase tracking-wide text-white/40">Sub → MQL</div>
+            <div class="text-lg font-semibold text-white">{{ (funnel.leads + funnel.disqualified) > 0 ? Math.round((funnel.leads / (funnel.leads + funnel.disqualified)) * 100) : 0 }}%</div>
+            <div class="text-[10px] uppercase tracking-wide text-white/40">Qualified rate</div>
           </div>
           <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center">
             <div class="text-lg font-semibold text-white">{{ funnel.leads > 0 ? Math.round((funnel.sql / funnel.leads) * 100) : 0 }}%</div>
-            <div class="text-[10px] uppercase tracking-wide text-white/40">MQL → SQL</div>
+            <div class="text-[10px] uppercase tracking-wide text-white/40">Lead → SQL</div>
           </div>
           <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center">
             <div class="text-lg font-semibold text-white">{{ funnel.sql > 0 ? Math.round((funnel.demos / funnel.sql) * 100) : 0 }}%</div>

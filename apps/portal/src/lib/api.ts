@@ -524,6 +524,7 @@ export type SalesFunnel = {
   month: string
   formSubmissions: number
   leads: number
+  disqualified: number
   sql: number
   demos: number
   perForm: SalesFunnelPerForm[]
