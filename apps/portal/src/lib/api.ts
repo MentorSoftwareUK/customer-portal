@@ -507,6 +507,32 @@ export async function adminGetDashboardStats() {
   return (await res.json()) as { stats: AdminDashboardStats }
 }
 
+export type SalesFunnelStage = {
+  stageId: string
+  label: string
+  count: number
+  order: number
+}
+
+export type SalesFunnel = {
+  month: string
+  submissions: number
+  leads: number
+  sql: number
+  demos: number
+  byStage: SalesFunnelStage[]
+}
+
+export async function adminGetSalesFunnel(month?: string) {
+  const qs = month ? `?month=${encodeURIComponent(month)}` : ''
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/sales-funnel${qs}`, { method: 'GET' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin sales funnel failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { funnel: SalesFunnel }
+}
+
 export async function trackSessionStart(path?: string) {
   const res = await apiFetch(`${getApiBaseUrl()}/activity/session/start`, {
     method: 'POST',

@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { adminGetDashboardStats, type AdminDashboardStats } from '../../lib/api'
+import { onMounted, ref, computed } from 'vue'
+import {
+  adminGetDashboardStats,
+  adminGetSalesFunnel,
+  type AdminDashboardStats,
+  type SalesFunnel,
+} from '../../lib/api'
 
+/* ------------------------------------------------------------------ */
+/*  Customer overview (existing stat cards)                           */
+/* ------------------------------------------------------------------ */
 const loading = ref(true)
 const error = ref<string | null>(null)
 const stats = ref<AdminDashboardStats | null>(null)
 
-async function load() {
+async function loadStats() {
   loading.value = true
   error.value = null
   try {
@@ -19,8 +27,66 @@ async function load() {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/*  Sales funnel                                                      */
+/* ------------------------------------------------------------------ */
+const funnelLoading = ref(true)
+const funnelError = ref<string | null>(null)
+const funnel = ref<SalesFunnel | null>(null)
+
+/** Generate the last 6 months as YYYY-MM options. */
+const monthOptions = computed(() => {
+  const opts: { value: string; label: string }[] = []
+  const now = new Date()
+  for (let i = 1; i <= 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const label = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+    opts.push({ value: val, label })
+  }
+  return opts
+})
+
+const selectedMonth = ref(monthOptions.value[0]?.value ?? '')
+
+async function loadFunnel() {
+  funnelLoading.value = true
+  funnelError.value = null
+  try {
+    const res = await adminGetSalesFunnel(selectedMonth.value || undefined)
+    funnel.value = res.funnel
+  } catch (e) {
+    funnelError.value = e instanceof Error ? e.message : 'Failed to load sales funnel'
+  } finally {
+    funnelLoading.value = false
+  }
+}
+
+/** Computed funnel bars (widths relative to submissions) */
+const funnelBars = computed(() => {
+  if (!funnel.value) return []
+  const f = funnel.value
+  const max = Math.max(f.submissions, 1)
+  return [
+    { label: 'Submissions', value: f.submissions, pct: 100, color: 'bg-indigo-500' },
+    { label: 'Leads', value: f.leads, pct: Math.round((f.leads / max) * 100), color: 'bg-sky-500' },
+    { label: 'SQL', value: f.sql, pct: Math.round((f.sql / max) * 100), color: 'bg-emerald-500' },
+    { label: 'Demos', value: f.demos, pct: Math.round((f.demos / max) * 100), color: 'bg-amber-500' },
+  ]
+})
+
+/** Month display label */
+const funnelMonthLabel = computed(() => {
+  if (!funnel.value) return ''
+  const parts = funnel.value.month.split('-').map(Number)
+  const y = parts[0] ?? 2026
+  const m = parts[1] ?? 1
+  return new Date(y, m - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+})
+
 onMounted(() => {
-  void load()
+  void loadStats()
+  void loadFunnel()
 })
 </script>
 
@@ -38,7 +104,7 @@ onMounted(() => {
         <button
           class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 hover:bg-white/10"
           type="button"
-          @click="load"
+          @click="loadStats"
         >
           Refresh
         </button>
@@ -85,6 +151,91 @@ onMounted(() => {
             <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Supported<br>accommodation</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.totalSupportedAccommodation.toLocaleString() }}</div>
             <p class="mt-1 text-xs text-white/40">number_of_homes (SA)</p>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- ─── Sales funnel ─── -->
+    <div class="rounded-2xl border border-white/10 bg-[#0f1428] p-6 text-white shadow-[0_18px_40px_rgba(15,20,40,0.35)]">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="text-sm font-semibold text-white/80">Sales funnel — {{ funnelMonthLabel }}</div>
+        <div class="flex items-center gap-2">
+          <select
+            v-model="selectedMonth"
+            class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 outline-none hover:bg-white/10"
+            @change="loadFunnel"
+          >
+            <option v-for="o in monthOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
+          </select>
+          <button
+            class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 hover:bg-white/10"
+            type="button"
+            @click="loadFunnel"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div v-if="funnelLoading" class="mt-6 text-sm text-white/60">Loading funnel data…</div>
+
+      <div v-else-if="funnelError" class="mt-6 rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200">
+        {{ funnelError }}
+      </div>
+
+      <template v-else-if="funnel">
+        <!-- Funnel bars -->
+        <div class="mt-6 space-y-3">
+          <div v-for="bar in funnelBars" :key="bar.label" class="space-y-1">
+            <div class="flex items-baseline justify-between text-sm">
+              <span class="font-medium text-white/70">{{ bar.label }}</span>
+              <span class="text-lg font-semibold text-white">{{ bar.value }}</span>
+            </div>
+            <div class="h-7 w-full overflow-hidden rounded-lg bg-white/5">
+              <div
+                :class="bar.color"
+                class="h-full rounded-lg transition-all duration-500"
+                :style="{ width: bar.pct + '%', minWidth: bar.value > 0 ? '2rem' : '0' }"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Conversion rates -->
+        <div class="mt-4 flex flex-wrap gap-3">
+          <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center">
+            <div class="text-lg font-semibold text-white">{{ funnel.submissions > 0 ? Math.round((funnel.leads / funnel.submissions) * 100) : 0 }}%</div>
+            <div class="text-[10px] uppercase tracking-wide text-white/40">Sub → Lead</div>
+          </div>
+          <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center">
+            <div class="text-lg font-semibold text-white">{{ funnel.leads > 0 ? Math.round((funnel.sql / funnel.leads) * 100) : 0 }}%</div>
+            <div class="text-[10px] uppercase tracking-wide text-white/40">Lead → SQL</div>
+          </div>
+          <div class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center">
+            <div class="text-lg font-semibold text-white">{{ funnel.sql > 0 ? Math.round((funnel.demos / funnel.sql) * 100) : 0 }}%</div>
+            <div class="text-[10px] uppercase tracking-wide text-white/40">SQL → Demo</div>
+          </div>
+        </div>
+
+        <!-- Per-stage breakdown -->
+        <div class="mt-6">
+          <div class="text-xs font-semibold uppercase tracking-wide text-white/50">Lead pipeline breakdown</div>
+          <div class="mt-3 overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-white/10 text-left text-xs uppercase tracking-wide text-white/40">
+                  <th class="pb-2 pr-4 font-semibold">Stage</th>
+                  <th class="pb-2 pl-3 font-semibold text-right">Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="s in funnel.byStage" :key="s.stageId" class="border-b border-white/5">
+                  <td class="py-2 pr-4 text-white/70">{{ s.label }}</td>
+                  <td class="py-2 pl-3 text-right text-white">{{ s.count }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </template>
