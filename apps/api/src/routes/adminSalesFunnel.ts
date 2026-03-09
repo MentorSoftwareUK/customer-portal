@@ -6,34 +6,34 @@ import { env } from '../env'
 /*  Types                                                             */
 /* ------------------------------------------------------------------ */
 
+export type MonthSummary = {
+  month: string
+  mqls: number
+  sql: number
+  demos: number
+}
+
 export type SalesFunnelDto = {
   month: string
-  /** Total form submissions across all tracked forms = MQLs. */
   mqls: number
-  /**
-   * SQL = qualified form submissions:
-   *  - Self Scheduling: all (demo bookings)
-   *  - Contact form: only Sales dept, minus bots
-   *  - Checklist: only if resulted in demo
-   *  - Reg 32: only if resulted in demo
-   */
   sql: number
-  /** Submissions that resulted in a demo (Demo Completed+ in lead pipeline). */
   demos: number
-  /** Per-form breakdown. */
   perForm: Array<{
     formName: string
     submissions: number
     sql: number
     demos: number
   }>
-  /** Lead pipeline stage breakdown (for reference). */
   byStage: Array<{
     stageId: string
     label: string
     count: number
     order: number
   }>
+  /** Previous month summary for delta comparison. */
+  previous: MonthSummary | null
+  /** Last 6 months oldest → newest (for sparklines). */
+  trend: MonthSummary[]
 }
 
 /* ------------------------------------------------------------------ */
@@ -92,6 +92,12 @@ type FormSub = {
   department?: string // only present on contact form
 }
 
+/** Convert epoch-ms to YYYY-MM (UTC). */
+function msToMonth(ms: number): string {
+  const d = new Date(ms)
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
+}
+
 /**
  * Fetch form submissions in a time range, capturing email + department.
  */
@@ -102,7 +108,7 @@ async function hsFormSubmissions(
 ): Promise<FormSub[]> {
   const results: FormSub[] = []
   let after: string | undefined
-  const MAX_PAGES = 10
+  const MAX_PAGES = 20
 
   for (let page = 0; page < MAX_PAGES; page++) {
     const qs = new URLSearchParams({ limit: '50' })
@@ -273,6 +279,33 @@ function stageOrder(stageId: string): number {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Per-submission classification                                     */
+/* ------------------------------------------------------------------ */
+
+function classifySub(
+  formId: string,
+  sub: FormSub,
+  botEmails: Set<string>,
+  emailReachedDemo: (email?: string) => boolean,
+): { isSql: boolean; isDemo: boolean } {
+  const isBot = sub.email ? botEmails.has(sub.email) : false
+  if (formId === FORM_SELF_SCHEDULING.id) {
+    if (!isBot) return { isSql: true, isDemo: emailReachedDemo(sub.email) }
+    return { isSql: false, isDemo: false }
+  }
+  if (formId === FORM_CONTACT.id) {
+    const isSales = (sub.department ?? '').toLowerCase().trim() === 'sales'
+    if (isSales && !isBot) return { isSql: true, isDemo: emailReachedDemo(sub.email) }
+    return { isSql: false, isDemo: false }
+  }
+  if (formId === FORM_CHECKLIST.id || formId === FORM_REG32.id) {
+    if (emailReachedDemo(sub.email) && !isBot) return { isSql: true, isDemo: true }
+    return { isSql: false, isDemo: false }
+  }
+  return { isSql: false, isDemo: false }
+}
+
+/* ------------------------------------------------------------------ */
 /*  Cache                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -315,22 +348,31 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
       mon === 12
         ? `${year + 1}-01-01`
         : `${year}-${String(mon + 1).padStart(2, '0')}-01`
-    const startMs = new Date(`${monthStart}T00:00:00.000Z`).getTime()
     const endMs = new Date(`${nextMonth}T00:00:00.000Z`).getTime()
 
     try {
-      /* ========== 1. Form submissions ========== */
+      /* ========== 1. Compute 6-month trend window ========== */
+      const TREND_COUNT = 6
+      const trendMonths: string[] = []
+      for (let i = TREND_COUNT - 1; i >= 0; i--) {
+        const d = new Date(Date.UTC(year, mon - 1 - i, 1))
+        trendMonths.push(
+          `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`,
+        )
+      }
+      const windowStartMs = new Date(Date.UTC(year, mon - TREND_COUNT, 1)).getTime()
+
+      /* ========== 2. Form submissions (6-month window) ========== */
       const formResults = await Promise.all(
         TRACKED_FORMS.map(async (f) => {
-          const subs = await hsFormSubmissions(f.id, startMs, endMs)
+          const subs = await hsFormSubmissions(f.id, windowStartMs, endMs)
           return { formId: f.id, name: f.name, subs }
         }),
       )
 
-      /* ========== 2. Build email → demo lookup from lead pipeline ========== */
+      /* ========== 3. Build email → demo lookup from lead pipeline ========== */
       const allLeads = await hsListAllLeads(['hs_pipeline_stage', 'hs_createdate'])
 
-      // Build email → highest lead stage order (across ALL leads, not just this month)
       const leadContactIds = new Map<string, string[]>()
       for (const l of allLeads) {
         for (const c of l.associations?.contacts?.results ?? []) {
@@ -345,7 +387,6 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
           ? await hsBatchContactEmails([...leadContactIds.keys()])
           : new Map<string, string>()
 
-      // email → max stage order across all their leads
       const emailMaxStage = new Map<string, number>()
       for (const l of allLeads) {
         const order = stageOrder(l.properties.hs_pipeline_stage ?? '')
@@ -357,63 +398,58 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
         }
       }
 
-      /** Did this email reach Demo Completed or beyond (excl. disqualified)? */
       function emailReachedDemo(email?: string): boolean {
         if (!email) return false
         const order = emailMaxStage.get(email) ?? 0
-        return order >= DEMO_THRESHOLD_ORDER && order !== 9 // 9 = disqualified
+        return order >= DEMO_THRESHOLD_ORDER && order !== 9
       }
 
-      /* ========== 3. Bot detection ========== */
+      /* ========== 4. Bot detection ========== */
       const allEmails = formResults.flatMap((f) =>
         f.subs.map((s) => s.email).filter(Boolean),
       ) as string[]
       const botEmails = await hsBatchCheckBots(allEmails)
 
-      /* ========== 4. Per-form SQL + Demo logic ========== */
+      /* ========== 5. Per-form detail for selected month ========== */
       const perForm = formResults.map((f) => {
-        const submissions = f.subs.length
+        const monthSubs = f.subs.filter(
+          (s) => msToMonth(s.submittedAt) === monthParam,
+        )
         let sql = 0
         let demos = 0
-
-        for (const sub of f.subs) {
-          const isBot = sub.email ? botEmails.has(sub.email) : false
-          const reachedDemo = emailReachedDemo(sub.email)
-
-          if (f.formId === FORM_SELF_SCHEDULING.id) {
-            // Self Scheduling: all are SQL (demo bookings)
-            if (!isBot) {
-              sql++
-              if (reachedDemo) demos++
-            }
-          } else if (f.formId === FORM_CONTACT.id) {
-            // Contact form: only Sales department, minus bots
-            const isSales =
-              (sub.department ?? '').toLowerCase().trim() === 'sales'
-            if (isSales && !isBot) {
-              sql++
-              if (reachedDemo) demos++
-            }
-          } else if (
-            f.formId === FORM_CHECKLIST.id ||
-            f.formId === FORM_REG32.id
-          ) {
-            // Checklist / Reg 32: only if resulted in demo
-            if (reachedDemo && !isBot) {
-              sql++
-              demos++
-            }
-          }
+        for (const sub of monthSubs) {
+          const c = classifySub(f.formId, sub, botEmails, emailReachedDemo)
+          if (c.isSql) sql++
+          if (c.isDemo) demos++
         }
-
-        return { formName: f.name, submissions, sql, demos }
+        return { formName: f.name, submissions: monthSubs.length, sql, demos }
       })
 
       const totalMqls = perForm.reduce((s, f) => s + f.submissions, 0)
       const totalSql = perForm.reduce((s, f) => s + f.sql, 0)
       const totalDemos = perForm.reduce((s, f) => s + f.demos, 0)
 
-      /* ========== 5. Lead pipeline stage breakdown (reference) ========== */
+      /* ========== 6. Trend (6-month summaries) ========== */
+      const trend: MonthSummary[] = trendMonths.map((m) => {
+        let mqls = 0
+        let sql = 0
+        let demos = 0
+        for (const f of formResults) {
+          for (const sub of f.subs) {
+            if (msToMonth(sub.submittedAt) !== m) continue
+            mqls++
+            const c = classifySub(f.formId, sub, botEmails, emailReachedDemo)
+            if (c.isSql) sql++
+            if (c.isDemo) demos++
+          }
+        }
+        return { month: m, mqls, sql, demos }
+      })
+
+      const prevIdx = trendMonths.indexOf(monthParam) - 1
+      const previous = prevIdx >= 0 ? trend[prevIdx] : null
+
+      /* ========== 7. Lead pipeline stage breakdown (reference) ========== */
       const monthLeads = allLeads.filter((l) => {
         const d = l.properties.hs_createdate ?? l.createdAt ?? ''
         return d >= monthStart && d < nextMonth
@@ -439,6 +475,8 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
         demos: totalDemos,
         perForm,
         byStage,
+        previous,
+        trend,
       }
       cache.set(monthParam, { ts: Date.now(), data: funnel })
       return { funnel }

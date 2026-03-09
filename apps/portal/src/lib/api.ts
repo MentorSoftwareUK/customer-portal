@@ -521,6 +521,13 @@ export type SalesFunnelPerForm = {
   demos: number
 }
 
+export type MonthSummary = {
+  month: string
+  mqls: number
+  sql: number
+  demos: number
+}
+
 export type SalesFunnel = {
   month: string
   mqls: number
@@ -528,6 +535,8 @@ export type SalesFunnel = {
   demos: number
   perForm: SalesFunnelPerForm[]
   byStage: SalesFunnelStage[]
+  previous: MonthSummary | null
+  trend: MonthSummary[]
 }
 
 export async function adminGetSalesFunnel(month?: string) {
