@@ -54,37 +54,37 @@ onMounted(() => {
         <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           <!-- Live companies -->
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div class="text-xs font-semibold uppercase tracking-wide text-white/50">Live customers</div>
+            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Live<br>customers</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.liveCompanyCount.toLocaleString() }}</div>
             <p class="mt-1 text-xs text-white/40">Companies set to live customer</p>
           </div>
 
           <!-- Users associated with live customers -->
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div class="text-xs font-semibold uppercase tracking-wide text-white/50">Live customer users</div>
+            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Associated<br>contacts</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.liveUserCount.toLocaleString() }}</div>
-            <p class="mt-1 text-xs text-white/40">Active users at live companies</p>
+            <p class="mt-1 text-xs text-white/40">HubSpot contacts at live companies</p>
           </div>
 
           <!-- Total homes -->
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div class="text-xs font-semibold uppercase tracking-wide text-white/50">Total homes</div>
+            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Total<br>homes</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.totalHomes.toLocaleString() }}</div>
-            <p class="mt-1 text-xs text-white/40">number_of_homes across live customers</p>
+            <p class="mt-1 text-xs text-white/40">All home types across live customers</p>
           </div>
 
           <!-- Children's homes -->
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div class="text-xs font-semibold uppercase tracking-wide text-white/50">Children's homes</div>
+            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Children's<br>homes</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.totalChildrensHomes.toLocaleString() }}</div>
-            <p class="mt-1 text-xs text-white/40">number_of_homes__ch_ across live customers</p>
+            <p class="mt-1 text-xs text-white/40">number_of_homes (CH)</p>
           </div>
 
           <!-- Supported accommodation -->
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div class="text-xs font-semibold uppercase tracking-wide text-white/50">Supported accommodation</div>
+            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Supported<br>accommodation</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.totalSupportedAccommodation.toLocaleString() }}</div>
-            <p class="mt-1 text-xs text-white/40">number_of_homes__sa_ across live customers</p>
+            <p class="mt-1 text-xs text-white/40">number_of_homes (SA)</p>
           </div>
         </div>
       </template>

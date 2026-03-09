@@ -5,7 +5,6 @@ import {
   hubspotSearchLiveCustomerCompanyIds,
   hubspotGetCompanyById,
 } from '../integrations/hubspot'
-import { getDb } from '../db'
 
 export type AdminDashboardStatsDto = {
   liveCompanyCount: number
@@ -61,12 +60,22 @@ export const adminDashboardStatsRoutes: FastifyPluginAsync = async (app) => {
 
       const liveCompanyCount = liveCompanyIds.length
 
-      // 2. Fetch number_of_homes properties for each live company
+      // 2. Fetch homes + contacts properties for each live company.
+      //    number_of_homes is a string type (often empty); compute total from subcategories.
+      //    Use num_associated_contacts for user count since portal_users.companyId is sparse.
       let totalHomes = 0
       let totalChildrensHomes = 0
       let totalSupportedAccommodation = 0
+      let liveUserCount = 0
 
-      const homeProperties = ['number_of_homes', 'number_of_homes__ch_', 'number_of_homes__sa_']
+      const companyProperties = [
+        'number_of_homes__ch_',
+        'number_of_homes__sa_',
+        'number_of_homes__18__',
+        'number_of_homes__mbu_',
+        'number_of_homes__solo_ch_',
+        'num_associated_contacts',
+      ]
 
       // Process in batches of 10 to avoid overwhelming HubSpot
       const BATCH_SIZE = 10
@@ -76,7 +85,7 @@ export const adminDashboardStatsRoutes: FastifyPluginAsync = async (app) => {
           batch.map(async (companyId, idx) => {
             if (idx > 0) await rateLimitPause()
             try {
-              return await hubspotGetCompanyById({ id: companyId, properties: homeProperties })
+              return await hubspotGetCompanyById({ id: companyId, properties: companyProperties })
             } catch (e) {
               console.warn(`[admin-dashboard-stats] Failed to fetch company ${companyId}:`, e)
               return null
@@ -86,28 +95,23 @@ export const adminDashboardStatsRoutes: FastifyPluginAsync = async (app) => {
 
         for (const company of results) {
           if (!company?.properties) continue
-          const homes = Number(company.properties['number_of_homes']) || 0
           const ch = Number(company.properties['number_of_homes__ch_']) || 0
           const sa = Number(company.properties['number_of_homes__sa_']) || 0
-          totalHomes += homes
+          const over18 = Number(company.properties['number_of_homes__18__']) || 0
+          const mbu = Number(company.properties['number_of_homes__mbu_']) || 0
+          const soloCh = Number(company.properties['number_of_homes__solo_ch_']) || 0
+          const contacts = Number(company.properties['num_associated_contacts']) || 0
+
           totalChildrensHomes += ch
           totalSupportedAccommodation += sa
+          totalHomes += ch + sa + over18 + mbu + soloCh
+          liveUserCount += contacts
         }
 
         // Rate limit between batches
         if (i + BATCH_SIZE < liveCompanyIds.length) {
           await rateLimitPause(500)
         }
-      }
-
-      // 3. Count portal users associated with live companies
-      let liveUserCount = 0
-      const db = await getDb()
-      if (db && liveCompanyIds.length > 0) {
-        liveUserCount = await db.collection('portal_users').countDocuments({
-          companyId: { $in: liveCompanyIds },
-          status: 'active',
-        })
       }
 
       const stats: AdminDashboardStatsDto = {
