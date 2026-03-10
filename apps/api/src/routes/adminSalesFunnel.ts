@@ -90,7 +90,19 @@ type FormSub = {
   submittedAt: number
   email?: string
   department?: string // only present on contact form
+  stage?: string // "What stage are you at?" — only on self-scheduling form
 }
+
+/**
+ * Contact stages that indicate the user can self-schedule a demo.
+ * If a Self Scheduling form submission has one of these stages,
+ * it counts as a demo even before the lead pipeline is updated.
+ */
+const SELF_SCHEDULE_DEMO_STAGES = new Set([
+  'Newly Registered',
+  'Registered – Single Home',
+  'Registered – Multiple Homes',
+])
 
 /** Convert epoch-ms to YYYY-MM (UTC). */
 function msToMonth(ms: number): string {
@@ -132,6 +144,7 @@ async function hsFormSubmissions(
         submittedAt: sub.submittedAt,
         email: vals.get('email')?.toLowerCase(),
         department: vals.get('department'),
+        stage: vals.get('what_stage_are_you_at_'),
       })
     }
 
@@ -290,7 +303,12 @@ function classifySub(
 ): { isSql: boolean; isDemo: boolean } {
   const isBot = sub.email ? botEmails.has(sub.email) : false
   if (formId === FORM_SELF_SCHEDULING.id) {
-    if (!isBot) return { isSql: true, isDemo: emailReachedDemo(sub.email) }
+    if (!isBot) {
+      const isDemo =
+        emailReachedDemo(sub.email) ||
+        SELF_SCHEDULE_DEMO_STAGES.has(sub.stage ?? '')
+      return { isSql: true, isDemo }
+    }
     return { isSql: false, isDemo: false }
   }
   if (formId === FORM_CONTACT.id) {
