@@ -34,6 +34,7 @@ async function loadStats() {
 const funnelLoading = ref(true)
 const funnelError = ref<string | null>(null)
 const funnel = ref<SalesFunnel | null>(null)
+const cachedAt = ref<string | null>(null)
 
 const monthOptions = computed(() => {
   const opts: { value: string; label: string }[] = []
@@ -49,12 +50,13 @@ const monthOptions = computed(() => {
 
 const selectedMonth = ref(monthOptions.value[0]?.value ?? '')
 
-async function loadFunnel() {
+async function loadFunnel(refresh = false) {
   funnelLoading.value = true
   funnelError.value = null
   try {
-    const res = await adminGetSalesFunnel(selectedMonth.value || undefined)
+    const res = await adminGetSalesFunnel(selectedMonth.value || undefined, refresh)
     funnel.value = res.funnel
+    cachedAt.value = res.cachedAt ?? null
   } catch (e) {
     funnelError.value = e instanceof Error ? e.message : 'Failed to load sales funnel'
   } finally {
@@ -258,18 +260,23 @@ onMounted(() => {
           <select
             v-model="selectedMonth"
             class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 outline-none hover:bg-white/10"
-            @change="loadFunnel"
+            @change="loadFunnel(false)"
           >
             <option v-for="o in monthOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
           </select>
           <button
             class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 hover:bg-white/10"
             type="button"
-            @click="loadFunnel"
+            title="Refresh from HubSpot"
+            :disabled="funnelLoading"
+            @click="loadFunnel(true)"
           >
-            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            <svg class="h-3.5 w-3.5" :class="{ 'animate-spin': funnelLoading }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
           </button>
         </div>
+      </div>
+      <div v-if="cachedAt" class="mt-1 text-[10px] text-white/25">
+        Last updated: {{ new Date(cachedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
       </div>
 
       <!-- Loading / Error -->

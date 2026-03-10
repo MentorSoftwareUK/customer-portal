@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify'
 import { requireAdmin } from '../auth/requireAdmin'
 import { env } from '../env'
+import { getCachedFunnel, setCachedFunnel } from '../store/salesFunnelCache'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -322,13 +323,6 @@ function classifySub(
 }
 
 /* ------------------------------------------------------------------ */
-/*  Cache                                                             */
-/* ------------------------------------------------------------------ */
-
-const cache = new Map<string, { ts: number; data: SalesFunnelDto }>()
-const CACHE_TTL_MS = 5 * 60_000
-
-/* ------------------------------------------------------------------ */
 /*  Route                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -338,7 +332,7 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
     if (!ok) return reply
   })
 
-  app.get<{ Querystring: { month?: string } }>('/', async (req, reply) => {
+  app.get<{ Querystring: { month?: string; refresh?: string } }>('/', async (req, reply) => {
     if (!env.HUBSPOT_PRIVATE_APP_TOKEN) {
       return reply.status(503).send({ error: 'hubspot_not_configured' })
     }
@@ -353,9 +347,14 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({ error: 'invalid_month', message: 'Use format YYYY-MM' })
     }
 
-    const cached = cache.get(monthParam)
-    if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
-      return { funnel: cached.data }
+    const wantsRefresh = req.query.refresh === 'true'
+
+    /* ── Return cached data unless refresh requested ── */
+    if (!wantsRefresh) {
+      const cached = await getCachedFunnel(monthParam)
+      if (cached) {
+        return { funnel: cached.data, cached: true, cachedAt: cached.updatedAt.toISOString() }
+      }
     }
 
     const [year, mon] = monthParam.split('-').map(Number)
@@ -494,8 +493,13 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
         previous,
         trend,
       }
-      cache.set(monthParam, { ts: Date.now(), data: funnel })
-      return { funnel }
+
+      /* ── Persist to MongoDB ── */
+      await setCachedFunnel(monthParam, funnel).catch((err) =>
+        console.error('[admin-sales-funnel] cache write failed', err),
+      )
+
+      return { funnel, cached: false, cachedAt: new Date().toISOString() }
     } catch (e: any) {
       console.error('[admin-sales-funnel]', e)
       return reply

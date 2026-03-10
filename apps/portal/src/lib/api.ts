@@ -539,14 +539,17 @@ export type SalesFunnel = {
   trend: MonthSummary[]
 }
 
-export async function adminGetSalesFunnel(month?: string) {
-  const qs = month ? `?month=${encodeURIComponent(month)}` : ''
+export async function adminGetSalesFunnel(month?: string, refresh = false) {
+  const params = new URLSearchParams()
+  if (month) params.set('month', month)
+  if (refresh) params.set('refresh', 'true')
+  const qs = params.toString() ? `?${params}` : ''
   const res = await apiFetch(`${getApiBaseUrl()}/admin/sales-funnel${qs}`, { method: 'GET' })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     throw new Error(`Admin sales funnel failed: ${res.status}${text ? ` - ${text}` : ''}`)
   }
-  return (await res.json()) as { funnel: SalesFunnel }
+  return (await res.json()) as { funnel: SalesFunnel; cached?: boolean; cachedAt?: string }
 }
 
 export async function trackSessionStart(path?: string) {
