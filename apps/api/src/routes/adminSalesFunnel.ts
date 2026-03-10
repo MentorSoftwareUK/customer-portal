@@ -90,20 +90,18 @@ type FormSub = {
   submittedAt: number
   email?: string
   department?: string // only present on contact form
+  stage?: string // "What stage are you at?" — self-scheduling form
 }
 
 /**
- * Contact stages that indicate the user can self-schedule a demo.
- * If a Self Scheduling form submission has one of these stages,
- * it counts as a demo even before the lead pipeline is updated.
- * Include both en-dash (–) and hyphen (-) variants for safety.
+ * Contact stages (internal HubSpot values) that indicate the user can
+ * self-schedule a demo. A Self Scheduling form submission with one of
+ * these stages counts as a demo automatically.
  */
 const SELF_SCHEDULE_DEMO_STAGES = new Set([
-  'Newly Registered',
-  'Registered – Single Home',
-  'Registered – Multiple Homes',
-  'Registered - Single Home',
-  'Registered - Multiple Homes',
+  'Just Opened',
+  'Single Home',
+  'Multi Home',
 ])
 
 /** Convert epoch-ms to YYYY-MM (UTC). */
@@ -146,6 +144,7 @@ async function hsFormSubmissions(
         submittedAt: sub.submittedAt,
         email: vals.get('email')?.toLowerCase(),
         department: vals.get('department'),
+        stage: vals.get('what_stage_are_you_at_'),
       })
     }
 
@@ -267,56 +266,6 @@ async function hsBatchContactEmails(
 
   return map
 }
-
-/**
- * Batch-lookup the “What stage are you at?” contact property for a list
- * of emails, returning email → stage value.
- */
-async function hsBatchContactStages(
-  emails: string[],
-): Promise<Map<string, string>> {
-  const map = new Map<string, string>()
-  if (emails.length === 0) return map
-
-  const BATCH = 100
-  const unique = [...new Set(emails)]
-
-  for (let i = 0; i < unique.length; i += BATCH) {
-    const batch = unique.slice(i, i + BATCH)
-    const res = await hsFetch('/crm/v3/objects/contacts/search', {
-      method: 'POST',
-      body: JSON.stringify({
-        filterGroups: [
-          {
-            filters: [
-              {
-                propertyName: 'email',
-                operator: 'IN',
-                values: batch,
-              },
-            ],
-          },
-        ],
-        properties: ['email', 'what_stage_are_you_at_'],
-        limit: 100,
-      }),
-    })
-    const data = (await res.json()) as {
-      results: Array<{
-        properties: { email?: string; what_stage_are_you_at_?: string }
-      }>
-    }
-    for (const c of data.results ?? []) {
-      const email = c.properties.email?.toLowerCase()
-      const stage = c.properties.what_stage_are_you_at_
-      if (email && stage) map.set(email, stage)
-    }
-  }
-
-  return map
-}
-
-/* ------------------------------------------------------------------ */
 /*  Lead pipeline stage definitions                                   */
 /* ------------------------------------------------------------------ */
 
@@ -349,15 +298,13 @@ function classifySub(
   sub: FormSub,
   botEmails: Set<string>,
   emailReachedDemo: (email?: string) => boolean,
-  emailContactStage: Map<string, string>,
 ): { isSql: boolean; isDemo: boolean } {
   const isBot = sub.email ? botEmails.has(sub.email) : false
   if (formId === FORM_SELF_SCHEDULING.id) {
     if (!isBot) {
-      const contactStage = sub.email ? emailContactStage.get(sub.email) ?? '' : ''
       const isDemo =
         emailReachedDemo(sub.email) ||
-        SELF_SCHEDULE_DEMO_STAGES.has(contactStage)
+        SELF_SCHEDULE_DEMO_STAGES.has(sub.stage ?? '')
       return { isSql: true, isDemo }
     }
     return { isSql: false, isDemo: false }
@@ -479,12 +426,6 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
       ) as string[]
       const botEmails = await hsBatchCheckBots(allEmails)
 
-      /* ========== 4b. Contact stage lookup (for self-scheduling demo check) ========== */
-      const selfSchedEmails = formResults
-        .filter((f) => f.formId === FORM_SELF_SCHEDULING.id)
-        .flatMap((f) => f.subs.map((s) => s.email).filter(Boolean)) as string[]
-      const emailContactStage = await hsBatchContactStages(selfSchedEmails)
-
       /* ========== 5. Per-form detail for selected month ========== */
       const perForm = formResults.map((f) => {
         const monthSubs = f.subs.filter(
@@ -493,7 +434,7 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
         let sql = 0
         let demos = 0
         for (const sub of monthSubs) {
-          const c = classifySub(f.formId, sub, botEmails, emailReachedDemo, emailContactStage)
+          const c = classifySub(f.formId, sub, botEmails, emailReachedDemo)
           if (c.isSql) sql++
           if (c.isDemo) demos++
         }
@@ -513,7 +454,7 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
           for (const sub of f.subs) {
             if (msToMonth(sub.submittedAt) !== m) continue
             mqls++
-            const c = classifySub(f.formId, sub, botEmails, emailReachedDemo, emailContactStage)
+            const c = classifySub(f.formId, sub, botEmails, emailReachedDemo)
             if (c.isSql) sql++
             if (c.isDemo) demos++
           }
