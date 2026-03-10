@@ -552,6 +552,63 @@ export async function adminGetSalesFunnel(month?: string, refresh = false) {
   return (await res.json()) as { funnel: SalesFunnel; cached?: boolean; cachedAt?: string }
 }
 
+/* ─── Sales stats (deals / revenue KPIs) ─── */
+
+export type SalesMonthSummary = {
+  month: string
+  dealsWon: number
+  revenue: number
+  winRate: number
+  avgCloseTimeDays: number
+}
+
+export type SalesPipelineStage = {
+  stageId: string
+  label: string
+  count: number
+  value: number
+  order: number
+}
+
+export type SalesRecentDeal = {
+  name: string
+  amount: number
+  stage: string
+  won: boolean
+  closeDate: string
+  createdDate: string
+}
+
+export type SalesStats = {
+  dealsWonToday: number
+  dealsWonThisWeek: number
+  dealsWonThisMonth: number
+  dealsLostThisMonth: number
+  revenueWonThisMonth: number
+  mrr: number
+  winRate: number
+  loseRate: number
+  avgCloseTimeDays: number
+  openPipelineValue: number
+  openDealCount: number
+  pipelineStages: SalesPipelineStage[]
+  recentDeals: SalesRecentDeal[]
+  trend: SalesMonthSummary[]
+  previous: SalesMonthSummary | null
+}
+
+export async function adminGetSalesStats(refresh = false) {
+  const params = new URLSearchParams()
+  if (refresh) params.set('refresh', 'true')
+  const qs = params.toString() ? `?${params}` : ''
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/sales-stats${qs}`, { method: 'GET' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Admin sales stats failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { stats: SalesStats; cached?: boolean; cachedAt?: string }
+}
+
 export async function trackSessionStart(path?: string) {
   const res = await apiFetch(`${getApiBaseUrl()}/activity/session/start`, {
     method: 'POST',
