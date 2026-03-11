@@ -615,6 +615,9 @@ export const adminCustomerSuccessRoutes: FastifyPluginAsync = async (app) => {
     if (!refresh) {
       // In-memory cache
       if (memCache && Date.now() - memCache.ts < CACHE_TTL_MS) {
+        // Backfill fields added after cache was created
+        if (!memCache.data.atRiskCustomers) memCache.data.atRiskCustomers = []
+        if (!memCache.data.atRiskSummary) memCache.data.atRiskSummary = { high: 0, medium: 0, low: 0 }
         return reply.send({
           stats: memCache.data,
           cached: true,
@@ -624,6 +627,9 @@ export const adminCustomerSuccessRoutes: FastifyPluginAsync = async (app) => {
       // MongoDB cache
       const cached = await getCachedSuccess()
       if (cached) {
+        // Backfill fields added after cache was created
+        if (!cached.data.atRiskCustomers) cached.data.atRiskCustomers = []
+        if (!cached.data.atRiskSummary) cached.data.atRiskSummary = { high: 0, medium: 0, low: 0 }
         memCache = { data: cached.data, ts: cached.updatedAt.getTime() }
         return reply.send({
           stats: cached.data,

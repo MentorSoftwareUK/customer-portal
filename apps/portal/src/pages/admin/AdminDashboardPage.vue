@@ -1098,13 +1098,13 @@ onMounted(() => {
           </div>
 
           <!-- ── At-risk customers ── -->
-          <div v-if="success.atRiskCustomers.length > 0" class="mt-8">
+          <div v-if="success.atRiskCustomers?.length > 0" class="mt-8">
             <div class="flex items-center gap-3">
               <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">At-risk customers</div>
               <div class="flex items-center gap-2 text-[10px]">
-                <span v-if="success.atRiskSummary.high > 0" class="rounded-full bg-rose-500/15 px-2 py-0.5 font-bold text-rose-400">{{ success.atRiskSummary.high }} high</span>
-                <span v-if="success.atRiskSummary.medium > 0" class="rounded-full bg-amber-500/15 px-2 py-0.5 font-bold text-amber-400">{{ success.atRiskSummary.medium }} medium</span>
-                <span v-if="success.atRiskSummary.low > 0" class="rounded-full bg-sky-500/15 px-2 py-0.5 font-bold text-sky-400">{{ success.atRiskSummary.low }} low</span>
+                <span v-if="success.atRiskSummary?.high > 0" class="rounded-full bg-rose-500/15 px-2 py-0.5 font-bold text-rose-400">{{ success.atRiskSummary.high }} high</span>
+                <span v-if="success.atRiskSummary?.medium > 0" class="rounded-full bg-amber-500/15 px-2 py-0.5 font-bold text-amber-400">{{ success.atRiskSummary.medium }} medium</span>
+                <span v-if="success.atRiskSummary?.low > 0" class="rounded-full bg-sky-500/15 px-2 py-0.5 font-bold text-sky-400">{{ success.atRiskSummary.low }} low</span>
               </div>
             </div>
             <div class="mt-3 overflow-x-auto">
