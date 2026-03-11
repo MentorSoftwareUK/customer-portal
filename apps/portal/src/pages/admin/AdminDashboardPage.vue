@@ -3,8 +3,6 @@ import { onMounted, ref, computed, watch } from 'vue'
 import SparkLine from '../../components/SparkLine.vue'
 import DonutChart from '../../components/DonutChart.vue'
 import LineChart from '../../components/LineChart.vue'
-import AudioTooltip from '../../components/AudioTooltip.vue'
-import { marketingExplanations, salesExplanations, successExplanations } from '../../data/statExplanations'
 import {
   adminGetDashboardStats,
   adminGetSalesFunnel,
@@ -161,8 +159,6 @@ const kpiCards = computed(() => {
       suffix: '%',
       spark: f.trend.map((t) => t.mqls),
       color: '#818cf8',
-      audioKey: 'mkt-mqls',
-      audioText: marketingExplanations.mqls,
     },
     {
       label: 'SQL',
@@ -172,8 +168,6 @@ const kpiCards = computed(() => {
       suffix: '%',
       spark: f.trend.map((t) => t.sql),
       color: '#34d399',
-      audioKey: 'mkt-sql',
-      audioText: marketingExplanations.sql,
     },
     {
       label: 'Demos',
@@ -183,8 +177,6 @@ const kpiCards = computed(() => {
       suffix: '%',
       spark: f.trend.map((t) => t.demos),
       color: '#fbbf24',
-      audioKey: 'mkt-demos',
-      audioText: marketingExplanations.demos,
     },
     {
       label: 'MQL → Demo',
@@ -194,8 +186,6 @@ const kpiCards = computed(() => {
       suffix: 'pp',
       spark: f.trend.map((t) => (t.mqls > 0 ? (t.demos / t.mqls) * 100 : 0)),
       color: '#f472b6',
-      audioKey: 'mkt-m2d',
-      audioText: marketingExplanations.mqlToDemo,
     },
   ]
 })
@@ -310,8 +300,6 @@ const salesKpiCards = computed(() => {
       suffix: '%',
       spark: s.trend.map((t) => t.dealsWon),
       color: '#34d399',
-      audioKey: 'sal-won',
-      audioText: salesExplanations.dealsWon,
     },
     {
       label: 'Revenue Won',
@@ -321,8 +309,6 @@ const salesKpiCards = computed(() => {
       suffix: '%',
       spark: s.trend.map((t) => t.revenue),
       color: '#818cf8',
-      audioKey: 'sal-rev',
-      audioText: salesExplanations.revenueWon,
     },
     {
       label: 'Win Rate',
@@ -335,8 +321,6 @@ const salesKpiCards = computed(() => {
       suffix: 'pp',
       spark: s.trend.map((t) => t.winRate),
       color: '#fbbf24',
-      audioKey: 'sal-win',
-      audioText: salesExplanations.winRate,
     },
     {
       label: 'Avg Close Time',
@@ -345,7 +329,7 @@ const salesKpiCards = computed(() => {
       delta: {
         value: Math.abs(s.avgCloseTimeDays - (p?.avgCloseTimeDays ?? 0)),
         dir: s.avgCloseTimeDays < (p?.avgCloseTimeDays ?? 0)
-          ? 'up' as const
+          ? 'up' as const // faster = good
           : s.avgCloseTimeDays > (p?.avgCloseTimeDays ?? 0)
             ? 'down' as const
             : 'flat' as const,
@@ -353,8 +337,6 @@ const salesKpiCards = computed(() => {
       suffix: 'd',
       spark: s.trend.map((t) => t.avgCloseTimeDays),
       color: '#f472b6',
-      audioKey: 'sal-close',
-      audioText: salesExplanations.avgCloseTime,
     },
     {
       label: 'Open Pipeline',
@@ -364,8 +346,6 @@ const salesKpiCards = computed(() => {
       suffix: '',
       spark: [],
       color: '#38bdf8',
-      audioKey: 'sal-pipe',
-      audioText: salesExplanations.openPipeline,
     },
     {
       label: 'Lose Rate',
@@ -374,7 +354,7 @@ const salesKpiCards = computed(() => {
       delta: {
         value: Math.abs(s.loseRate - (p ? (100 - p.winRate) : 0)),
         dir: s.loseRate < (p ? (100 - p.winRate) : 0)
-          ? 'up' as const
+          ? 'up' as const // lower lose = good
           : s.loseRate > (p ? (100 - p.winRate) : 0)
             ? 'down' as const
             : 'flat' as const,
@@ -382,8 +362,6 @@ const salesKpiCards = computed(() => {
       suffix: 'pp',
       spark: s.trend.map((t) => 100 - t.winRate),
       color: '#fb7185',
-      audioKey: 'sal-lose',
-      audioText: salesExplanations.loseRate,
     },
   ]
 })
@@ -628,10 +606,7 @@ onMounted(() => {
               class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.05]"
             >
               <div class="flex items-start justify-between">
-                <div class="flex items-center gap-1">
-                  <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">{{ card.label }}</div>
-                  <AudioTooltip v-if="card.audioText" :text="card.audioText" :cache-key="card.audioKey" />
-                </div>
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">{{ card.label }}</div>
                 <SparkLine :data="card.spark" :color="card.color" :width="64" :height="24" />
               </div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ card.val }}</div>
@@ -654,10 +629,7 @@ onMounted(() => {
 
           <!-- ── Visual funnel ── -->
           <div class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Funnel</div>
-              <AudioTooltip :text="marketingExplanations.funnel" cache-key="mkt-funnel" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Funnel</div>
             <div class="mt-4 flex flex-col items-center gap-0">
               <template v-for="(step, idx) in funnelSteps" :key="step.label">
                 <div
@@ -689,10 +661,7 @@ onMounted(() => {
 
           <!-- ── Per-form performance ── -->
           <div class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Form performance</div>
-              <AudioTooltip :text="marketingExplanations.formPerformance" cache-key="mkt-forms" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Form performance</div>
             <div class="mt-3 space-y-2">
               <div
                 v-for="(pf, idx) in funnel.perForm"
@@ -739,10 +708,7 @@ onMounted(() => {
 
           <!-- ── Lead pipeline (reference) ── -->
           <div v-if="funnel.byStage.length > 0" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Lead pipeline</div>
-              <AudioTooltip :text="marketingExplanations.leadPipeline" cache-key="mkt-pipeline" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Lead pipeline</div>
             <div class="mt-3 space-y-1.5">
               <div v-for="s in funnel.byStage" :key="s.stageId" class="flex items-center gap-3">
                 <span class="w-32 shrink-0 text-right text-xs text-white/40 sm:w-40">{{ s.label }}</span>
@@ -763,10 +729,7 @@ onMounted(() => {
             <div class="mt-5 grid grid-cols-1 gap-6 md:grid-cols-3">
               <!-- Stage donut -->
               <div v-if="stageDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <div class="mb-3 flex items-center gap-1">
-                  <div class="text-xs font-semibold text-white/50">Registration Stage</div>
-                  <AudioTooltip :text="marketingExplanations.stageBreakdown" cache-key="mkt-stage" />
-                </div>
+                <div class="mb-3 text-xs font-semibold text-white/50">Registration Stage</div>
                 <DonutChart
                   :segments="stageDonut"
                   :size="160"
@@ -777,10 +740,7 @@ onMounted(() => {
               </div>
               <!-- Provision donut -->
               <div v-if="provisionDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <div class="mb-3 flex items-center gap-1">
-                  <div class="text-xs font-semibold text-white/50">Provision Type</div>
-                  <AudioTooltip :text="marketingExplanations.provisionType" cache-key="mkt-provision" />
-                </div>
+                <div class="mb-3 text-xs font-semibold text-white/50">Provision Type</div>
                 <DonutChart
                   :segments="provisionDonut"
                   :size="160"
@@ -791,10 +751,7 @@ onMounted(() => {
               </div>
               <!-- Referral donut -->
               <div v-if="referralDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <div class="mb-3 flex items-center gap-1">
-                  <div class="text-xs font-semibold text-white/50">Where Did You Hear About Us</div>
-                  <AudioTooltip :text="marketingExplanations.referral" cache-key="mkt-referral" />
-                </div>
+                <div class="mb-3 text-xs font-semibold text-white/50">Where Did You Hear About Us</div>
                 <DonutChart
                   :segments="referralDonut"
                   :size="160"
@@ -808,10 +765,7 @@ onMounted(() => {
 
           <!-- ── Weekly submissions line chart ── -->
           <div v-if="weeklyLinePoints.length > 1" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Submissions over time</div>
-              <AudioTooltip :text="marketingExplanations.weeklySubmissions" cache-key="mkt-weekly" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Submissions over time</div>
             <div class="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
               <LineChart :points="weeklyLinePoints" color="#818cf8" :height="200" />
             </div>
@@ -819,10 +773,7 @@ onMounted(() => {
 
           <!-- ── Traffic sources ── -->
           <div v-if="funnel.trafficSources && funnel.trafficSources.length > 0" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Traffic sources</div>
-              <AudioTooltip :text="marketingExplanations.trafficSources" cache-key="mkt-traffic" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Traffic sources</div>
             <div class="mt-3 space-y-1.5">
               <div v-for="(t, ti) in funnel.trafficSources" :key="t.value" class="flex items-center gap-3">
                 <span class="w-32 shrink-0 text-right text-xs text-white/40 sm:w-40">{{ t.label }}</span>
@@ -866,10 +817,7 @@ onMounted(() => {
               class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.05]"
             >
               <div class="flex items-start justify-between">
-                <div class="flex items-center gap-1">
-                  <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">{{ card.label }}</div>
-                  <AudioTooltip v-if="card.audioText" :text="card.audioText" :cache-key="card.audioKey" />
-                </div>
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">{{ card.label }}</div>
                 <SparkLine v-if="card.spark.length > 0" :data="card.spark" :color="card.color" :width="64" :height="24" />
               </div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ card.val }}</div>
@@ -892,10 +840,7 @@ onMounted(() => {
 
           <!-- ── Agent breakdown ── -->
           <div v-if="sales.freeCustomers" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Free customers</div>
-              <AudioTooltip :text="salesExplanations.freeCustomers" cache-key="sal-free" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Free customers</div>
             <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
               <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
                 <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Total free</div>
@@ -922,10 +867,7 @@ onMounted(() => {
 
           <!-- ── Agent breakdown (original) ── -->
           <div v-if="filteredAgents.length > 0" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Performance by agent</div>
-              <AudioTooltip :text="salesExplanations.agentPerformance" cache-key="sal-agent" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Performance by agent</div>
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div
                 v-for="agent in filteredAgents"
@@ -973,10 +915,7 @@ onMounted(() => {
 
           <!-- ── Deal pipeline by stage ── -->
           <div v-if="sales.pipelineStages.length > 0" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Deal pipeline</div>
-              <AudioTooltip :text="salesExplanations.dealPipeline" cache-key="sal-pipeline" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Deal pipeline</div>
             <div class="mt-3 space-y-1.5">
               <div v-for="s in sales.pipelineStages" :key="s.stageId" class="flex items-center gap-3">
                 <span class="w-40 shrink-0 text-right text-xs text-white/40 sm:w-48">{{ s.label }}</span>
@@ -995,10 +934,7 @@ onMounted(() => {
 
           <!-- ── MRR trend ── -->
           <div v-if="mrrLinePoints.length > 1" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Monthly recurring revenue trend</div>
-              <AudioTooltip :text="salesExplanations.mrrTrend" cache-key="sal-mrr" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Monthly recurring revenue trend</div>
             <div class="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
               <LineChart :points="mrrLinePoints" color="#34d399" :height="200" :format-value="formatCurrency" />
             </div>
@@ -1006,10 +942,7 @@ onMounted(() => {
 
           <!-- ── Recent deals ── -->
           <div v-if="sales.recentDeals.length > 0" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Recent deals</div>
-              <AudioTooltip :text="salesExplanations.recentDeals" cache-key="sal-recent" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Recent deals</div>
             <div class="mt-3 overflow-x-auto">
               <table class="w-full text-left text-xs">
                 <thead>
@@ -1068,36 +1001,24 @@ onMounted(() => {
           <!-- ── KPI cards ── -->
           <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-center gap-1">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Paying customers</div>
-                <AudioTooltip :text="successExplanations.payingCustomers" cache-key="suc-pay" />
-              </div>
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Paying customers</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.totalPayingCustomers }}</div>
               <div class="mt-1 text-[10px] text-white/25">Active paying accounts</div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-center gap-1">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Retention rate</div>
-                <AudioTooltip :text="successExplanations.retentionRate" cache-key="suc-ret" />
-              </div>
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Retention rate</div>
               <div class="mt-3 text-2xl font-bold tabular-nums sm:text-3xl" :class="success.retentionRate >= 90 ? 'text-emerald-400' : success.retentionRate >= 75 ? 'text-amber-400' : 'text-rose-400'">{{ success.retentionRate }}%</div>
               <div class="mt-1 text-[10px] text-white/25">Paying / total customer base</div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-center gap-1">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Churned</div>
-                <AudioTooltip :text="successExplanations.churned" cache-key="suc-churn" />
-              </div>
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Churned</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-rose-400 sm:text-3xl">{{ success.totalChurned }}</div>
               <div class="mt-1 text-[10px] text-white/25">
                 This month: {{ success.churnedThisMonth }} · Last 3mo: {{ success.churnedLast3Months }}
               </div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-center gap-1">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Off-boarding</div>
-                <AudioTooltip :text="successExplanations.offboarding" cache-key="suc-offboard" />
-              </div>
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Off-boarding</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-amber-400 sm:text-3xl">{{ success.totalOffboarding }}</div>
               <div class="mt-1 text-[10px] text-white/25">Cancellation in progress</div>
             </div>
@@ -1106,34 +1027,22 @@ onMounted(() => {
           <!-- ── Tenure + meetings row ── -->
           <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-center gap-1">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Avg tenure</div>
-                <AudioTooltip :text="successExplanations.avgTenure" cache-key="suc-tenure" />
-              </div>
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Avg tenure</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.avgTenureMonths }}mo</div>
               <div class="mt-1 text-[10px] text-white/25">Average customer lifetime</div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-center gap-1">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Meetings (30d)</div>
-                <AudioTooltip :text="successExplanations.meetings" cache-key="suc-mtg" />
-              </div>
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Meetings (30d)</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.meetingsThisMonth }}</div>
               <div class="mt-1 text-[10px] text-white/25">All meetings last 30 days</div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-center gap-1">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Completed</div>
-                <AudioTooltip :text="successExplanations.completed" cache-key="suc-comp" />
-              </div>
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Completed</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-emerald-400 sm:text-3xl">{{ success.meetingsCompleted }}</div>
               <div class="mt-1 text-[10px] text-white/25">Meetings completed</div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-center gap-1">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">No-show</div>
-                <AudioTooltip :text="successExplanations.noShow" cache-key="suc-noshow" />
-              </div>
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">No-show</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-rose-400 sm:text-3xl">{{ success.meetingsNoShow }}</div>
               <div class="mt-1 text-[10px] text-white/25">Customer no-shows</div>
             </div>
@@ -1141,10 +1050,7 @@ onMounted(() => {
 
           <!-- ── Success team ── -->
           <div v-if="success.meetingsByAgent.length > 0" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Success team (30d)</div>
-              <AudioTooltip :text="successExplanations.successTeam" cache-key="suc-team" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Success team (30d)</div>
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div
                 v-for="agent in success.meetingsByAgent"
@@ -1194,10 +1100,7 @@ onMounted(() => {
           <!-- ── At-risk customers ── -->
           <div v-if="success.atRiskCustomers?.length > 0" class="mt-8">
             <div class="flex items-center gap-3">
-              <div class="flex items-center gap-1.5">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">At-risk customers</div>
-                <AudioTooltip :text="successExplanations.atRisk" cache-key="suc-risk" />
-              </div>
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">At-risk customers</div>
               <div class="flex items-center gap-2 text-[10px]">
                 <span v-if="success.atRiskSummary?.high > 0" class="rounded-full bg-rose-500/15 px-2 py-0.5 font-bold text-rose-400">{{ success.atRiskSummary.high }} high</span>
                 <span v-if="success.atRiskSummary?.medium > 0" class="rounded-full bg-amber-500/15 px-2 py-0.5 font-bold text-amber-400">{{ success.atRiskSummary.medium }} medium</span>
@@ -1253,10 +1156,7 @@ onMounted(() => {
 
           <!-- ── Churn vs new customers trend ── -->
           <div v-if="churnTrendLinePoints.length > 1" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Churn vs new customers (6 months)</div>
-              <AudioTooltip :text="successExplanations.churnTrend" cache-key="suc-churntrend" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Churn vs new customers (6 months)</div>
             <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
                 <div class="mb-2 text-[10px] font-semibold text-rose-400">Churned</div>
@@ -1274,10 +1174,7 @@ onMounted(() => {
             <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Breakdown insights</div>
             <div class="mt-5 grid grid-cols-1 gap-6 md:grid-cols-2">
               <div v-if="churnReasonDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <div class="mb-3 flex items-center gap-1">
-                  <div class="text-xs font-semibold text-white/50">Cancellation reasons</div>
-                  <AudioTooltip :text="successExplanations.cancellationReasons" cache-key="suc-cancel" />
-                </div>
+                <div class="mb-3 text-xs font-semibold text-white/50">Cancellation reasons</div>
                 <DonutChart
                   :segments="churnReasonDonut"
                   :size="160"
@@ -1287,10 +1184,7 @@ onMounted(() => {
                 />
               </div>
               <div v-if="tenureDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <div class="mb-3 flex items-center gap-1">
-                  <div class="text-xs font-semibold text-white/50">Customer tenure</div>
-                  <AudioTooltip :text="successExplanations.tenureDistribution" cache-key="suc-tenuredist" />
-                </div>
+                <div class="mb-3 text-xs font-semibold text-white/50">Customer tenure</div>
                 <DonutChart
                   :segments="tenureDonut"
                   :size="160"
@@ -1304,10 +1198,7 @@ onMounted(() => {
 
           <!-- ── Recently churned customers ── -->
           <div v-if="success.recentChurned.length > 0" class="mt-8">
-            <div class="flex items-center gap-1.5">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Recently churned</div>
-              <AudioTooltip :text="successExplanations.recentChurned" cache-key="suc-recentchurn" />
-            </div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Recently churned</div>
             <div class="mt-3 overflow-x-auto">
               <table class="w-full text-left text-xs">
                 <thead>
