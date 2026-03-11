@@ -3,7 +3,7 @@ import { ref, watch, onBeforeUnmount } from 'vue'
 
 const props = defineProps<{
   /** The explanation text to speak */
-  text: string
+  text?: string
   /** Stable cache key (unused now but kept for interface compat) */
   cacheKey?: string
 }>()
@@ -81,6 +81,8 @@ async function toggle() {
     stop()
     return
   }
+
+  if (!props.text) return
 
   loading.value = true
 
