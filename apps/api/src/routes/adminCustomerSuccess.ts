@@ -43,6 +43,25 @@ export type CustomerSuccessDto = {
   /* Customer tenure stats */
   avgTenureMonths: number
   customersByTenure: Array<{ bucket: string; count: number }>
+
+  /* At-risk customers */
+  atRiskCustomers: Array<{
+    name: string
+    companyId: string
+    owner: string
+    riskScore: number        // 0-100, higher = more at risk
+    riskLevel: 'high' | 'medium' | 'low'
+    reasons: string[]
+    daysSinceLastContact: number | null
+    daysSinceLastMeeting: number | null
+    daysSinceLastActivity: number | null
+    tenureMonths: number | null
+  }>
+  atRiskSummary: {
+    high: number
+    medium: number
+    low: number
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -173,6 +192,11 @@ const COMPANY_PROPERTIES = [
   'hubspot_owner_id',
   'what_prompted_you_to_consider_cancelling_mentor_software',
   'the_main_reason_you_re_leaving__other_',
+  'notes_last_contacted',
+  'hs_last_sales_activity_timestamp',
+  'hs_latest_meeting_activity',
+  'num_notes',
+  'num_contacted_notes',
 ]
 
 const MEETING_PROPERTIES = [
@@ -419,6 +443,110 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     count: tenureMonths.filter((t) => t >= b.min && t < b.max).length,
   }))
 
+  /* ── 12. At-risk customers ── */
+  const OWNER_NAMES: Record<string, string> = {
+    ...SUCCESS_TEAM,
+    '711739855': 'Naheed Dad',
+    '1774092550': 'Raj Singh',
+    '193457719': 'Liam Kotecha',
+    '231709811': 'Joe Hardstaff',
+    '29942907': 'Josh Ireland',
+    '78021788': 'Jonathan Hebbes',
+    '29285963': 'Dean Bennett',
+    '508706004': 'Ian Born',
+  }
+
+  function daysSince(isoOrNull: string | null | undefined): number | null {
+    if (!isoOrNull) return null
+    const d = new Date(isoOrNull)
+    if (isNaN(d.getTime())) return null
+    return Math.floor((now.getTime() - d.getTime()) / 86_400_000)
+  }
+
+  const atRiskCustomers: CustomerSuccessDto['atRiskCustomers'] = []
+
+  for (const c of paying) {
+    const daysSinceContact = daysSince(c.properties.notes_last_contacted)
+    const daysSinceMeeting = daysSince(c.properties.hs_latest_meeting_activity)
+    const daysSinceActivity = daysSince(c.properties.hs_last_sales_activity_timestamp)
+    const tenure = c.properties.contract_start_date
+      ? Math.floor((now.getTime() - new Date(c.properties.contract_start_date).getTime()) / (30.44 * 86_400_000))
+      : null
+    const salesActivities = parseInt(c.properties.num_notes ?? '0', 10) || 0
+
+    const reasons: string[] = []
+    let score = 0
+
+    // No contact in 90+ days => high risk signal
+    if (daysSinceContact === null) {
+      reasons.push('Never contacted')
+      score += 35
+    } else if (daysSinceContact >= 90) {
+      reasons.push(`No contact in ${daysSinceContact}d`)
+      score += 30
+    } else if (daysSinceContact >= 60) {
+      reasons.push(`No contact in ${daysSinceContact}d`)
+      score += 15
+    }
+
+    // No meetings in 90+ days
+    if (daysSinceMeeting === null) {
+      reasons.push('No meetings recorded')
+      score += 25
+    } else if (daysSinceMeeting >= 90) {
+      reasons.push(`No meeting in ${daysSinceMeeting}d`)
+      score += 20
+    } else if (daysSinceMeeting >= 60) {
+      reasons.push(`No meeting in ${daysSinceMeeting}d`)
+      score += 10
+    }
+
+    // No sales activity in 60+ days
+    if (daysSinceActivity !== null && daysSinceActivity >= 60) {
+      reasons.push(`No activity in ${daysSinceActivity}d`)
+      score += 15
+    }
+
+    // Very low engagement (few total activities)
+    if (salesActivities <= 2) {
+      reasons.push('Very low engagement')
+      score += 15
+    }
+
+    // New customer with no engagement (< 6 months tenure, no meeting)
+    if (tenure !== null && tenure <= 6 && daysSinceMeeting === null) {
+      reasons.push('New customer, no onboarding meeting')
+      score += 10
+    }
+
+    if (score < 25) continue // not at risk
+
+    const riskLevel = score >= 60 ? 'high' as const : score >= 40 ? 'medium' as const : 'low' as const
+
+    atRiskCustomers.push({
+      name: c.properties.name ?? 'Unknown',
+      companyId: c.id,
+      owner: OWNER_NAMES[c.properties.hubspot_owner_id ?? ''] ?? 'Unassigned',
+      riskScore: Math.min(score, 100),
+      riskLevel,
+      reasons,
+      daysSinceLastContact: daysSinceContact,
+      daysSinceLastMeeting: daysSinceMeeting,
+      daysSinceLastActivity: daysSinceActivity,
+      tenureMonths: tenure,
+    })
+  }
+
+  // Sort by risk score descending, cap at 25
+  atRiskCustomers.sort((a, b) => b.riskScore - a.riskScore)
+  const topAtRisk = atRiskCustomers.slice(0, 25)
+
+  const atRiskSummary = {
+    high: atRiskCustomers.filter((c) => c.riskLevel === 'high').length,
+    medium: atRiskCustomers.filter((c) => c.riskLevel === 'medium').length,
+    low: atRiskCustomers.filter((c) => c.riskLevel === 'low').length,
+  }
+
   return {
     totalPayingCustomers,
     totalChurned,
@@ -435,6 +563,8 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     churnTrend,
     avgTenureMonths,
     customersByTenure,
+    atRiskCustomers: topAtRisk,
+    atRiskSummary,
   }
 }
 

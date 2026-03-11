@@ -664,6 +664,23 @@ export type CustomerSuccess = {
   churnTrend: Array<{ month: string; churned: number; newCustomers: number }>
   avgTenureMonths: number
   customersByTenure: Array<{ bucket: string; count: number }>
+  atRiskCustomers: Array<{
+    name: string
+    companyId: string
+    owner: string
+    riskScore: number
+    riskLevel: 'high' | 'medium' | 'low'
+    reasons: string[]
+    daysSinceLastContact: number | null
+    daysSinceLastMeeting: number | null
+    daysSinceLastActivity: number | null
+    tenureMonths: number | null
+  }>
+  atRiskSummary: {
+    high: number
+    medium: number
+    low: number
+  }
 }
 
 export async function adminGetCustomerSuccess(refresh = false) {

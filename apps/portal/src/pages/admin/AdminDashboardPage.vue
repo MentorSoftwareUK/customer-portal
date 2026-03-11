@@ -1097,6 +1097,63 @@ onMounted(() => {
             </div>
           </div>
 
+          <!-- ── At-risk customers ── -->
+          <div v-if="success.atRiskCustomers.length > 0" class="mt-8">
+            <div class="flex items-center gap-3">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">At-risk customers</div>
+              <div class="flex items-center gap-2 text-[10px]">
+                <span v-if="success.atRiskSummary.high > 0" class="rounded-full bg-rose-500/15 px-2 py-0.5 font-bold text-rose-400">{{ success.atRiskSummary.high }} high</span>
+                <span v-if="success.atRiskSummary.medium > 0" class="rounded-full bg-amber-500/15 px-2 py-0.5 font-bold text-amber-400">{{ success.atRiskSummary.medium }} medium</span>
+                <span v-if="success.atRiskSummary.low > 0" class="rounded-full bg-sky-500/15 px-2 py-0.5 font-bold text-sky-400">{{ success.atRiskSummary.low }} low</span>
+              </div>
+            </div>
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-white/[0.06]">
+                    <th class="pb-2 pr-4 font-semibold text-white/30">Company</th>
+                    <th class="pb-2 pr-4 font-semibold text-white/30">Owner</th>
+                    <th class="pb-2 pr-4 text-center font-semibold text-white/30">Risk</th>
+                    <th class="pb-2 pr-4 text-right font-semibold text-white/30">Last contact</th>
+                    <th class="pb-2 pr-4 text-right font-semibold text-white/30">Last meeting</th>
+                    <th class="pb-2 font-semibold text-white/30">Reasons</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="c in success.atRiskCustomers"
+                    :key="c.companyId"
+                    class="border-b border-white/[0.03] last:border-0"
+                  >
+                    <td class="max-w-[180px] truncate py-2.5 pr-4 text-white/70">{{ c.name }}</td>
+                    <td class="py-2.5 pr-4 text-white/50">{{ c.owner }}</td>
+                    <td class="py-2.5 pr-4 text-center">
+                      <span
+                        class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        :class="c.riskLevel === 'high' ? 'bg-rose-500/15 text-rose-400' : c.riskLevel === 'medium' ? 'bg-amber-500/15 text-amber-400' : 'bg-sky-500/15 text-sky-400'"
+                      >{{ c.riskScore }}</span>
+                    </td>
+                    <td class="py-2.5 pr-4 text-right tabular-nums" :class="c.daysSinceLastContact !== null && c.daysSinceLastContact >= 90 ? 'text-rose-400' : c.daysSinceLastContact !== null && c.daysSinceLastContact >= 60 ? 'text-amber-400' : 'text-white/40'">
+                      {{ c.daysSinceLastContact !== null ? c.daysSinceLastContact + 'd' : '—' }}
+                    </td>
+                    <td class="py-2.5 pr-4 text-right tabular-nums" :class="c.daysSinceLastMeeting !== null && c.daysSinceLastMeeting >= 90 ? 'text-rose-400' : c.daysSinceLastMeeting !== null && c.daysSinceLastMeeting >= 60 ? 'text-amber-400' : 'text-white/40'">
+                      {{ c.daysSinceLastMeeting !== null ? c.daysSinceLastMeeting + 'd' : 'Never' }}
+                    </td>
+                    <td class="max-w-[250px] py-2.5">
+                      <div class="flex flex-wrap gap-1">
+                        <span
+                          v-for="(r, ri) in c.reasons"
+                          :key="ri"
+                          class="rounded bg-white/[0.06] px-1.5 py-0.5 text-[9px] text-white/40"
+                        >{{ r }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- ── Churn vs new customers trend ── -->
           <div v-if="churnTrendLinePoints.length > 1" class="mt-8">
             <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Churn vs new customers (6 months)</div>

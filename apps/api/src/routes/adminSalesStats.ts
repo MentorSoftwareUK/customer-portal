@@ -219,6 +219,8 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
     'days_to_close',
     'hs_mrr',
     'hubspot_owner_id',
+    'hs_v2_date_entered_closedwon',
+    'hs_v2_date_entered_closedlost',
   ]
 
   /* ── Query 1: All closed deals in last 6 months ── */
@@ -265,15 +267,28 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
 
   /* ── Helpers ── */
   const amt = (d: HsDeal) => parseFloat(d.properties.amount ?? '0') || 0
-  const closeDateOf = (d: HsDeal) =>
-    d.properties.closedate ? new Date(d.properties.closedate) : null
+  const isWon = (d: HsDeal) => d.properties.dealstage === 'closedwon'
+  /** Actual date the deal entered closed-won / closed-lost stage (not the
+   *  HubSpot "Close Date" field which is often the contract end date). */
+  const actualCloseDate = (d: HsDeal): Date | null => {
+    const raw = isWon(d)
+      ? d.properties.hs_v2_date_entered_closedwon
+      : d.properties.hs_v2_date_entered_closedlost
+    return raw ? new Date(raw) : null
+  }
   const daysToClose = (d: HsDeal) =>
     parseFloat(d.properties.days_to_close ?? '0') || 0
-  const isWon = (d: HsDeal) => d.properties.dealstage === 'closedwon'
   const monthOfDeal = (d: HsDeal) => {
-    const cd = closeDateOf(d)
+    const cd = actualCloseDate(d)
     return cd ? monthKey(cd) : null
   }
+
+  /* Sort by actual close date (most recent first) */
+  closedDeals.sort((a, b) => {
+    const da = actualCloseDate(a)?.getTime() ?? 0
+    const db = actualCloseDate(b)?.getTime() ?? 0
+    return db - da
+  })
 
   /* ── Current month stats ── */
   const thisMonthDeals = closedDeals.filter(
@@ -283,12 +298,12 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
   const lostThisMonth = thisMonthDeals.filter((d) => !isWon(d))
 
   const dealsWonToday = wonThisMonth.filter((d) => {
-    const cd = closeDateOf(d)
+    const cd = actualCloseDate(d)
     return cd && cd >= todayStart
   }).length
 
   const dealsWonThisWeek = wonThisMonth.filter((d) => {
-    const cd = closeDateOf(d)
+    const cd = actualCloseDate(d)
     return cd && cd >= weekStart
   }).length
 
@@ -357,7 +372,9 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
     amount: amt(d),
     stage: STAGE_MAP[d.properties.dealstage ?? '']?.label ?? d.properties.dealstage ?? '',
     won: isWon(d),
-    closeDate: d.properties.closedate ?? '',
+    closeDate: (isWon(d)
+      ? d.properties.hs_v2_date_entered_closedwon
+      : d.properties.hs_v2_date_entered_closedlost) ?? d.properties.createdate ?? '',
     createdDate: d.properties.createdate ?? '',
     agent: ownerName(d),
   }))
