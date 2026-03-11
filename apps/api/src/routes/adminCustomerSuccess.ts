@@ -56,6 +56,7 @@ export type CustomerSuccessDto = {
     daysSinceLastMeeting: number | null
     daysSinceLastActivity: number | null
     tenureMonths: number | null
+    contractStartDate: string | null
   }>
   atRiskSummary: {
     high: number
@@ -589,6 +590,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
       daysSinceLastMeeting: daysSinceMeeting,
       daysSinceLastActivity: daysSinceActivity,
       tenureMonths: tenure,
+      contractStartDate: c.properties.contract_start_date ?? null,
     })
   }
 

@@ -675,6 +675,7 @@ export type CustomerSuccess = {
     daysSinceLastMeeting: number | null
     daysSinceLastActivity: number | null
     tenureMonths: number | null
+    contractStartDate: string | null
   }>
   atRiskSummary: {
     high: number
