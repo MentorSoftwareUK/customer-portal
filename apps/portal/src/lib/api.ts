@@ -659,6 +659,7 @@ export type CustomerSuccess = {
     total: number
     completed: number
     noShow: number
+    companiesAssigned: number
   }>
   churnTrend: Array<{ month: string; churned: number; newCustomers: number }>
   avgTenureMonths: number

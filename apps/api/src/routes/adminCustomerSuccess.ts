@@ -34,6 +34,7 @@ export type CustomerSuccessDto = {
     total: number
     completed: number
     noShow: number
+    companiesAssigned: number
   }>
 
   /* Monthly churn trend (last 6 months) */
@@ -232,7 +233,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
         ],
       },
     ],
-    ['name', 'salesstatus'],
+    ['name', 'salesstatus', 'hubspot_owner_id'],
   )
   const totalOffboarding = offboarding.length
 
@@ -344,12 +345,27 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     agentMeetingMap.set(oid, bucket)
   }
 
-  const meetingsByAgent = [...agentMeetingMap.entries()]
-    .map(([ownerId, b]) => ({
-      name: SUCCESS_TEAM[ownerId] ?? 'Unknown',
-      ownerId,
-      ...b,
-    }))
+  /* Count companies assigned to each success team member */
+  const allCompanies = [...paying, ...churned, ...offboarding]
+  const companyCounts = new Map<string, number>()
+  for (const c of allCompanies) {
+    const oid = c.properties.hubspot_owner_id ?? ''
+    if (SUCCESS_TEAM[oid]) {
+      companyCounts.set(oid, (companyCounts.get(oid) ?? 0) + 1)
+    }
+  }
+
+  /* Ensure all success team members appear, even with 0 meetings */
+  const meetingsByAgent = Object.entries(SUCCESS_TEAM)
+    .map(([ownerId, name]) => {
+      const bucket = agentMeetingMap.get(ownerId) ?? { total: 0, completed: 0, noShow: 0 }
+      return {
+        name,
+        ownerId,
+        ...bucket,
+        companiesAssigned: companyCounts.get(ownerId) ?? 0,
+      }
+    })
     .sort((a, b) => b.total - a.total)
 
   /* ── 10. Churn trend (last 6 months) ── */

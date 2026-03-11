@@ -1048,9 +1048,9 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- ── Success team meetings ── -->
+          <!-- ── Success team ── -->
           <div v-if="success.meetingsByAgent.length > 0" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Success team meetings (30d)</div>
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Success team (30d)</div>
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div
                 v-for="agent in success.meetingsByAgent"
@@ -1061,9 +1061,13 @@ onMounted(() => {
                   <div class="h-2.5 w-2.5 rounded-full" :style="{ backgroundColor: SUCCESS_AGENT_COLORS[agent.name] ?? '#94a3b8' }" />
                   <span class="text-sm font-semibold text-white/80">{{ agent.name }}</span>
                 </div>
-                <div class="mt-3 grid grid-cols-3 gap-y-2 text-xs text-center">
+                <div class="mt-3 grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
                   <div>
-                    <div class="text-white/30">Total</div>
+                    <div class="text-white/30">Companies</div>
+                    <div class="text-lg font-bold tabular-nums text-white">{{ agent.companiesAssigned }}</div>
+                  </div>
+                  <div>
+                    <div class="text-white/30">Meetings</div>
                     <div class="text-lg font-bold tabular-nums text-white">{{ agent.total }}</div>
                   </div>
                   <div>
@@ -1088,6 +1092,7 @@ onMounted(() => {
                     />
                   </div>
                 </div>
+                <div v-else class="mt-3 text-[10px] text-white/20">No meetings logged</div>
               </div>
             </div>
           </div>
