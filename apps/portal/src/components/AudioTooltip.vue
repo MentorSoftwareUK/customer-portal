@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount, computed } from 'vue'
+import { getAdminAccessToken } from '../lib/auth'
 
 const props = defineProps<{
   /** The explanation text to speak */
@@ -25,10 +26,6 @@ const blobCache = new Map<string, ArrayBuffer>()
 function getApiBaseUrl(): string {
   const envBase = import.meta.env.VITE_API_BASE_URL as string | undefined
   return (envBase && envBase.trim()) || 'http://localhost:3001'
-}
-
-function getAdminToken(): string | null {
-  try { return localStorage.getItem('admin_access_token') } catch { return null }
 }
 
 function updateBars() {
@@ -98,7 +95,7 @@ async function toggle() {
       return
     }
 
-    const token = getAdminToken()
+    const token = getAdminAccessToken()
     const res = await fetch(`${getApiBaseUrl()}/admin/tts`, {
       method: 'POST',
       headers: {
@@ -158,7 +155,7 @@ onBeforeUnmount(() => {
 const label = computed(() => {
   if (loading.value) return 'Loading…'
   if (playing.value) return 'Stop'
-  return 'Listen'
+  return 'Explain'
 })
 </script>
 
@@ -167,7 +164,7 @@ const label = computed(() => {
     v-if="text"
     @click.stop="toggle"
     :disabled="loading"
-    :title="playing ? 'Stop explanation' : 'Listen to explanation'"
+    :title="playing ? 'Stop' : 'Explain this metric'"
     class="voice-pill"
     :class="{ playing, loading }"
   >
