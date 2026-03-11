@@ -46,7 +46,22 @@ export type SalesStatsDto = {
     won: boolean
     closeDate: string
     createdDate: string
+    agent: string
   }>
+
+  /* Deals by agent */
+  agentBreakdown: Array<{
+    name: string
+    ownerId: string
+    won: number
+    lost: number
+    revenue: number
+    openDeals: number
+    openValue: number
+  }>
+
+  /* MRR trend (last 6 months) */
+  mrrTrend: Array<{ month: string; mrr: number }>
 
   /* Trend — last 6 months, oldest → newest */
   trend: SalesMonthSummary[]
@@ -93,6 +108,17 @@ async function hsFetch(path: string, init?: RequestInit) {
 /* ------------------------------------------------------------------ */
 
 const MAIN_PIPELINE_ID = 'default'
+
+/* ── Key sales agent IDs ── */
+const OWNER_MAP: Record<string, string> = {
+  '711739855': 'Naheed Dad',
+  '1774092550': 'Raj Singh',
+  '588615646': 'Hope Schindler',
+  '193457719': 'Liam Kotecha',
+  '231709811': 'Joe Hardstaff',
+  '29942907': 'Josh Ireland',
+  '78021788': 'Jonathan Hebbes',
+}
 
 const STAGE_MAP: Record<string, { label: string; order: number }> = {
   appointmentscheduled: { label: 'Discovery Call Made', order: 0 },
@@ -183,6 +209,7 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
     'pipeline',
     'days_to_close',
     'hs_mrr',
+    'hubspot_owner_id',
   ]
 
   /* ── Query 1: All closed deals in last 6 months ── */
@@ -313,6 +340,9 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
     .sort((a, b) => a.order - b.order)
 
   /* ── Recent deals (last 10 closed) ── */
+  const ownerName = (d: HsDeal) =>
+    OWNER_MAP[d.properties.hubspot_owner_id ?? ''] ?? 'Unassigned'
+
   const recentDeals = closedDeals.slice(0, 10).map((d) => ({
     name: d.properties.dealname ?? 'Untitled',
     amount: amt(d),
@@ -320,6 +350,54 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
     won: isWon(d),
     closeDate: d.properties.closedate ?? '',
     createdDate: d.properties.createdate ?? '',
+    agent: ownerName(d),
+  }))
+
+  /* ── Agent breakdown ── */
+  const agentMap = new Map<
+    string,
+    { name: string; won: number; lost: number; revenue: number; openDeals: number; openValue: number }
+  >()
+  const ensureAgent = (ownerId: string) => {
+    if (!agentMap.has(ownerId)) {
+      agentMap.set(ownerId, {
+        name: OWNER_MAP[ownerId] ?? 'Other',
+        won: 0, lost: 0, revenue: 0, openDeals: 0, openValue: 0,
+      })
+    }
+    return agentMap.get(ownerId)!
+  }
+  for (const d of thisMonthDeals) {
+    const oid = d.properties.hubspot_owner_id ?? 'unassigned'
+    const a = ensureAgent(oid)
+    if (isWon(d)) { a.won++; a.revenue += amt(d) }
+    else a.lost++
+  }
+  for (const d of openDeals) {
+    const oid = d.properties.hubspot_owner_id ?? 'unassigned'
+    const a = ensureAgent(oid)
+    a.openDeals++
+    a.openValue += amt(d)
+  }
+  const agentBreakdown = [...agentMap.entries()]
+    .map(([ownerId, a]) => ({ ...a, ownerId }))
+    .sort((a, b) => b.revenue - a.revenue)
+
+  /* ── MRR trend (sum of hs_mrr from won deals each month) ── */
+  const mrrTrendMap = new Map<string, number>()
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    mrrTrendMap.set(monthKey(d), 0)
+  }
+  for (const d of closedDeals) {
+    if (!isWon(d)) continue
+    const mk = monthOfDeal(d)
+    if (!mk || !mrrTrendMap.has(mk)) continue
+    mrrTrendMap.set(mk, mrrTrendMap.get(mk)! + (parseFloat(d.properties.hs_mrr ?? '0') || 0))
+  }
+  const mrrTrend = [...mrrTrendMap.entries()].map(([month, mrr]) => ({
+    month,
+    mrr: Math.round(mrr * 100) / 100,
   }))
 
   /* ── Trend (last 6 months, oldest → newest) ── */
@@ -401,6 +479,8 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
     openDealCount,
     pipelineStages,
     recentDeals,
+    agentBreakdown,
+    mrrTrend,
     trend,
     previous,
   }

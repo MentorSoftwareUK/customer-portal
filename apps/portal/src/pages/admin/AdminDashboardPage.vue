@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue'
 import SparkLine from '../../components/SparkLine.vue'
+import DonutChart from '../../components/DonutChart.vue'
+import LineChart from '../../components/LineChart.vue'
 import {
   adminGetDashboardStats,
   adminGetSalesFunnel,
@@ -219,6 +221,40 @@ const funnelMonthLabel = computed(() => {
   return new Date(parts[0] ?? 2026, (parts[1] ?? 1) - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 })
 
+/* ── Donut chart colour palettes ── */
+const STAGE_COLORS = ['#818cf8', '#34d399', '#fbbf24', '#f472b6', '#38bdf8', '#a78bfa']
+const PROVISION_COLORS = ['#f97316', '#06b6d4', '#a855f7', '#14b8a6']
+const REFERRAL_COLORS = ['#818cf8', '#f472b6', '#34d399', '#fbbf24', '#38bdf8', '#fb7185', '#a78bfa', '#94a3b8']
+const TRAFFIC_COLORS = ['#818cf8', '#34d399', '#fbbf24', '#f472b6', '#38bdf8', '#f97316', '#a855f7', '#fb7185', '#14b8a6', '#94a3b8']
+
+const stageDonut = computed(() =>
+  (funnel.value?.stageBreakdown ?? []).map((s, i) => ({
+    label: s.label, value: s.count, color: STAGE_COLORS[i % STAGE_COLORS.length]!,
+  })),
+)
+
+const provisionDonut = computed(() =>
+  (funnel.value?.provisionBreakdown ?? []).map((s, i) => ({
+    label: s.label, value: s.count, color: PROVISION_COLORS[i % PROVISION_COLORS.length]!,
+  })),
+)
+
+const referralDonut = computed(() =>
+  (funnel.value?.referralBreakdown ?? []).map((s, i) => ({
+    label: s.label, value: s.count, color: REFERRAL_COLORS[i % REFERRAL_COLORS.length]!,
+  })),
+)
+
+const weeklyLinePoints = computed(() =>
+  (funnel.value?.weeklySubmissions ?? []).map((w) => ({
+    label: w.weekLabel, value: w.count,
+  })),
+)
+
+const trafficSourceMax = computed(() =>
+  Math.max(...(funnel.value?.trafficSources ?? []).map((t) => t.count), 1),
+)
+
 /* ------------------------------------------------------------------ */
 /*  Sales KPI cards                                                   */
 /* ------------------------------------------------------------------ */
@@ -307,6 +343,29 @@ const maxPipelineStageCount = computed(() => {
   if (!sales.value) return 1
   return Math.max(...sales.value.pipelineStages.map((s) => s.count), 1)
 })
+
+/* ── MRR trend line chart ── */
+const mrrLinePoints = computed(() =>
+  (sales.value?.mrrTrend ?? []).map((m) => ({
+    label: m.month,
+    value: m.mrr,
+  })),
+)
+
+/* ── Agent colour palette ── */
+const AGENT_COLORS: Record<string, string> = {
+  'Naheed Dad': '#818cf8',
+  'Raj Singh': '#34d399',
+  'Hope Schindler': '#fbbf24',
+  'Liam Kotecha': '#f472b6',
+  'Joe Hardstaff': '#38bdf8',
+  'Josh Ireland': '#a855f7',
+  'Jonathan Hebbes': '#f97316',
+}
+
+function agentColor(name: string): string {
+  return AGENT_COLORS[name] ?? '#94a3b8'
+}
 
 function formatCurrency(v: number): string {
   if (v >= 1000) return `£${(v / 1000).toFixed(1)}k`
@@ -581,6 +640,76 @@ onMounted(() => {
               </div>
             </div>
           </div>
+
+          <!-- ── Donut charts: Stage · Provision · Referral ── -->
+          <div class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Breakdown insights</div>
+            <div class="mt-5 grid grid-cols-1 gap-6 md:grid-cols-3">
+              <!-- Stage donut -->
+              <div v-if="stageDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+                <div class="mb-3 text-xs font-semibold text-white/50">Registration Stage</div>
+                <DonutChart
+                  :segments="stageDonut"
+                  :size="160"
+                  :stroke-width="24"
+                  :centre-value="String(stageDonut.reduce((a, s) => a + s.value, 0))"
+                  centre-label="total"
+                />
+              </div>
+              <!-- Provision donut -->
+              <div v-if="provisionDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+                <div class="mb-3 text-xs font-semibold text-white/50">Provision Type</div>
+                <DonutChart
+                  :segments="provisionDonut"
+                  :size="160"
+                  :stroke-width="24"
+                  :centre-value="String(provisionDonut.reduce((a, s) => a + s.value, 0))"
+                  centre-label="total"
+                />
+              </div>
+              <!-- Referral donut -->
+              <div v-if="referralDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+                <div class="mb-3 text-xs font-semibold text-white/50">Where Did You Hear About Us</div>
+                <DonutChart
+                  :segments="referralDonut"
+                  :size="160"
+                  :stroke-width="24"
+                  :centre-value="String(referralDonut.reduce((a, s) => a + s.value, 0))"
+                  centre-label="total"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Weekly submissions line chart ── -->
+          <div v-if="weeklyLinePoints.length > 1" class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Submissions over time</div>
+            <div class="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+              <LineChart :points="weeklyLinePoints" color="#818cf8" :height="200" />
+            </div>
+          </div>
+
+          <!-- ── Traffic sources ── -->
+          <div v-if="funnel.trafficSources && funnel.trafficSources.length > 0" class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Traffic sources</div>
+            <div class="mt-3 space-y-1.5">
+              <div v-for="(t, ti) in funnel.trafficSources" :key="t.value" class="flex items-center gap-3">
+                <span class="w-32 shrink-0 text-right text-xs text-white/40 sm:w-40">{{ t.label }}</span>
+                <div class="h-5 flex-1 overflow-hidden rounded bg-white/[0.04]">
+                  <div
+                    class="h-full rounded transition-all duration-500"
+                    :style="{
+                      width: Math.round((t.count / trafficSourceMax) * 100) + '%',
+                      minWidth: t.count > 0 ? '4px' : '0',
+                      backgroundColor: TRAFFIC_COLORS[ti % TRAFFIC_COLORS.length],
+                      opacity: 0.4,
+                    }"
+                  />
+                </div>
+                <span class="w-7 text-right text-xs font-semibold tabular-nums text-white/60">{{ t.count }}</span>
+              </div>
+            </div>
+          </div>
         </template>
       </template>
 
@@ -646,6 +775,62 @@ onMounted(() => {
             </div>
           </div>
 
+          <!-- ── Agent breakdown ── -->
+          <div v-if="sales.agentBreakdown && sales.agentBreakdown.length > 0" class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Performance by agent</div>
+            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div
+                v-for="agent in sales.agentBreakdown"
+                :key="agent.ownerId"
+                class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4"
+              >
+                <div class="flex items-center gap-2">
+                  <div class="h-2.5 w-2.5 rounded-full" :style="{ backgroundColor: agentColor(agent.name) }" />
+                  <span class="text-sm font-semibold text-white/80">{{ agent.name }}</span>
+                </div>
+                <div class="mt-3 grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
+                  <div>
+                    <div class="text-white/30">Won</div>
+                    <div class="text-lg font-bold tabular-nums text-emerald-400">{{ agent.won }}</div>
+                  </div>
+                  <div>
+                    <div class="text-white/30">Lost</div>
+                    <div class="text-lg font-bold tabular-nums text-rose-400">{{ agent.lost }}</div>
+                  </div>
+                  <div>
+                    <div class="text-white/30">Revenue</div>
+                    <div class="font-bold tabular-nums text-white/70">{{ formatCurrency(agent.revenue) }}</div>
+                  </div>
+                  <div>
+                    <div class="text-white/30">Open</div>
+                    <div class="font-bold tabular-nums text-white/70">{{ agent.openDeals }} ({{ formatCurrency(agent.openValue) }})</div>
+                  </div>
+                </div>
+                <!-- Win rate mini bar -->
+                <div v-if="agent.won + agent.lost > 0" class="mt-3">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-white/30">Win rate</span>
+                    <span class="font-bold tabular-nums text-white/50">{{ Math.round((agent.won / (agent.won + agent.lost)) * 100) }}%</span>
+                  </div>
+                  <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-white/[0.04]">
+                    <div
+                      class="h-full rounded-full bg-emerald-500/60 transition-all duration-500"
+                      :style="{ width: Math.round((agent.won / (agent.won + agent.lost)) * 100) + '%' }"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── MRR trend ── -->
+          <div v-if="mrrLinePoints.length > 1" class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Monthly recurring revenue trend</div>
+            <div class="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+              <LineChart :points="mrrLinePoints" color="#34d399" :height="200" :format-value="formatCurrency" />
+            </div>
+          </div>
+
           <!-- ── Recent deals ── -->
           <div v-if="sales.recentDeals.length > 0" class="mt-8">
             <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Recent deals</div>
@@ -654,6 +839,7 @@ onMounted(() => {
                 <thead>
                   <tr class="border-b border-white/[0.06]">
                     <th class="pb-2 pr-4 font-semibold text-white/30">Deal</th>
+                    <th class="pb-2 pr-4 font-semibold text-white/30">Agent</th>
                     <th class="pb-2 pr-4 text-right font-semibold text-white/30">Amount</th>
                     <th class="pb-2 pr-4 font-semibold text-white/30">Stage</th>
                     <th class="pb-2 text-right font-semibold text-white/30">Closed</th>
@@ -666,6 +852,13 @@ onMounted(() => {
                     class="border-b border-white/[0.03] last:border-0"
                   >
                     <td class="max-w-[200px] truncate py-2.5 pr-4 text-white/70">{{ deal.name }}</td>
+                    <td class="py-2.5 pr-4">
+                      <span v-if="deal.agent" class="inline-flex items-center gap-1">
+                        <span class="h-1.5 w-1.5 rounded-full" :style="{ backgroundColor: agentColor(deal.agent) }" />
+                        <span class="text-white/50">{{ deal.agent }}</span>
+                      </span>
+                      <span v-else class="text-white/25">—</span>
+                    </td>
                     <td class="py-2.5 pr-4 text-right tabular-nums text-white/60">£{{ deal.amount.toLocaleString('en-GB') }}</td>
                     <td class="py-2.5 pr-4">
                       <span

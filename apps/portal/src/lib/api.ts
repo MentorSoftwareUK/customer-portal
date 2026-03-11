@@ -528,6 +528,9 @@ export type MonthSummary = {
   demos: number
 }
 
+export type BreakdownItem = { label: string; value: string; count: number }
+export type WeeklyBucket = { weekLabel: string; startDate: string; count: number }
+
 export type SalesFunnel = {
   month: string
   mqls: number
@@ -537,6 +540,11 @@ export type SalesFunnel = {
   byStage: SalesFunnelStage[]
   previous: MonthSummary | null
   trend: MonthSummary[]
+  stageBreakdown: BreakdownItem[]
+  provisionBreakdown: BreakdownItem[]
+  referralBreakdown: BreakdownItem[]
+  weeklySubmissions: WeeklyBucket[]
+  trafficSources: BreakdownItem[]
 }
 
 export async function adminGetSalesFunnel(month?: string, refresh = false) {
@@ -577,7 +585,20 @@ export type SalesRecentDeal = {
   won: boolean
   closeDate: string
   createdDate: string
+  agent: string
 }
+
+export type SalesAgentBreakdown = {
+  name: string
+  ownerId: string
+  won: number
+  lost: number
+  revenue: number
+  openDeals: number
+  openValue: number
+}
+
+export type MrrTrendItem = { month: string; mrr: number }
 
 export type SalesStats = {
   dealsWonToday: number
@@ -595,6 +616,8 @@ export type SalesStats = {
   recentDeals: SalesRecentDeal[]
   trend: SalesMonthSummary[]
   previous: SalesMonthSummary | null
+  agentBreakdown: SalesAgentBreakdown[]
+  mrrTrend: MrrTrendItem[]
 }
 
 export async function adminGetSalesStats(refresh = false) {

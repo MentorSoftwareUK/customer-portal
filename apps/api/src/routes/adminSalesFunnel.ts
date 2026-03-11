@@ -35,6 +35,19 @@ export type SalesFunnelDto = {
   previous: MonthSummary | null
   /** Last 6 months oldest → newest (for sparklines). */
   trend: MonthSummary[]
+
+  /* ── New marketing breakdowns ── */
+
+  /** "What stage are you at?" distribution (selected month). */
+  stageBreakdown: Array<{ label: string; value: string; count: number }>
+  /** Provision type distribution (selected month). */
+  provisionBreakdown: Array<{ label: string; value: string; count: number }>
+  /** "Where did you hear about us" distribution (selected month). */
+  referralBreakdown: Array<{ label: string; value: string; count: number }>
+  /** Weekly submission counts within selected month (Mon-start). */
+  weeklySubmissions: Array<{ weekLabel: string; startDate: string; count: number }>
+  /** Traffic source distribution from HubSpot contacts (selected month). */
+  trafficSources: Array<{ label: string; value: string; count: number }>
 }
 
 /* ------------------------------------------------------------------ */
@@ -92,6 +105,8 @@ type FormSub = {
   email?: string
   department?: string // only present on contact form
   stage?: string // "What stage are you at?" — self-scheduling form
+  provisionType?: string // "Provision Type" — self-scheduling form (semi-colon separated for multi-check)
+  referralSource?: string // "Where did you hear about Mentor" — self-scheduling + contact forms
 }
 
 /**
@@ -146,6 +161,8 @@ async function hsFormSubmissions(
         email: vals.get('email')?.toLowerCase(),
         department: vals.get('department'),
         stage: vals.get('what_stage_are_you_at_'),
+        provisionType: vals.get('provision_type'),
+        referralSource: vals.get('where_did_you_hear_about_mentor'),
       })
     }
 
@@ -267,6 +284,144 @@ async function hsBatchContactEmails(
 
   return map
 }
+
+/* ------------------------------------------------------------------ */
+/*  Label maps for breakdown charts                                   */
+/* ------------------------------------------------------------------ */
+
+const STAGE_LABELS: Record<string, string> = {
+  'No Home': 'Pre-Registration',
+  'OFSTED Inspection': 'Awaiting Ofsted',
+  'Just Opened': 'Newly Registered',
+  'Single Home': 'Registered – Single Home',
+  'Multi Home': 'Registered – Multiple Homes',
+}
+
+const PROVISION_LABELS: Record<string, string> = {
+  "Children's Home": "Children's Home",
+  'Supported Accommodation': 'Supported Accommodation',
+  '18 Plus': '18 Plus',
+}
+
+const REFERRAL_LABELS: Record<string, string> = {
+  'Internet Search': 'Google Search',
+  'Instagram': 'Instagram',
+  'Linked In': 'LinkedIn',
+  'Facebook': 'Facebook',
+  'Word of mouth': 'Word of Mouth',
+  'Whatsapp group': 'WhatsApp Group',
+  'Conference or Event': 'Conference / Event',
+}
+
+const TRAFFIC_SOURCE_LABELS: Record<string, string> = {
+  ORGANIC_SEARCH: 'Organic Search',
+  PAID_SEARCH: 'Paid Search',
+  EMAIL_MARKETING: 'Email Marketing',
+  SOCIAL_MEDIA: 'Organic Social',
+  REFERRALS: 'Referrals',
+  OTHER_CAMPAIGNS: 'Other Campaigns',
+  DIRECT_TRAFFIC: 'Direct Traffic',
+  OFFLINE: 'Offline Sources',
+  PAID_SOCIAL: 'Paid Social',
+  AI_REFERRALS: 'AI Referrals',
+}
+
+/* ------------------------------------------------------------------ */
+/*  Traffic sources from HubSpot contacts (created in month)          */
+/* ------------------------------------------------------------------ */
+
+async function hsTrafficSources(
+  monthStart: string,
+  nextMonth: string,
+): Promise<Array<{ label: string; value: string; count: number }>> {
+  const counts = new Map<string, number>()
+  let after: string | undefined
+  const MAX_PAGES = 10
+
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const body: Record<string, unknown> = {
+      filterGroups: [
+        {
+          filters: [
+            { propertyName: 'createdate', operator: 'GTE', value: `${monthStart}T00:00:00.000Z` },
+            { propertyName: 'createdate', operator: 'LT', value: `${nextMonth}T00:00:00.000Z` },
+          ],
+        },
+      ],
+      properties: ['hs_analytics_source'],
+      limit: 100,
+    }
+    if (after) body.after = after
+
+    const res = await hsFetch('/crm/v3/objects/contacts/search', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+    const data = (await res.json()) as {
+      results: Array<{ properties: Record<string, string | null> }>
+      paging?: { next?: { after: string } }
+    }
+    for (const c of data.results ?? []) {
+      const src = (c.properties.hs_analytics_source ?? '').trim()
+      if (src) counts.set(src, (counts.get(src) ?? 0) + 1)
+    }
+
+    after = data.paging?.next?.after
+    if (!after) break
+  }
+
+  return [...counts.entries()]
+    .map(([value, count]) => ({
+      label: TRAFFIC_SOURCE_LABELS[value] ?? value,
+      value,
+      count,
+    }))
+    .sort((a, b) => b.count - a.count)
+}
+
+/* ------------------------------------------------------------------ */
+/*  Weekly submission bucketing helper                                 */
+/* ------------------------------------------------------------------ */
+
+function weeklyBuckets(
+  subs: FormSub[],
+  year: number,
+  mon: number,
+): Array<{ weekLabel: string; startDate: string; count: number }> {
+  // Build Monday-start weeks covering the full month
+  const monthStart = new Date(Date.UTC(year, mon - 1, 1))
+  const monthEnd = new Date(Date.UTC(year, mon, 0)) // last day of month
+  const weeks: Array<{ start: Date; end: Date }> = []
+
+  // Find the Monday on or before the 1st
+  let cursor = new Date(monthStart)
+  const dayOfWeek = cursor.getUTCDay()
+  const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+  cursor.setUTCDate(cursor.getUTCDate() - diff)
+
+  while (cursor <= monthEnd) {
+    const weekEnd = new Date(cursor)
+    weekEnd.setUTCDate(weekEnd.getUTCDate() + 6)
+    weeks.push({ start: new Date(cursor), end: weekEnd })
+    cursor.setUTCDate(cursor.getUTCDate() + 7)
+  }
+
+  return weeks.map((w, i) => {
+    const count = subs.filter((s) => {
+      const d = new Date(s.submittedAt)
+      return d >= w.start && d <= w.end && d >= monthStart && d <= monthEnd
+    }).length
+    const startStr = w.start.toISOString().split('T')[0]!
+    const startDay = Math.max(w.start.getUTCDate(), monthStart.getUTCDate())
+    const endDay = Math.min(w.end.getUTCDate(), monthEnd.getUTCDate())
+    return {
+      weekLabel: `${startDay}–${endDay} ${monthStart.toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' })}`,
+      startDate: startStr,
+      count,
+    }
+  })
+}
+
 /*  Lead pipeline stage definitions                                   */
 /* ------------------------------------------------------------------ */
 
@@ -483,6 +638,53 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
         order: s.order,
       })).filter((s) => s.count > 0)
 
+      /* ========== 8. Marketing breakdowns (new) ========== */
+
+      // Collect all form subs for the selected month
+      const allMonthSubs = formResults.flatMap((f) =>
+        f.subs.filter((s) => msToMonth(s.submittedAt) === monthParam),
+      )
+
+      // Stage breakdown
+      const stageCountMap = new Map<string, number>()
+      for (const sub of allMonthSubs) {
+        const v = (sub.stage ?? '').trim()
+        if (v) stageCountMap.set(v, (stageCountMap.get(v) ?? 0) + 1)
+      }
+      const stageBreakdown = [...stageCountMap.entries()]
+        .map(([value, count]) => ({ label: STAGE_LABELS[value] ?? value, value, count }))
+        .sort((a, b) => b.count - a.count)
+
+      // Provision breakdown (multi-check: values are semicolon-separated)
+      const provCountMap = new Map<string, number>()
+      for (const sub of allMonthSubs) {
+        const raw = (sub.provisionType ?? '').trim()
+        if (!raw) continue
+        for (const v of raw.split(';')) {
+          const trimmed = v.trim()
+          if (trimmed) provCountMap.set(trimmed, (provCountMap.get(trimmed) ?? 0) + 1)
+        }
+      }
+      const provisionBreakdown = [...provCountMap.entries()]
+        .map(([value, count]) => ({ label: PROVISION_LABELS[value] ?? value, value, count }))
+        .sort((a, b) => b.count - a.count)
+
+      // Referral source breakdown
+      const refCountMap = new Map<string, number>()
+      for (const sub of allMonthSubs) {
+        const v = (sub.referralSource ?? '').trim()
+        if (v) refCountMap.set(v, (refCountMap.get(v) ?? 0) + 1)
+      }
+      const referralBreakdown = [...refCountMap.entries()]
+        .map(([value, count]) => ({ label: REFERRAL_LABELS[value] ?? value, value, count }))
+        .sort((a, b) => b.count - a.count)
+
+      // Weekly submissions
+      const weeklySubmissions = weeklyBuckets(allMonthSubs, year!, mon!)
+
+      // Traffic sources (parallel fetch)
+      const trafficSources = await hsTrafficSources(monthStart, nextMonth)
+
       const funnel: SalesFunnelDto = {
         month: monthParam,
         mqls: totalMqls,
@@ -492,6 +694,11 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
         byStage,
         previous,
         trend,
+        stageBreakdown,
+        provisionBreakdown,
+        referralBreakdown,
+        weeklySubmissions,
+        trafficSources,
       }
 
       /* ── Persist to MongoDB ── */

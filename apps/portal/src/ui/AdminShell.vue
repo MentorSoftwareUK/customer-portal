@@ -12,6 +12,7 @@ const isMac = typeof navigator !== 'undefined' && navigator.platform.toLowerCase
 const route = useRoute()
 const router = useRouter()
 const currentPath = computed(() => route.path)
+const isDashboardPage = computed(() => route.path.endsWith('/dashboard'))
 
 const isActive = (to: string) => {
   return currentPath.value === to || currentPath.value.startsWith(`${to}/`)
@@ -597,7 +598,7 @@ onUnmounted(() => {
     </aside>
 
     <main id="main-content" class="min-h-screen bg-[#e2e2e2] pt-20 md:ml-64 text-gray-900">
-      <div class="mx-auto w-full max-w-screen-xl px-4 py-3 sm:py-5 lg:px-12">
+      <div :class="isDashboardPage ? 'w-full px-4 py-3 sm:py-5 lg:px-8' : 'mx-auto w-full max-w-screen-xl px-4 py-3 sm:py-5 lg:px-12'">
         <router-view />
       </div>
     </main>
