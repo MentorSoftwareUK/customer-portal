@@ -62,6 +62,46 @@ export type CustomerSuccessDto = {
     medium: number
     low: number
   }
+
+  /* KPI sparkline data (6 monthly data points, oldest → newest) */
+  kpiSpark: {
+    paying: number[]
+    churned: number[]
+    retention: number[]
+    meetings: number[]
+    completed: number[]
+    noShow: number[]
+  }
+
+  /* Previous-period values for delta indicators */
+  previousPeriod: {
+    totalPayingCustomers: number
+    retentionRate: number
+    churned: number
+    meetingsMonth: number
+    completedMonth: number
+    noShowMonth: number
+  }
+
+  /* New customers (within first 60 days of contract start) */
+  newCustomers: Array<{
+    name: string
+    companyId: string
+    owner: string
+    contractStartDate: string
+    daysSinceStart: number
+    hubspotUrl: string
+    trainingMeeting: 'completed' | 'scheduled' | 'none'
+    successMeeting: 'completed' | 'scheduled' | 'none'
+  }>
+
+  /* Early churn breakdown */
+  earlyChurn: {
+    within60: number
+    within90: number
+    within120: number
+    totalWithDates: number
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -316,19 +356,18 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
         '—',
     }))
 
-  /* ── 8. Meetings (last 30 days) ── */
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 86_400_000)
-    .toISOString()
-    .split('T')[0]!
+  /* ── 8. Meetings (last 6 months for sparkline data) ── */
+  const sixMonthsAgoDate = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+  const sixMonthsAgoStr = sixMonthsAgoDate.toISOString().split('T')[0]!
 
-  const meetings = await searchMeetings(
+  const allMeetings = await searchMeetings(
     [
       {
         filters: [
           {
             propertyName: 'hs_meeting_start_time',
             operator: 'GTE',
-            value: thirtyDaysAgo,
+            value: sixMonthsAgoStr,
           },
           {
             propertyName: 'hs_meeting_start_time',
@@ -340,6 +379,13 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     ],
     MEETING_PROPERTIES,
   )
+
+  // Filter to last 30 days for the main KPI counts
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 86_400_000)
+  const meetings = allMeetings.filter((m) => {
+    const st = m.properties.hs_meeting_start_time
+    return st && new Date(st) >= thirtyDaysAgo && new Date(st) <= now
+  })
 
   const meetingsThisMonth = meetings.length
   const meetingsCompleted = meetings.filter(
@@ -556,6 +602,192 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     low: atRiskCustomers.filter((c) => c.riskLevel === 'low').length,
   }
 
+  /* ── 13. Monthly meeting buckets (for sparklines) ── */
+  const meetingsByMonthMap = new Map<string, { total: number; completed: number; noShow: number }>()
+  for (const m of allMeetings) {
+    const st = m.properties.hs_meeting_start_time
+    if (!st) continue
+    const mk = monthKey(new Date(st))
+    const b = meetingsByMonthMap.get(mk) ?? { total: 0, completed: 0, noShow: 0 }
+    b.total++
+    if (m.properties.hs_meeting_outcome === 'COMPLETED') b.completed++
+    if (m.properties.hs_meeting_outcome === 'NO_SHOW') b.noShow++
+    meetingsByMonthMap.set(mk, b)
+  }
+
+  /* ── 14. KPI sparklines (6 monthly data points) ── */
+  // Estimate historical paying counts by reversing churn/new from churnTrend
+  const payingSpark: number[] = []
+  let payingEst = totalPayingCustomers
+  for (let i = 5; i >= 0; i--) {
+    payingSpark.unshift(Math.max(0, payingEst))
+    if (i > 0) {
+      payingEst = payingEst + (churnTrend[i]?.churned ?? 0) - (churnTrend[i]?.newCustomers ?? 0)
+    }
+  }
+
+  const meetingsSpark: number[] = []
+  const completedSpark: number[] = []
+  const noShowSpark: number[] = []
+  const churnedSpark: number[] = []
+  const retentionSpark: number[] = []
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const mk = monthKey(d)
+    const mb = meetingsByMonthMap.get(mk) ?? { total: 0, completed: 0, noShow: 0 }
+    meetingsSpark.push(mb.total)
+    completedSpark.push(mb.completed)
+    noShowSpark.push(mb.noShow)
+    churnedSpark.push(churnTrend[5 - i]?.churned ?? 0)
+    // Retention % estimate for sparkline
+    const estPay = payingSpark[5 - i] ?? totalPayingCustomers
+    const totalBase = estPay + (churnTrend.slice(0, 5 - i + 1).reduce((a, t) => a + t.churned, 0))
+    retentionSpark.push(totalBase > 0 ? Math.round((estPay / totalBase) * 100) : 100)
+  }
+
+  const kpiSpark = {
+    paying: payingSpark,
+    churned: churnedSpark,
+    retention: retentionSpark,
+    meetings: meetingsSpark,
+    completed: completedSpark,
+    noShow: noShowSpark,
+  }
+
+  /* ── 15. Previous period for delta comparison ── */
+  const prevMK = monthKey(new Date(now.getFullYear(), now.getMonth() - 1, 1))
+  const prevMeetingBucket = meetingsByMonthMap.get(prevMK) ?? { total: 0, completed: 0, noShow: 0 }
+  const previousPeriod = {
+    totalPayingCustomers: payingSpark[4] ?? totalPayingCustomers,
+    retentionRate: retentionSpark[4] ?? retentionRate,
+    churned: churnTrend[4]?.churned ?? 0,
+    meetingsMonth: prevMeetingBucket.total,
+    completedMonth: prevMeetingBucket.completed,
+    noShowMonth: prevMeetingBucket.noShow,
+  }
+
+  /* ── 16. New customers (within first 60 days) ── */
+  const HUBSPOT_PORTAL_ID = '145032754'
+  const sixtyDaysAgo = new Date(now.getTime() - 60 * 86_400_000)
+
+  const newCustCandidates = paying.filter((c) => {
+    const start = c.properties.contract_start_date
+    if (!start) return false
+    return new Date(start) >= sixtyDaysAgo
+  })
+
+  // Fetch associated meetings for each new customer
+  type MeetingClassification = 'training' | 'success' | 'other'
+  function classifyMeeting(m: HsMeeting): MeetingClassification {
+    const title = (m.properties.hs_meeting_title ?? '').toLowerCase()
+    if (title.includes('training') || title.includes('onboarding') || title.includes('setup') || title.includes('implementation')) return 'training'
+    if (title.includes('success') || title.includes('review') || title.includes('check-in') || title.includes('check in') || title.includes('qbr') || title.includes('quarterly')) return 'success'
+    return 'other'
+  }
+
+  function deriveMeetingStatus(
+    companyMeetings: HsMeeting[],
+    type: 'training' | 'success',
+  ): 'completed' | 'scheduled' | 'none' {
+    const typed = companyMeetings.filter((m) => classifyMeeting(m) === type)
+    if (typed.length === 0) return 'none'
+    const hasCompleted = typed.some(
+      (m) =>
+        m.properties.hs_meeting_outcome === 'COMPLETED' ||
+        (m.properties.hs_meeting_start_time &&
+          new Date(m.properties.hs_meeting_start_time) < now &&
+          m.properties.hs_meeting_outcome !== 'CANCELLED' &&
+          m.properties.hs_meeting_outcome !== 'NO_SHOW'),
+    )
+    if (hasCompleted) return 'completed'
+    const hasFuture = typed.some(
+      (m) =>
+        m.properties.hs_meeting_start_time &&
+        new Date(m.properties.hs_meeting_start_time) > now,
+    )
+    if (hasFuture) return 'scheduled'
+    return 'none'
+  }
+
+  const newCustomers: CustomerSuccessDto['newCustomers'] = []
+  // Process in parallel, max 10 concurrent
+  const batchSize = 10
+  for (let b = 0; b < newCustCandidates.length; b += batchSize) {
+    const batch = newCustCandidates.slice(b, b + batchSize)
+    const results = await Promise.all(
+      batch.map(async (c) => {
+        let companyMeetings: HsMeeting[] = []
+        try {
+          // Fetch meeting associations for this company
+          const assocRes = await hsFetch(
+            `/crm/v4/objects/companies/${c.id}/associations/meetings?limit=500`,
+          )
+          const assocData = (await assocRes.json()) as {
+            results?: Array<{ toObjectId: string }>
+          }
+          const meetingIds = (assocData.results ?? []).map((r) => r.toObjectId)
+
+          if (meetingIds.length > 0) {
+            const readRes = await hsFetch('/crm/v3/objects/meetings/batch/read', {
+              method: 'POST',
+              body: JSON.stringify({
+                inputs: meetingIds.map((id) => ({ id })),
+                properties: MEETING_PROPERTIES,
+              }),
+            })
+            const readData = (await readRes.json()) as { results?: HsMeeting[] }
+            companyMeetings = readData.results ?? []
+          }
+        } catch {
+          /* association fetch failed – treat as no meetings */
+        }
+
+        const startDate = c.properties.contract_start_date!
+        return {
+          name: c.properties.name ?? 'Unknown',
+          companyId: c.id,
+          owner:
+            OWNER_NAMES[c.properties.hubspot_owner_id ?? ''] ?? 'Unassigned',
+          contractStartDate: startDate,
+          daysSinceStart: Math.floor(
+            (now.getTime() - new Date(startDate).getTime()) / 86_400_000,
+          ),
+          hubspotUrl: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL_ID}/company/${c.id}`,
+          trainingMeeting: deriveMeetingStatus(companyMeetings, 'training'),
+          successMeeting: deriveMeetingStatus(companyMeetings, 'success'),
+        }
+      }),
+    )
+    newCustomers.push(...results)
+  }
+
+  // Sort by most recent first
+  newCustomers.sort(
+    (a, b) =>
+      new Date(b.contractStartDate).getTime() -
+      new Date(a.contractStartDate).getTime(),
+  )
+
+  /* ── 17. Early churn breakdown ── */
+  let within60 = 0
+  let within90 = 0
+  let within120 = 0
+  let totalWithDates = 0
+  for (const c of churned) {
+    const start = c.properties.contract_start_date
+    const left = c.properties.date_left
+    if (!start || !left) continue
+    totalWithDates++
+    const tenureDays = Math.floor(
+      (new Date(left).getTime() - new Date(start).getTime()) / 86_400_000,
+    )
+    if (tenureDays <= 60) within60++
+    if (tenureDays <= 90) within90++
+    if (tenureDays <= 120) within120++
+  }
+
+  const earlyChurn = { within60, within90, within120, totalWithDates }
+
   return {
     totalPayingCustomers,
     totalChurned,
@@ -574,6 +806,10 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     customersByTenure,
     atRiskCustomers: topAtRisk,
     atRiskSummary,
+    kpiSpark,
+    previousPeriod,
+    newCustomers,
+    earlyChurn,
   }
 }
 
@@ -627,6 +863,10 @@ export const adminCustomerSuccessRoutes: FastifyPluginAsync = async (app) => {
         // Backfill fields added after cache was created
         if (!memCache.data.atRiskCustomers) memCache.data.atRiskCustomers = []
         if (!memCache.data.atRiskSummary) memCache.data.atRiskSummary = { high: 0, medium: 0, low: 0 }
+        if (!memCache.data.kpiSpark) memCache.data.kpiSpark = { paying: [], churned: [], retention: [], meetings: [], completed: [], noShow: [] }
+        if (!memCache.data.previousPeriod) memCache.data.previousPeriod = { totalPayingCustomers: 0, retentionRate: 0, churned: 0, meetingsMonth: 0, completedMonth: 0, noShowMonth: 0 }
+        if (!memCache.data.newCustomers) memCache.data.newCustomers = []
+        if (!memCache.data.earlyChurn) memCache.data.earlyChurn = { within60: 0, within90: 0, within120: 0, totalWithDates: 0 }
         return reply.send({
           stats: memCache.data,
           cached: true,
@@ -639,6 +879,10 @@ export const adminCustomerSuccessRoutes: FastifyPluginAsync = async (app) => {
         // Backfill fields added after cache was created
         if (!cached.data.atRiskCustomers) cached.data.atRiskCustomers = []
         if (!cached.data.atRiskSummary) cached.data.atRiskSummary = { high: 0, medium: 0, low: 0 }
+        if (!cached.data.kpiSpark) cached.data.kpiSpark = { paying: [], churned: [], retention: [], meetings: [], completed: [], noShow: [] }
+        if (!cached.data.previousPeriod) cached.data.previousPeriod = { totalPayingCustomers: 0, retentionRate: 0, churned: 0, meetingsMonth: 0, completedMonth: 0, noShowMonth: 0 }
+        if (!cached.data.newCustomers) cached.data.newCustomers = []
+        if (!cached.data.earlyChurn) cached.data.earlyChurn = { within60: 0, within90: 0, within120: 0, totalWithDates: 0 }
         memCache = { data: cached.data, ts: cached.updatedAt.getTime() }
         return reply.send({
           stats: cached.data,

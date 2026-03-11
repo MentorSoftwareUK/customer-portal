@@ -455,6 +455,102 @@ const newCustTrendLinePoints = computed(() =>
   })),
 )
 
+/* ── Success KPI cards with sparklines + deltas ── */
+const successKpiCards = computed(() => {
+  if (!success.value) return []
+  const s = success.value
+  const prev = s.previousPeriod
+  const spark = s.kpiSpark
+
+  return [
+    {
+      label: 'Paying customers',
+      sub: 'Active paying accounts',
+      val: s.totalPayingCustomers.toString(),
+      delta: prev ? pctDelta(s.totalPayingCustomers, prev.totalPayingCustomers) : { value: 0, dir: 'flat' as const },
+      suffix: '%',
+      spark: spark?.paying ?? [],
+      color: '#34d399',
+    },
+    {
+      label: 'Retention rate',
+      sub: 'Paying / total customer base',
+      val: `${s.retentionRate}%`,
+      delta: prev
+        ? { value: Math.abs(s.retentionRate - prev.retentionRate), dir: s.retentionRate > prev.retentionRate ? 'up' as const : s.retentionRate < prev.retentionRate ? 'down' as const : 'flat' as const }
+        : { value: 0, dir: 'flat' as const },
+      suffix: 'pp',
+      spark: spark?.retention ?? [],
+      color: '#818cf8',
+      valClass: s.retentionRate >= 90 ? 'text-emerald-400' : s.retentionRate >= 75 ? 'text-amber-400' : 'text-rose-400',
+    },
+    {
+      label: 'Churned',
+      sub: `This month: ${s.churnedThisMonth} · Last 3mo: ${s.churnedLast3Months}`,
+      val: s.totalChurned.toString(),
+      delta: prev
+        ? { value: Math.abs(s.churnedThisMonth - prev.churned), dir: s.churnedThisMonth < prev.churned ? 'up' as const : s.churnedThisMonth > prev.churned ? 'down' as const : 'flat' as const }
+        : { value: 0, dir: 'flat' as const },
+      suffix: '',
+      spark: spark?.churned ?? [],
+      color: '#f472b6',
+      valClass: 'text-rose-400',
+      invertDelta: true,
+    },
+    {
+      label: 'Off-boarding',
+      sub: 'Cancellation in progress',
+      val: s.totalOffboarding.toString(),
+      delta: { value: 0, dir: 'flat' as const },
+      suffix: '',
+      spark: [],
+      color: '#fbbf24',
+      valClass: 'text-amber-400',
+    },
+    {
+      label: 'Avg tenure',
+      sub: 'Average customer lifetime',
+      val: `${s.avgTenureMonths}mo`,
+      delta: { value: 0, dir: 'flat' as const },
+      suffix: '',
+      spark: [],
+      color: '#38bdf8',
+    },
+    {
+      label: 'Meetings (30d)',
+      sub: 'All meetings last 30 days',
+      val: s.meetingsThisMonth.toString(),
+      delta: prev ? pctDelta(s.meetingsThisMonth, prev.meetingsMonth) : { value: 0, dir: 'flat' as const },
+      suffix: '%',
+      spark: spark?.meetings ?? [],
+      color: '#a78bfa',
+    },
+    {
+      label: 'Completed',
+      sub: 'Meetings completed',
+      val: s.meetingsCompleted.toString(),
+      delta: prev ? pctDelta(s.meetingsCompleted, prev.completedMonth) : { value: 0, dir: 'flat' as const },
+      suffix: '%',
+      spark: spark?.completed ?? [],
+      color: '#34d399',
+      valClass: 'text-emerald-400',
+    },
+    {
+      label: 'No-show',
+      sub: 'Customer no-shows',
+      val: s.meetingsNoShow.toString(),
+      delta: prev
+        ? { value: Math.abs(s.meetingsNoShow - prev.noShowMonth), dir: s.meetingsNoShow < prev.noShowMonth ? 'up' as const : s.meetingsNoShow > prev.noShowMonth ? 'down' as const : 'flat' as const }
+        : { value: 0, dir: 'flat' as const },
+      suffix: '',
+      spark: spark?.noShow ?? [],
+      color: '#fb7185',
+      valClass: 'text-rose-400',
+      invertDelta: true,
+    },
+  ]
+})
+
 onMounted(() => {
   void loadStats()
   void loadFunnel()
@@ -998,53 +1094,32 @@ onMounted(() => {
         </div>
 
         <template v-else-if="success">
-          <!-- ── KPI cards ── -->
+          <!-- ── KPI cards with sparklines + deltas ── -->
           <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Paying customers</div>
-              <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.totalPayingCustomers }}</div>
-              <div class="mt-1 text-xs text-white/50">Active paying accounts</div>
-            </div>
-            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Retention rate</div>
-              <div class="mt-3 text-2xl font-bold tabular-nums sm:text-3xl" :class="success.retentionRate >= 90 ? 'text-emerald-400' : success.retentionRate >= 75 ? 'text-amber-400' : 'text-rose-400'">{{ success.retentionRate }}%</div>
-              <div class="mt-1 text-xs text-white/50">Paying / total customer base</div>
-            </div>
-            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Churned</div>
-              <div class="mt-3 text-2xl font-bold tabular-nums text-rose-400 sm:text-3xl">{{ success.totalChurned }}</div>
-              <div class="mt-1 text-xs text-white/50">
-                This month: {{ success.churnedThisMonth }} · Last 3mo: {{ success.churnedLast3Months }}
+            <div
+              v-for="card in successKpiCards"
+              :key="card.label"
+              class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.05]"
+            >
+              <div class="flex items-start justify-between">
+                <div class="text-xs font-semibold uppercase tracking-wider text-white/60">{{ card.label }}</div>
+                <SparkLine v-if="card.spark.length > 1" :data="card.spark" :color="card.color" :width="64" :height="24" />
               </div>
-            </div>
-            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Off-boarding</div>
-              <div class="mt-3 text-2xl font-bold tabular-nums text-amber-400 sm:text-3xl">{{ success.totalOffboarding }}</div>
-              <div class="mt-1 text-xs text-white/50">Cancellation in progress</div>
-            </div>
-          </div>
-
-          <!-- ── Tenure + meetings row ── -->
-          <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Avg tenure</div>
-              <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.avgTenureMonths }}mo</div>
-              <div class="mt-1 text-xs text-white/50">Average customer lifetime</div>
-            </div>
-            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Meetings (30d)</div>
-              <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.meetingsThisMonth }}</div>
-              <div class="mt-1 text-xs text-white/50">All meetings last 30 days</div>
-            </div>
-            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Completed</div>
-              <div class="mt-3 text-2xl font-bold tabular-nums text-emerald-400 sm:text-3xl">{{ success.meetingsCompleted }}</div>
-              <div class="mt-1 text-xs text-white/50">Meetings completed</div>
-            </div>
-            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">No-show</div>
-              <div class="mt-3 text-2xl font-bold tabular-nums text-rose-400 sm:text-3xl">{{ success.meetingsNoShow }}</div>
-              <div class="mt-1 text-xs text-white/50">Customer no-shows</div>
+              <div class="mt-3 text-2xl font-bold tabular-nums sm:text-3xl" :class="card.valClass ?? 'text-white'">{{ card.val }}</div>
+              <div class="mt-1.5 flex items-center gap-1.5">
+                <span
+                  v-if="card.delta.dir !== 'flat'"
+                  class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-bold"
+                  :class="(card.invertDelta ? card.delta.dir === 'down' : card.delta.dir === 'up') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'"
+                >
+                  <svg v-if="card.delta.dir === 'up'" class="h-2.5 w-2.5" fill="none" viewBox="0 0 10 10"><path d="M5 2v6M2.5 4.5 5 2l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <svg v-else class="h-2.5 w-2.5" fill="none" viewBox="0 0 10 10"><path d="M5 8V2M2.5 5.5 5 8l2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  {{ card.delta.value }}{{ card.suffix }}
+                </span>
+                <span v-else class="text-xs text-white/50">—</span>
+                <span v-if="card.delta.dir !== 'flat'" class="text-xs text-white/50">vs prev</span>
+              </div>
+              <div class="mt-1 text-xs text-white/50">{{ card.sub }}</div>
             </div>
           </div>
 
@@ -1093,6 +1168,132 @@ onMounted(() => {
                   </div>
                 </div>
                 <div v-else class="mt-3 text-xs text-white/50">No meetings logged</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── New customers (first 60 days) ── -->
+          <div v-if="success.newCustomers && success.newCustomers.length > 0" class="mt-8">
+            <div class="flex items-center gap-3">
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">New customers</div>
+              <span class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-bold text-emerald-400">
+                {{ success.newCustomers.length }} in first 60 days
+              </span>
+            </div>
+            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <a
+                v-for="cust in success.newCustomers"
+                :key="cust.companyId"
+                :href="cust.hubspotUrl"
+                target="_blank"
+                rel="noopener"
+                class="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 transition-colors hover:border-amber-500/20 hover:bg-white/[0.04]"
+              >
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0">
+                    <div class="truncate text-sm font-semibold text-white/90 group-hover:text-amber-300 transition-colors">{{ cust.name }}</div>
+                    <div class="mt-0.5 text-xs text-white/50">{{ cust.owner }}</div>
+                  </div>
+                  <div class="flex flex-col items-end gap-1 shrink-0">
+                    <span class="rounded-full bg-white/[0.06] px-2 py-0.5 text-xs font-bold tabular-nums text-white/80">
+                      Day {{ cust.daysSinceStart }}
+                    </span>
+                    <svg class="h-3.5 w-3.5 text-white/30 group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  </div>
+                </div>
+                <!-- Meeting status indicators -->
+                <div class="mt-3 flex items-center gap-3">
+                  <div class="flex items-center gap-1.5">
+                    <div
+                      class="h-2 w-2 rounded-full"
+                      :class="cust.trainingMeeting === 'completed' ? 'bg-emerald-400' : cust.trainingMeeting === 'scheduled' ? 'bg-amber-400' : 'bg-white/20'"
+                    />
+                    <span class="text-xs" :class="cust.trainingMeeting === 'completed' ? 'text-emerald-400' : cust.trainingMeeting === 'scheduled' ? 'text-amber-400' : 'text-white/40'">
+                      Training {{ cust.trainingMeeting === 'completed' ? '✓' : cust.trainingMeeting === 'scheduled' ? '⏳' : '—' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <div
+                      class="h-2 w-2 rounded-full"
+                      :class="cust.successMeeting === 'completed' ? 'bg-emerald-400' : cust.successMeeting === 'scheduled' ? 'bg-amber-400' : 'bg-white/20'"
+                    />
+                    <span class="text-xs" :class="cust.successMeeting === 'completed' ? 'text-emerald-400' : cust.successMeeting === 'scheduled' ? 'text-amber-400' : 'text-white/40'">
+                      Success {{ cust.successMeeting === 'completed' ? '✓' : cust.successMeeting === 'scheduled' ? '⏳' : '—' }}
+                    </span>
+                  </div>
+                </div>
+                <!-- Progress bar: days elapsed out of 60 -->
+                <div class="mt-3">
+                  <div class="h-1.5 overflow-hidden rounded-full bg-white/[0.04]">
+                    <div
+                      class="h-full rounded-full transition-all duration-500"
+                      :class="cust.daysSinceStart <= 30 ? 'bg-emerald-500/60' : cust.daysSinceStart <= 45 ? 'bg-amber-500/60' : 'bg-rose-500/60'"
+                      :style="{ width: Math.min(100, Math.round((cust.daysSinceStart / 60) * 100)) + '%' }"
+                    />
+                  </div>
+                  <div class="mt-1 flex items-center justify-between text-xs text-white/40">
+                    <span>{{ new Date(cust.contractStartDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) }}</span>
+                    <span>60d window</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+          <div v-else-if="success.newCustomers && success.newCustomers.length === 0" class="mt-8">
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">New customers</div>
+            <div class="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 text-center">
+              <div class="text-sm text-white/50">No customers within their first 60 days</div>
+            </div>
+          </div>
+
+          <!-- ── Early churn stats ── -->
+          <div v-if="success.earlyChurn && success.earlyChurn.totalWithDates > 0" class="mt-8">
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Early churn breakdown</div>
+            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+                <div class="flex items-center justify-between">
+                  <div class="text-xs font-semibold uppercase tracking-wider text-white/50">Within 60 days</div>
+                  <span class="text-2xl font-bold tabular-nums text-rose-400">{{ success.earlyChurn.within60 }}</span>
+                </div>
+                <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.04]">
+                  <div
+                    class="h-full rounded-full bg-rose-500/60 transition-all duration-500"
+                    :style="{ width: (success.earlyChurn.totalWithDates > 0 ? Math.round((success.earlyChurn.within60 / success.earlyChurn.totalWithDates) * 100) : 0) + '%' }"
+                  />
+                </div>
+                <div class="mt-1.5 text-xs tabular-nums text-white/40">
+                  {{ success.earlyChurn.totalWithDates > 0 ? Math.round((success.earlyChurn.within60 / success.earlyChurn.totalWithDates) * 100) : 0 }}% of all churn
+                </div>
+              </div>
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+                <div class="flex items-center justify-between">
+                  <div class="text-xs font-semibold uppercase tracking-wider text-white/50">Within 90 days</div>
+                  <span class="text-2xl font-bold tabular-nums text-amber-400">{{ success.earlyChurn.within90 }}</span>
+                </div>
+                <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.04]">
+                  <div
+                    class="h-full rounded-full bg-amber-500/60 transition-all duration-500"
+                    :style="{ width: (success.earlyChurn.totalWithDates > 0 ? Math.round((success.earlyChurn.within90 / success.earlyChurn.totalWithDates) * 100) : 0) + '%' }"
+                  />
+                </div>
+                <div class="mt-1.5 text-xs tabular-nums text-white/40">
+                  {{ success.earlyChurn.totalWithDates > 0 ? Math.round((success.earlyChurn.within90 / success.earlyChurn.totalWithDates) * 100) : 0 }}% of all churn
+                </div>
+              </div>
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+                <div class="flex items-center justify-between">
+                  <div class="text-xs font-semibold uppercase tracking-wider text-white/50">Within 120 days</div>
+                  <span class="text-2xl font-bold tabular-nums text-sky-400">{{ success.earlyChurn.within120 }}</span>
+                </div>
+                <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/[0.04]">
+                  <div
+                    class="h-full rounded-full bg-sky-500/60 transition-all duration-500"
+                    :style="{ width: (success.earlyChurn.totalWithDates > 0 ? Math.round((success.earlyChurn.within120 / success.earlyChurn.totalWithDates) * 100) : 0) + '%' }"
+                  />
+                </div>
+                <div class="mt-1.5 text-xs tabular-nums text-white/40">
+                  {{ success.earlyChurn.totalWithDates > 0 ? Math.round((success.earlyChurn.within120 / success.earlyChurn.totalWithDates) * 100) : 0 }}% of all churn
+                </div>
               </div>
             </div>
           </div>

@@ -681,6 +681,38 @@ export type CustomerSuccess = {
     medium: number
     low: number
   }
+  kpiSpark?: {
+    paying: number[]
+    churned: number[]
+    retention: number[]
+    meetings: number[]
+    completed: number[]
+    noShow: number[]
+  }
+  previousPeriod?: {
+    totalPayingCustomers: number
+    retentionRate: number
+    churned: number
+    meetingsMonth: number
+    completedMonth: number
+    noShowMonth: number
+  }
+  newCustomers?: Array<{
+    name: string
+    companyId: string
+    owner: string
+    contractStartDate: string
+    daysSinceStart: number
+    hubspotUrl: string
+    trainingMeeting: 'completed' | 'scheduled' | 'none'
+    successMeeting: 'completed' | 'scheduled' | 'none'
+  }>
+  earlyChurn?: {
+    within60: number
+    within90: number
+    within120: number
+    totalWithDates: number
+  }
 }
 
 export async function adminGetCustomerSuccess(refresh = false) {
