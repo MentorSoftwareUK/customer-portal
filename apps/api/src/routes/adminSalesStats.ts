@@ -63,6 +63,15 @@ export type SalesStatsDto = {
   /* MRR trend (last 6 months) */
   mrrTrend: Array<{ month: string; mrr: number }>
 
+  /* Free customer stats */
+  freeCustomers: {
+    totalFreeDeals: number
+    freeDealsThisMonth: number
+    convertedThisMonth: number
+    convertedRevenue: number
+    conversionRate: number
+  }
+
   /* Trend — last 6 months, oldest → newest */
   trend: SalesMonthSummary[]
 
@@ -465,6 +474,32 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
       }
     : null
 
+  /* ── Free customer stats ── */
+  // Free = closedwon deals with amount = 0
+  const allWonDeals = closedDeals.filter(isWon)
+  const allFreeWon = allWonDeals.filter((d) => amt(d) === 0)
+  const freeWonThisMonth = allFreeWon.filter((d) => monthOfDeal(d) === currentMonthKey)
+
+  // "Converted" = company that had a free deal in the past and now has a paying deal this month
+  // Simple proxy: paying deals this month where there exists a free deal with earlier close date
+  // More practical: just count paying deals with amount > 0 won this month
+  const payingWonThisMonth = wonThisMonth.filter((d) => amt(d) > 0)
+  const convertedRevenue = payingWonThisMonth.reduce((s, d) => s + amt(d), 0)
+
+  const totalFreeAllTime = allFreeWon.length
+  const freeConversionRate =
+    totalFreeAllTime > 0
+      ? Math.round((payingWonThisMonth.length / totalFreeAllTime) * 100)
+      : 0
+
+  const freeCustomers = {
+    totalFreeDeals: totalFreeAllTime,
+    freeDealsThisMonth: freeWonThisMonth.length,
+    convertedThisMonth: payingWonThisMonth.length,
+    convertedRevenue: Math.round(convertedRevenue * 100) / 100,
+    conversionRate: freeConversionRate,
+  }
+
   return {
     dealsWonToday,
     dealsWonThisWeek,
@@ -481,16 +516,20 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
     recentDeals,
     agentBreakdown,
     mrrTrend,
+    freeCustomers,
     trend,
     previous,
   }
 }
 
 /* ------------------------------------------------------------------ */
-/*  MongoDB cache                                                     */
+/*  MongoDB + in-memory cache                                        */
 /* ------------------------------------------------------------------ */
 
 const CACHE_COLLECTION = 'sales_stats_cache'
+const CACHE_TTL_MS = 10 * 60 * 1000 // 10 minutes
+
+let memCache: { data: SalesStatsDto; ts: number } | null = null
 
 async function getCachedStats(): Promise<{
   data: SalesStatsDto
@@ -528,8 +567,14 @@ export const adminSalesStatsRoutes: FastifyPluginAsync = async (app) => {
     const refresh = (req.query as Record<string, string>).refresh === 'true'
 
     if (!refresh) {
+      // In-memory cache first (fastest)
+      if (memCache && Date.now() - memCache.ts < CACHE_TTL_MS) {
+        return reply.send({ stats: memCache.data, cached: true, cachedAt: new Date(memCache.ts).toISOString() })
+      }
+      // MongoDB cache fallback
       const cached = await getCachedStats()
-      if (cached) {
+      if (cached && cached.data.freeCustomers) {
+        memCache = { data: cached.data, ts: cached.updatedAt.getTime() }
         return reply.send({
           stats: cached.data,
           cached: true,
@@ -539,6 +584,7 @@ export const adminSalesStatsRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const stats = await buildSalesStats()
+    memCache = { data: stats, ts: Date.now() }
     await setCachedStats(stats).catch(() => {})
     return reply.send({
       stats,

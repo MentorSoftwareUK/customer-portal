@@ -31,6 +31,7 @@ import { adminTicketStatsRoutes } from './routes/adminTicketStats'
 import { adminDashboardStatsRoutes } from './routes/adminDashboardStats'
 import { adminSalesFunnelRoutes } from './routes/adminSalesFunnel'
 import { adminSalesStatsRoutes } from './routes/adminSalesStats'
+import { adminCustomerSuccessRoutes } from './routes/adminCustomerSuccess'
 import { startEmailWorker } from './jobs/emailWorker'
 import { ensureSeedAdmin } from './store/adminUsers'
 
@@ -100,6 +101,7 @@ export async function buildServer() {
   await app.register(adminDashboardStatsRoutes, { prefix: '/admin/dashboard-stats' })
   await app.register(adminSalesFunnelRoutes, { prefix: '/admin/sales-funnel' })
   await app.register(adminSalesStatsRoutes, { prefix: '/admin/sales-stats' })
+  await app.register(adminCustomerSuccessRoutes, { prefix: '/admin/customer-success' })
   await app.register(usersRoutes, { prefix: '/admin/users' })
   await app.register(eventsRoutes, { prefix: '/events' })
   await app.register(stripeRoutes, { prefix: '/stripe' })

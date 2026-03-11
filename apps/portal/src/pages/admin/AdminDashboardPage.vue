@@ -7,9 +7,11 @@ import {
   adminGetDashboardStats,
   adminGetSalesFunnel,
   adminGetSalesStats,
+  adminGetCustomerSuccess,
   type AdminDashboardStats,
   type SalesFunnel,
   type SalesStats,
+  type CustomerSuccess,
 } from '../../lib/api'
 
 /* ------------------------------------------------------------------ */
@@ -72,8 +74,8 @@ async function loadFunnel(refresh = false) {
 /*  KPI cards with sparklines + deltas                                */
 /* ------------------------------------------------------------------ */
 
-/* Marketing / Sales toggle */
-const activeTab = ref<'marketing' | 'sales'>('marketing')
+/* Marketing / Sales / Success toggle */
+const activeTab = ref<'marketing' | 'sales' | 'success'>('marketing')
 
 /* ------------------------------------------------------------------ */
 /*  Sales stats                                                       */
@@ -97,10 +99,35 @@ async function loadSalesStats(refresh = false) {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/*  Customer Success stats                                            */
+/* ------------------------------------------------------------------ */
+const successLoading = ref(false)
+const successError = ref<string | null>(null)
+const success = ref<CustomerSuccess | null>(null)
+const successCachedAt = ref<string | null>(null)
+
+async function loadSuccessStats(refresh = false) {
+  successLoading.value = true
+  successError.value = null
+  try {
+    const res = await adminGetCustomerSuccess(refresh)
+    success.value = res.stats
+    successCachedAt.value = res.cachedAt ?? null
+  } catch (e) {
+    successError.value = e instanceof Error ? e.message : 'Failed to load success stats'
+  } finally {
+    successLoading.value = false
+  }
+}
+
 /* Lazy-load sales stats on first switch to Sales tab */
 watch(activeTab, (tab) => {
   if (tab === 'sales' && !sales.value && !salesLoading.value) {
     loadSalesStats()
+  }
+  if (tab === 'success' && !success.value && !successLoading.value) {
+    loadSuccessStats()
   }
 })
 
@@ -382,11 +409,51 @@ function relativeDate(iso: string): string {
   const d = new Date(iso)
   const now = new Date()
   const diff = Math.floor((now.getTime() - d.getTime()) / 86_400_000)
+  if (diff < 0) return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   if (diff === 0) return 'Today'
   if (diff === 1) return 'Yesterday'
   if (diff < 7) return `${diff}d ago`
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
+
+/* ── Success tab helpers ── */
+const CHURN_COLORS = ['#f472b6', '#818cf8', '#34d399', '#fbbf24', '#38bdf8', '#a855f7', '#f97316', '#fb7185', '#14b8a6']
+const SUCCESS_AGENT_COLORS: Record<string, string> = {
+  'Simone Mills': '#818cf8',
+  'Hope Schindler': '#fbbf24',
+  'Shaun Ward': '#34d399',
+}
+const TENURE_COLORS = ['#818cf8', '#34d399', '#fbbf24', '#f472b6', '#38bdf8']
+
+const churnReasonDonut = computed(() =>
+  (success.value?.cancellationReasons ?? []).map((r, i) => ({
+    label: r.reason.length > 30 ? r.reason.slice(0, 28) + '…' : r.reason,
+    value: r.count,
+    color: CHURN_COLORS[i % CHURN_COLORS.length]!,
+  })),
+)
+
+const tenureDonut = computed(() =>
+  (success.value?.customersByTenure ?? []).filter(b => b.count > 0).map((b, i) => ({
+    label: b.bucket,
+    value: b.count,
+    color: TENURE_COLORS[i % TENURE_COLORS.length]!,
+  })),
+)
+
+const churnTrendLinePoints = computed(() =>
+  (success.value?.churnTrend ?? []).map((t) => ({
+    label: t.month,
+    value: t.churned,
+  })),
+)
+
+const newCustTrendLinePoints = computed(() =>
+  (success.value?.churnTrend ?? []).map((t) => ({
+    label: t.month,
+    value: t.newCustomers,
+  })),
+)
 
 onMounted(() => {
   void loadStats()
@@ -473,6 +540,13 @@ onMounted(() => {
             >
               Sales
             </button>
+            <button
+              class="relative rounded-md px-4 py-1.5 text-xs font-semibold transition-all duration-200"
+              :class="activeTab === 'success' ? 'bg-amber-500/20 text-amber-300 shadow-sm' : 'text-white/40 hover:text-white/60'"
+              @click="activeTab = 'success'"
+            >
+              Success
+            </button>
           </div>
           <div v-if="activeTab === 'marketing'" class="text-xs text-white/40">{{ funnelMonthLabel }}</div>
         </div>
@@ -492,10 +566,10 @@ onMounted(() => {
             class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 hover:bg-white/10"
             type="button"
             title="Refresh from HubSpot"
-            :disabled="activeTab === 'marketing' ? funnelLoading : salesLoading"
-            @click="activeTab === 'marketing' ? loadFunnel(true) : loadSalesStats(true)"
+            :disabled="activeTab === 'marketing' ? funnelLoading : activeTab === 'sales' ? salesLoading : successLoading"
+            @click="activeTab === 'marketing' ? loadFunnel(true) : activeTab === 'sales' ? loadSalesStats(true) : loadSuccessStats(true)"
           >
-            <svg class="h-3.5 w-3.5" :class="{ 'animate-spin': activeTab === 'marketing' ? funnelLoading : salesLoading }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            <svg class="h-3.5 w-3.5" :class="{ 'animate-spin': activeTab === 'marketing' ? funnelLoading : activeTab === 'sales' ? salesLoading : successLoading }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
           </button>
         </div>
       </div>
@@ -505,6 +579,9 @@ onMounted(() => {
       </div>
       <div v-if="activeTab === 'sales' && salesCachedAt" class="mt-1 text-[10px] text-white/25">
         Last updated: {{ new Date(salesCachedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+      </div>
+      <div v-if="activeTab === 'success' && successCachedAt" class="mt-1 text-[10px] text-white/25">
+        Last updated: {{ new Date(successCachedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
       </div>
 
       <!-- ════════════════════════════════════════════════════════════ -->
@@ -762,6 +839,33 @@ onMounted(() => {
           </div>
 
           <!-- ── Agent breakdown ── -->
+          <div v-if="sales.freeCustomers" class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Free customers</div>
+            <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Total free</div>
+                <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.totalFreeDeals }}</div>
+                <div class="mt-1 text-[10px] text-white/25">Unregistered / pre-reg deals</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">New free this month</div>
+                <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.freeDealsThisMonth }}</div>
+                <div class="mt-1 text-[10px] text-white/25">Won this month at £0</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Converted</div>
+                <div class="mt-2 text-2xl font-bold tabular-nums text-emerald-400">{{ sales.freeCustomers.convertedThisMonth }}</div>
+                <div class="mt-1 text-[10px] text-white/25">Became paying this month</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Conversion value</div>
+                <div class="mt-2 text-2xl font-bold tabular-nums text-emerald-400">{{ formatCurrency(sales.freeCustomers.convertedRevenue) }}</div>
+                <div class="mt-1 text-[10px] text-white/25">Revenue from conversions · {{ sales.freeCustomers.conversionRate }}% rate</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Agent breakdown (original) ── -->
           <div v-if="filteredAgents.length > 0" class="mt-8">
             <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Performance by agent</div>
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -872,6 +976,185 @@ onMounted(() => {
                       >{{ deal.stage }}</span>
                     </td>
                     <td class="py-2.5 text-right text-white/40">{{ relativeDate(deal.closeDate) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </template>
+      </template>
+
+      <!-- ════════════════════════════════════════════════════════════ -->
+      <!--  SUCCESS TAB                                                -->
+      <!-- ════════════════════════════════════════════════════════════ -->
+      <template v-if="activeTab === 'success'">
+        <!-- Loading / Error -->
+        <div v-if="successLoading" class="mt-8 flex items-center justify-center py-12">
+          <div class="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-amber-400" />
+        </div>
+
+        <div v-else-if="successError" class="mt-6 rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200">
+          {{ successError }}
+        </div>
+
+        <template v-else-if="success">
+          <!-- ── KPI cards ── -->
+          <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Paying customers</div>
+              <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.totalPayingCustomers }}</div>
+              <div class="mt-1 text-[10px] text-white/25">Active paying accounts</div>
+            </div>
+            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Retention rate</div>
+              <div class="mt-3 text-2xl font-bold tabular-nums sm:text-3xl" :class="success.retentionRate >= 90 ? 'text-emerald-400' : success.retentionRate >= 75 ? 'text-amber-400' : 'text-rose-400'">{{ success.retentionRate }}%</div>
+              <div class="mt-1 text-[10px] text-white/25">Paying / total customer base</div>
+            </div>
+            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Churned</div>
+              <div class="mt-3 text-2xl font-bold tabular-nums text-rose-400 sm:text-3xl">{{ success.totalChurned }}</div>
+              <div class="mt-1 text-[10px] text-white/25">
+                This month: {{ success.churnedThisMonth }} · Last 3mo: {{ success.churnedLast3Months }}
+              </div>
+            </div>
+            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Off-boarding</div>
+              <div class="mt-3 text-2xl font-bold tabular-nums text-amber-400 sm:text-3xl">{{ success.totalOffboarding }}</div>
+              <div class="mt-1 text-[10px] text-white/25">Cancellation in progress</div>
+            </div>
+          </div>
+
+          <!-- ── Tenure + meetings row ── -->
+          <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Avg tenure</div>
+              <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.avgTenureMonths }}mo</div>
+              <div class="mt-1 text-[10px] text-white/25">Average customer lifetime</div>
+            </div>
+            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Meetings (30d)</div>
+              <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.meetingsThisMonth }}</div>
+              <div class="mt-1 text-[10px] text-white/25">All meetings last 30 days</div>
+            </div>
+            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Completed</div>
+              <div class="mt-3 text-2xl font-bold tabular-nums text-emerald-400 sm:text-3xl">{{ success.meetingsCompleted }}</div>
+              <div class="mt-1 text-[10px] text-white/25">Meetings completed</div>
+            </div>
+            <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">No-show</div>
+              <div class="mt-3 text-2xl font-bold tabular-nums text-rose-400 sm:text-3xl">{{ success.meetingsNoShow }}</div>
+              <div class="mt-1 text-[10px] text-white/25">Customer no-shows</div>
+            </div>
+          </div>
+
+          <!-- ── Success team meetings ── -->
+          <div v-if="success.meetingsByAgent.length > 0" class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Success team meetings (30d)</div>
+            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div
+                v-for="agent in success.meetingsByAgent"
+                :key="agent.ownerId"
+                class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4"
+              >
+                <div class="flex items-center gap-2">
+                  <div class="h-2.5 w-2.5 rounded-full" :style="{ backgroundColor: SUCCESS_AGENT_COLORS[agent.name] ?? '#94a3b8' }" />
+                  <span class="text-sm font-semibold text-white/80">{{ agent.name }}</span>
+                </div>
+                <div class="mt-3 grid grid-cols-3 gap-y-2 text-xs text-center">
+                  <div>
+                    <div class="text-white/30">Total</div>
+                    <div class="text-lg font-bold tabular-nums text-white">{{ agent.total }}</div>
+                  </div>
+                  <div>
+                    <div class="text-white/30">Completed</div>
+                    <div class="text-lg font-bold tabular-nums text-emerald-400">{{ agent.completed }}</div>
+                  </div>
+                  <div>
+                    <div class="text-white/30">No-show</div>
+                    <div class="text-lg font-bold tabular-nums text-rose-400">{{ agent.noShow }}</div>
+                  </div>
+                </div>
+                <!-- Completion rate bar -->
+                <div v-if="agent.total > 0" class="mt-3">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-white/30">Completion rate</span>
+                    <span class="font-bold tabular-nums text-white/50">{{ Math.round((agent.completed / agent.total) * 100) }}%</span>
+                  </div>
+                  <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-white/[0.04]">
+                    <div
+                      class="h-full rounded-full bg-emerald-500/60 transition-all duration-500"
+                      :style="{ width: Math.round((agent.completed / agent.total) * 100) + '%' }"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Churn vs new customers trend ── -->
+          <div v-if="churnTrendLinePoints.length > 1" class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Churn vs new customers (6 months)</div>
+            <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                <div class="mb-2 text-[10px] font-semibold text-rose-400">Churned</div>
+                <LineChart :points="churnTrendLinePoints" color="#f472b6" :height="160" />
+              </div>
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                <div class="mb-2 text-[10px] font-semibold text-emerald-400">New customers</div>
+                <LineChart :points="newCustTrendLinePoints" color="#34d399" :height="160" />
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Donuts: Cancellation reasons · Tenure ── -->
+          <div class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Breakdown insights</div>
+            <div class="mt-5 grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div v-if="churnReasonDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+                <div class="mb-3 text-xs font-semibold text-white/50">Cancellation reasons</div>
+                <DonutChart
+                  :segments="churnReasonDonut"
+                  :size="160"
+                  :stroke-width="24"
+                  :centre-value="String(churnReasonDonut.reduce((a, s) => a + s.value, 0))"
+                  centre-label="total"
+                />
+              </div>
+              <div v-if="tenureDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+                <div class="mb-3 text-xs font-semibold text-white/50">Customer tenure</div>
+                <DonutChart
+                  :segments="tenureDonut"
+                  :size="160"
+                  :stroke-width="24"
+                  :centre-value="String(tenureDonut.reduce((a, s) => a + s.value, 0))"
+                  centre-label="customers"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Recently churned customers ── -->
+          <div v-if="success.recentChurned.length > 0" class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Recently churned</div>
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-white/[0.06]">
+                    <th class="pb-2 pr-4 font-semibold text-white/30">Company</th>
+                    <th class="pb-2 pr-4 font-semibold text-white/30">Date left</th>
+                    <th class="pb-2 font-semibold text-white/30">Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="c in success.recentChurned"
+                    :key="c.name + c.dateLeft"
+                    class="border-b border-white/[0.03] last:border-0"
+                  >
+                    <td class="max-w-[200px] truncate py-2.5 pr-4 text-white/70">{{ c.name }}</td>
+                    <td class="py-2.5 pr-4 text-white/40">{{ c.dateLeft ? new Date(c.dateLeft).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—' }}</td>
+                    <td class="max-w-[300px] truncate py-2.5 text-white/50">{{ c.reason }}</td>
                   </tr>
                 </tbody>
               </table>

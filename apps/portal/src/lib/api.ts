@@ -618,6 +618,13 @@ export type SalesStats = {
   previous: SalesMonthSummary | null
   agentBreakdown: SalesAgentBreakdown[]
   mrrTrend: MrrTrendItem[]
+  freeCustomers?: {
+    totalFreeDeals: number
+    freeDealsThisMonth: number
+    convertedThisMonth: number
+    convertedRevenue: number
+    conversionRate: number
+  }
 }
 
 export async function adminGetSalesStats(refresh = false) {
@@ -630,6 +637,44 @@ export async function adminGetSalesStats(refresh = false) {
     throw new Error(`Admin sales stats failed: ${res.status}${text ? ` - ${text}` : ''}`)
   }
   return (await res.json()) as { stats: SalesStats; cached?: boolean; cachedAt?: string }
+}
+
+/* ── Customer Success ── */
+
+export type CustomerSuccess = {
+  totalPayingCustomers: number
+  totalChurned: number
+  totalOffboarding: number
+  retentionRate: number
+  churnedThisMonth: number
+  churnedLast3Months: number
+  cancellationReasons: Array<{ reason: string; count: number }>
+  recentChurned: Array<{ name: string; dateLeft: string; reason: string }>
+  meetingsThisMonth: number
+  meetingsCompleted: number
+  meetingsNoShow: number
+  meetingsByAgent: Array<{
+    name: string
+    ownerId: string
+    total: number
+    completed: number
+    noShow: number
+  }>
+  churnTrend: Array<{ month: string; churned: number; newCustomers: number }>
+  avgTenureMonths: number
+  customersByTenure: Array<{ bucket: string; count: number }>
+}
+
+export async function adminGetCustomerSuccess(refresh = false) {
+  const params = new URLSearchParams()
+  if (refresh) params.set('refresh', 'true')
+  const qs = params.toString() ? `?${params}` : ''
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/customer-success${qs}`, { method: 'GET' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Customer success stats failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { stats: CustomerSuccess; cached?: boolean; cachedAt?: string }
 }
 
 export async function trackSessionStart(path?: string) {

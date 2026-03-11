@@ -478,6 +478,12 @@ function classifySub(
 }
 
 /* ------------------------------------------------------------------ */
+/*  In-memory cache (keyed by month)                                  */
+/* ------------------------------------------------------------------ */
+const FUNNEL_CACHE_TTL_MS = 10 * 60 * 1000 // 10 minutes
+const memFunnelCache = new Map<string, { data: SalesFunnelDto; ts: number }>()
+
+/* ------------------------------------------------------------------ */
 /*  Route                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -506,8 +512,15 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
 
     /* ── Return cached data unless refresh requested ── */
     if (!wantsRefresh) {
+      // In-memory cache first
+      const mem = memFunnelCache.get(monthParam)
+      if (mem && Date.now() - mem.ts < FUNNEL_CACHE_TTL_MS) {
+        return { funnel: mem.data, cached: true, cachedAt: new Date(mem.ts).toISOString() }
+      }
+      // MongoDB cache fallback
       const cached = await getCachedFunnel(monthParam)
       if (cached && Array.isArray((cached.data as any).stageBreakdown)) {
+        memFunnelCache.set(monthParam, { data: cached.data, ts: cached.updatedAt.getTime() })
         return { funnel: cached.data, cached: true, cachedAt: cached.updatedAt.toISOString() }
       }
     }
@@ -701,7 +714,8 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
         trafficSources,
       }
 
-      /* ── Persist to MongoDB ── */
+      /* ── Persist to caches ── */
+      memFunnelCache.set(monthParam, { data: funnel, ts: Date.now() })
       await setCachedFunnel(monthParam, funnel).catch((err) =>
         console.error('[admin-sales-funnel] cache write failed', err),
       )
