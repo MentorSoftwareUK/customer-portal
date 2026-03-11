@@ -1,10 +1,31 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import SparkLine from '../../components/SparkLine.vue'
 import LineChart from '../../components/LineChart.vue'
 import DashboardSubNav from '../../components/DashboardSubNav.vue'
 import { adminGetSalesStats, type SalesStats } from '../../lib/api'
 import { pctDelta, formatCurrency, relativeDate } from '../../lib/dashboard-helpers'
+
+/* ------------------------------------------------------------------ */
+/*  Month picker                                                       */
+/* ------------------------------------------------------------------ */
+const now = new Date()
+const selectedMonth = ref((() => {
+  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+})())
+
+const monthOptions = computed(() => {
+  const opts: { value: string; label: string }[] = []
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    opts.push({
+      value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      label: d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
+    })
+  }
+  return opts
+})
 
 /* ------------------------------------------------------------------ */
 /*  State                                                              */
@@ -18,7 +39,7 @@ async function loadSalesStats(refresh = false) {
   salesLoading.value = true
   salesError.value = null
   try {
-    const res = await adminGetSalesStats(refresh)
+    const res = await adminGetSalesStats(selectedMonth.value, refresh)
     sales.value = res.stats
     salesCachedAt.value = res.cachedAt ?? null
   } catch (e) {
@@ -30,8 +51,8 @@ async function loadSalesStats(refresh = false) {
 
 /* ── Period label ── */
 const periodLabel = computed(() => {
-  const now = new Date()
-  return now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  const opt = monthOptions.value.find(o => o.value === selectedMonth.value)
+  return opt?.label ?? selectedMonth.value
 })
 
 /* ── KPI cards ── */
@@ -147,6 +168,8 @@ const filteredAgents = computed(() =>
   (sales.value?.agentBreakdown ?? []).filter((a) => SHOW_AGENTS.has(a.name)),
 )
 
+watch(selectedMonth, () => void loadSalesStats())
+
 onMounted(() => {
   void loadSalesStats()
 })
@@ -165,9 +188,15 @@ onMounted(() => {
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-4">
           <DashboardSubNav />
-          <div class="text-xs text-white/50">{{ periodLabel }}</div>
         </div>
         <div class="flex items-center gap-2">
+          <select
+            v-model="selectedMonth"
+            class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 appearance-none cursor-pointer pr-8"
+            style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff80' d='M3 5l3 3 3-3'/%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 8px center;"
+          >
+            <option v-for="opt in monthOptions" :key="opt.value" :value="opt.value" class="bg-[#1a1f3a] text-white">{{ opt.label }}</option>
+          </select>
           <button
             class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 hover:bg-white/10"
             type="button"

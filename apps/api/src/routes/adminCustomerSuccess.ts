@@ -255,9 +255,21 @@ function monthKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
-async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
+async function buildCustomerSuccessStats(selectedMonth?: string): Promise<CustomerSuccessDto> {
   const now = new Date()
-  const currentMK = monthKey(now)
+
+  // If a specific month is selected, pivot date calculations around it
+  let focusDate: Date
+  if (selectedMonth && /^\d{4}-\d{2}$/.test(selectedMonth)) {
+    const [y, m] = selectedMonth.split('-').map(Number)
+    focusDate = new Date(y!, m! - 1, 1)
+  } else {
+    focusDate = now
+  }
+  const currentMK = monthKey(focusDate)
+  const endOfMonth = new Date(focusDate.getFullYear(), focusDate.getMonth() + 1, 1)
+  // For meeting window and new-customer window, use end of selected month instead of now
+  const refDate = currentMK === monthKey(now) ? now : endOfMonth
 
   /* ── 1. Paying customers ── */
   const paying = await searchCompanies(
@@ -310,7 +322,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
       : 100
 
   /* ── 5. Churn timing ── */
-  const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1)
+  const threeMonthsAgo = new Date(focusDate.getFullYear(), focusDate.getMonth() - 3, 1)
 
   const churnedThisMonth = churned.filter((c) => {
     const dl = c.properties.date_left
@@ -358,7 +370,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     }))
 
   /* ── 8. Meetings (last 6 months for sparkline data) ── */
-  const sixMonthsAgoDate = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+  const sixMonthsAgoDate = new Date(focusDate.getFullYear(), focusDate.getMonth() - 5, 1)
   const sixMonthsAgoStr = sixMonthsAgoDate.toISOString().split('T')[0]!
 
   const allMeetings = await searchMeetings(
@@ -373,7 +385,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
           {
             propertyName: 'hs_meeting_start_time',
             operator: 'LTE',
-            value: now.toISOString(),
+            value: refDate.toISOString(),
           },
         ],
       },
@@ -381,11 +393,13 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     MEETING_PROPERTIES,
   )
 
-  // Filter to last 30 days for the main KPI counts
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 86_400_000)
+  // Filter to the selected month for the main KPI counts
+  const monthStart = new Date(focusDate.getFullYear(), focusDate.getMonth(), 1)
   const meetings = allMeetings.filter((m) => {
     const st = m.properties.hs_meeting_start_time
-    return st && new Date(st) >= thirtyDaysAgo && new Date(st) <= now
+    if (!st) return false
+    const d = new Date(st)
+    return d >= monthStart && d < endOfMonth
   })
 
   const meetingsThisMonth = meetings.length
@@ -446,7 +460,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     newCustomers: number
   }> = []
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const d = new Date(focusDate.getFullYear(), focusDate.getMonth() - i, 1)
     const mk = monthKey(d)
     const churnCount = churned.filter((c) => {
       const dl = c.properties.date_left
@@ -471,7 +485,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
       continue
     }
     const months =
-      (now.getTime() - new Date(start).getTime()) / (30.44 * 86_400_000)
+      (refDate.getTime() - new Date(start).getTime()) / (30.44 * 86_400_000)
     tenureMonths.push(Math.max(0, months))
   }
 
@@ -516,7 +530,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     if (!isoOrNull) return null
     const d = new Date(isoOrNull)
     if (isNaN(d.getTime())) return null
-    return Math.floor((now.getTime() - d.getTime()) / 86_400_000)
+    return Math.floor((refDate.getTime() - d.getTime()) / 86_400_000)
   }
 
   const atRiskCustomers: CustomerSuccessDto['atRiskCustomers'] = []
@@ -526,7 +540,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     const daysSinceMeeting = daysSince(c.properties.hs_latest_meeting_activity)
     const daysSinceActivity = daysSince(c.properties.hs_last_sales_activity_timestamp)
     const tenure = c.properties.contract_start_date
-      ? Math.floor((now.getTime() - new Date(c.properties.contract_start_date).getTime()) / (30.44 * 86_400_000))
+      ? Math.floor((refDate.getTime() - new Date(c.properties.contract_start_date).getTime()) / (30.44 * 86_400_000))
       : null
     const salesActivities = parseInt(c.properties.num_notes ?? '0', 10) || 0
 
@@ -634,7 +648,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
   const churnedSpark: number[] = []
   const retentionSpark: number[] = []
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const d = new Date(focusDate.getFullYear(), focusDate.getMonth() - i, 1)
     const mk = monthKey(d)
     const mb = meetingsByMonthMap.get(mk) ?? { total: 0, completed: 0, noShow: 0 }
     meetingsSpark.push(mb.total)
@@ -657,7 +671,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
   }
 
   /* ── 15. Previous period for delta comparison ── */
-  const prevMK = monthKey(new Date(now.getFullYear(), now.getMonth() - 1, 1))
+  const prevMK = monthKey(new Date(focusDate.getFullYear(), focusDate.getMonth() - 1, 1))
   const prevMeetingBucket = meetingsByMonthMap.get(prevMK) ?? { total: 0, completed: 0, noShow: 0 }
   const previousPeriod = {
     totalPayingCustomers: payingSpark[4] ?? totalPayingCustomers,
@@ -670,7 +684,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
 
   /* ── 16. New customers (within first 60 days) ── */
   const HUBSPOT_PORTAL_ID = '145032754'
-  const sixtyDaysAgo = new Date(now.getTime() - 60 * 86_400_000)
+  const sixtyDaysAgo = new Date(refDate.getTime() - 60 * 86_400_000)
 
   const newCustCandidates = paying.filter((c) => {
     const start = c.properties.contract_start_date
@@ -697,7 +711,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
       (m) =>
         m.properties.hs_meeting_outcome === 'COMPLETED' ||
         (m.properties.hs_meeting_start_time &&
-          new Date(m.properties.hs_meeting_start_time) < now &&
+          new Date(m.properties.hs_meeting_start_time) < refDate &&
           m.properties.hs_meeting_outcome !== 'CANCELLED' &&
           m.properties.hs_meeting_outcome !== 'NO_SHOW'),
     )
@@ -705,7 +719,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     const hasFuture = typed.some(
       (m) =>
         m.properties.hs_meeting_start_time &&
-        new Date(m.properties.hs_meeting_start_time) > now,
+        new Date(m.properties.hs_meeting_start_time) > refDate,
     )
     if (hasFuture) return 'scheduled'
     return 'none'
@@ -752,7 +766,7 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
             OWNER_NAMES[c.properties.hubspot_owner_id ?? ''] ?? 'Unassigned',
           contractStartDate: startDate,
           daysSinceStart: Math.floor(
-            (now.getTime() - new Date(startDate).getTime()) / 86_400_000,
+            (refDate.getTime() - new Date(startDate).getTime()) / 86_400_000,
           ),
           hubspotUrl: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL_ID}/company/${c.id}`,
           trainingMeeting: deriveMeetingStatus(companyMeetings, 'training'),
@@ -822,9 +836,9 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
 const CACHE_COLLECTION = 'customer_success_cache'
 const CACHE_TTL_MS = 15 * 60 * 1000 // 15 minutes
 
-let memCache: { data: CustomerSuccessDto; ts: number } | null = null
+const memCacheMap = new Map<string, { data: CustomerSuccessDto; ts: number }>()
 
-async function getCachedSuccess(): Promise<{
+async function getCachedSuccess(cacheKey = 'current'): Promise<{
   data: CustomerSuccessDto
   updatedAt: Date
 } | null> {
@@ -834,17 +848,17 @@ async function getCachedSuccess(): Promise<{
     .collection<{ _id: string; data: CustomerSuccessDto; updatedAt: Date }>(
       CACHE_COLLECTION,
     )
-    .findOne({ _id: 'current' as any })
+    .findOne({ _id: cacheKey as any })
 }
 
-async function setCachedSuccess(data: CustomerSuccessDto): Promise<void> {
+async function setCachedSuccess(data: CustomerSuccessDto, cacheKey = 'current'): Promise<void> {
   const db = await getDb()
   if (!db) return
   await db
     .collection(CACHE_COLLECTION)
     .updateOne(
-      { _id: 'current' as any },
-      { $set: { _id: 'current' as any, data, updatedAt: new Date() } },
+      { _id: cacheKey as any },
+      { $set: { _id: cacheKey as any, data, updatedAt: new Date() } },
       { upsert: true },
     )
 }
@@ -857,29 +871,33 @@ export const adminCustomerSuccessRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('onRequest', requireAdmin)
 
   app.get('/', async (req, reply) => {
-    const refresh = (req.query as Record<string, string>).refresh === 'true'
+    const q = req.query as Record<string, string>
+    const refresh = q.refresh === 'true'
+    const month = q.month && /^\d{4}-\d{2}$/.test(q.month) ? q.month : undefined
+    const cacheKey = month ?? 'current'
 
     if (!refresh) {
       // In-memory cache (only serve if within TTL and has fresh fields)
+      const mem = memCacheMap.get(cacheKey)
       if (
-        memCache &&
-        Date.now() - memCache.ts < CACHE_TTL_MS &&
-        memCache.data.kpiSpark && memCache.data.newCustomers
+        mem &&
+        Date.now() - mem.ts < CACHE_TTL_MS &&
+        mem.data.kpiSpark && mem.data.newCustomers
       ) {
         return reply.send({
-          stats: memCache.data,
+          stats: mem.data,
           cached: true,
-          cachedAt: new Date(memCache.ts).toISOString(),
+          cachedAt: new Date(mem.ts).toISOString(),
         })
       }
       // MongoDB cache (only serve if within TTL and has fresh fields)
-      const cached = await getCachedSuccess()
+      const cached = await getCachedSuccess(cacheKey)
       if (
         cached &&
         Date.now() - cached.updatedAt.getTime() < CACHE_TTL_MS &&
         cached.data.kpiSpark && cached.data.newCustomers
       ) {
-        memCache = { data: cached.data, ts: cached.updatedAt.getTime() }
+        memCacheMap.set(cacheKey, { data: cached.data, ts: cached.updatedAt.getTime() })
         return reply.send({
           stats: cached.data,
           cached: true,
@@ -888,9 +906,9 @@ export const adminCustomerSuccessRoutes: FastifyPluginAsync = async (app) => {
       }
     }
 
-    const stats = await buildCustomerSuccessStats()
-    memCache = { data: stats, ts: Date.now() }
-    await setCachedSuccess(stats).catch(() => {})
+    const stats = await buildCustomerSuccessStats(month)
+    memCacheMap.set(cacheKey, { data: stats, ts: Date.now() })
+    await setCachedSuccess(stats, cacheKey).catch(() => {})
     return reply.send({
       stats,
       cached: false,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import SparkLine from '../../components/SparkLine.vue'
 import DashboardSubNav from '../../components/DashboardSubNav.vue'
 import {
@@ -15,7 +15,35 @@ import {
 import { pctDelta, formatCurrency } from '../../lib/dashboard-helpers'
 
 /* ------------------------------------------------------------------ */
-/*  Customer overview                                                  */
+/*  Unified month picker                                               */
+/* ------------------------------------------------------------------ */
+const now = new Date()
+const defaultMonth = (() => {
+  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+})()
+
+const selectedMonth = ref(defaultMonth)
+
+// Build month options (last 12 months)
+const monthOptions = computed(() => {
+  const opts: { value: string; label: string }[] = []
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const label = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+    opts.push({ value: val, label })
+  }
+  return opts
+})
+
+const selectedMonthLabel = computed(() => {
+  const opt = monthOptions.value.find(o => o.value === selectedMonth.value)
+  return opt?.label ?? selectedMonth.value
+})
+
+/* ------------------------------------------------------------------ */
+/*  Customer overview (not month-dependent)                            */
 /* ------------------------------------------------------------------ */
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -40,27 +68,17 @@ async function loadStats() {
 const funnelLoading = ref(true)
 const funnel = ref<SalesFunnel | null>(null)
 
-const defaultMonth = (() => {
-  const now = new Date()
-  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-})()
-
 async function loadFunnel() {
   funnelLoading.value = true
   try {
-    const res = await adminGetSalesFunnel(defaultMonth)
+    const res = await adminGetSalesFunnel(selectedMonth.value)
     funnel.value = res.funnel
   } catch { /* silent */ } finally {
     funnelLoading.value = false
   }
 }
 
-const funnelMonthLabel = computed(() => {
-  if (!funnel.value) return ''
-  const parts = funnel.value.month.split('-').map(Number)
-  return new Date(parts[0] ?? 2026, (parts[1] ?? 1) - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
-})
+const funnelMonthLabel = computed(() => selectedMonthLabel.value)
 
 const marketingCards = computed(() => {
   if (!funnel.value) return []
@@ -91,17 +109,14 @@ const sales = ref<SalesStats | null>(null)
 async function loadSales() {
   salesLoading.value = true
   try {
-    const res = await adminGetSalesStats()
+    const res = await adminGetSalesStats(selectedMonth.value)
     sales.value = res.stats
   } catch { /* silent */ } finally {
     salesLoading.value = false
   }
 }
 
-const salesMonthLabel = computed(() => {
-  const now = new Date()
-  return now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
-})
+const salesMonthLabel = computed(() => selectedMonthLabel.value)
 
 const salesCards = computed(() => {
   if (!sales.value) return []
@@ -138,7 +153,7 @@ const success = ref<CustomerSuccess | null>(null)
 async function loadSuccess() {
   successLoading.value = true
   try {
-    const res = await adminGetCustomerSuccess()
+    const res = await adminGetCustomerSuccess(selectedMonth.value)
     success.value = res.stats
   } catch { /* silent */ } finally {
     successLoading.value = false
@@ -195,11 +210,17 @@ const successCards = computed(() => {
   ]
 })
 
-onMounted(() => {
-  void loadStats()
+function loadAllMonthData() {
   void loadFunnel()
   void loadSales()
   void loadSuccess()
+}
+
+watch(selectedMonth, () => loadAllMonthData())
+
+onMounted(() => {
+  void loadStats()
+  loadAllMonthData()
 })
 </script>
 
@@ -265,6 +286,29 @@ onMounted(() => {
     <div class="rounded-2xl border border-white/10 bg-[#0f1428] p-6 text-white shadow-[0_18px_40px_rgba(15,20,40,0.35)]">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <DashboardSubNav />
+        <div class="flex items-center gap-2">
+          <select
+            v-model="selectedMonth"
+            class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 appearance-none cursor-pointer pr-8"
+            style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff80' d='M3 5l3 3 3-3'/%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 8px center;"
+          >
+            <option
+              v-for="opt in monthOptions"
+              :key="opt.value"
+              :value="opt.value"
+              class="bg-[#1a1f3a] text-white"
+            >
+              {{ opt.label }}
+            </option>
+          </select>
+          <button
+            class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 hover:bg-white/10"
+            type="button"
+            @click="loadAllMonthData"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
       <!-- Marketing headlines -->
@@ -364,7 +408,7 @@ onMounted(() => {
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-3">
             <div class="text-sm font-semibold text-amber-300">Customer Success</div>
-            <span class="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-300/70">Current snapshot</span>
+            <span class="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-300/70">{{ selectedMonthLabel }}</span>
           </div>
           <RouterLink to="/admin/success" class="text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors">
             View details &rarr;

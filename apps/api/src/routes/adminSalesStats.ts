@@ -202,12 +202,24 @@ function startOfDay(): Date {
   return d
 }
 
-async function buildSalesStats(): Promise<SalesStatsDto> {
+async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   const now = new Date()
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
-  const currentMonthKey = monthKey(now)
-  const todayStart = startOfDay()
-  const weekStart = startOfWeek()
+
+  // If a specific month is selected, pivot all date calculations around it
+  let focusDate: Date
+  if (selectedMonth && /^\d{4}-\d{2}$/.test(selectedMonth)) {
+    const [y, m] = selectedMonth.split('-').map(Number)
+    focusDate = new Date(y!, m! - 1, 1)
+  } else {
+    focusDate = now
+  }
+  const currentMonthKey = monthKey(focusDate)
+  const isHistorical = currentMonthKey !== monthKey(now)
+  const sixMonthsAgo = new Date(focusDate.getFullYear(), focusDate.getMonth() - 5, 1)
+  // End of selected month (for HubSpot query upper bound)
+  const endOfMonth = new Date(focusDate.getFullYear(), focusDate.getMonth() + 1, 1)
+  const todayStart = isHistorical ? endOfMonth : startOfDay()
+  const weekStart = isHistorical ? endOfMonth : startOfWeek()
 
   const DEAL_PROPERTIES = [
     'dealname',
@@ -234,6 +246,11 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
             operator: 'GTE',
             value: sixMonthsAgo.toISOString(),
           },
+          ...(isHistorical ? [{
+            propertyName: 'closedate',
+            operator: 'LT',
+            value: endOfMonth.toISOString(),
+          }] : []),
           { propertyName: 'dealstage', operator: 'EQ', value: 'closedwon' },
         ],
       },
@@ -245,6 +262,11 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
             operator: 'GTE',
             value: sixMonthsAgo.toISOString(),
           },
+          ...(isHistorical ? [{
+            propertyName: 'closedate',
+            operator: 'LT',
+            value: endOfMonth.toISOString(),
+          }] : []),
           { propertyName: 'dealstage', operator: 'EQ', value: 'closedlost' },
         ],
       },
@@ -412,7 +434,7 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
   /* ── MRR trend (sum of hs_mrr from won deals each month) ── */
   const mrrTrendMap = new Map<string, number>()
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const d = new Date(focusDate.getFullYear(), focusDate.getMonth() - i, 1)
     mrrTrendMap.set(monthKey(d), 0)
   }
   for (const d of closedDeals) {
@@ -433,7 +455,7 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
   >()
   // Seed all 6 months
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const d = new Date(focusDate.getFullYear(), focusDate.getMonth() - i, 1)
     const mk = monthKey(d)
     trendMap.set(mk, { won: 0, lost: 0, revenue: 0, closeDays: [] })
   }
@@ -467,7 +489,7 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
   )
 
   /* ── Previous month ── */
-  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const prevMonthDate = new Date(focusDate.getFullYear(), focusDate.getMonth() - 1, 1)
   const prevMK = monthKey(prevMonthDate)
   const prevBucket = trendMap.get(prevMK)
   const previous: SalesMonthSummary | null = prevBucket
@@ -546,9 +568,9 @@ async function buildSalesStats(): Promise<SalesStatsDto> {
 const CACHE_COLLECTION = 'sales_stats_cache'
 const CACHE_TTL_MS = 10 * 60 * 1000 // 10 minutes
 
-let memCache: { data: SalesStatsDto; ts: number } | null = null
+const memCacheMap = new Map<string, { data: SalesStatsDto; ts: number }>()
 
-async function getCachedStats(): Promise<{
+async function getCachedStats(cacheKey = 'current'): Promise<{
   data: SalesStatsDto
   updatedAt: Date
 } | null> {
@@ -558,17 +580,17 @@ async function getCachedStats(): Promise<{
     .collection<{ _id: string; data: SalesStatsDto; updatedAt: Date }>(
       CACHE_COLLECTION,
     )
-    .findOne({ _id: 'current' as any })
+    .findOne({ _id: cacheKey as any })
 }
 
-async function setCachedStats(data: SalesStatsDto): Promise<void> {
+async function setCachedStats(data: SalesStatsDto, cacheKey = 'current'): Promise<void> {
   const db = await getDb()
   if (!db) return
   await db
     .collection(CACHE_COLLECTION)
     .updateOne(
-      { _id: 'current' as any },
-      { $set: { _id: 'current' as any, data, updatedAt: new Date() } },
+      { _id: cacheKey as any },
+      { $set: { _id: cacheKey as any, data, updatedAt: new Date() } },
       { upsert: true },
     )
 }
@@ -581,17 +603,21 @@ export const adminSalesStatsRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('onRequest', requireAdmin)
 
   app.get('/', async (req, reply) => {
-    const refresh = (req.query as Record<string, string>).refresh === 'true'
+    const q = req.query as Record<string, string>
+    const refresh = q.refresh === 'true'
+    const month = q.month && /^\d{4}-\d{2}$/.test(q.month) ? q.month : undefined
+    const cacheKey = month ?? 'current'
 
     if (!refresh) {
       // In-memory cache first (fastest)
-      if (memCache && Date.now() - memCache.ts < CACHE_TTL_MS) {
-        return reply.send({ stats: memCache.data, cached: true, cachedAt: new Date(memCache.ts).toISOString() })
+      const mem = memCacheMap.get(cacheKey)
+      if (mem && Date.now() - mem.ts < CACHE_TTL_MS) {
+        return reply.send({ stats: mem.data, cached: true, cachedAt: new Date(mem.ts).toISOString() })
       }
       // MongoDB cache fallback
-      const cached = await getCachedStats()
+      const cached = await getCachedStats(cacheKey)
       if (cached && cached.data.freeCustomers) {
-        memCache = { data: cached.data, ts: cached.updatedAt.getTime() }
+        memCacheMap.set(cacheKey, { data: cached.data, ts: cached.updatedAt.getTime() })
         return reply.send({
           stats: cached.data,
           cached: true,
@@ -600,9 +626,9 @@ export const adminSalesStatsRoutes: FastifyPluginAsync = async (app) => {
       }
     }
 
-    const stats = await buildSalesStats()
-    memCache = { data: stats, ts: Date.now() }
-    await setCachedStats(stats).catch(() => {})
+    const stats = await buildSalesStats(month)
+    memCacheMap.set(cacheKey, { data: stats, ts: Date.now() })
+    await setCachedStats(stats, cacheKey).catch(() => {})
     return reply.send({
       stats,
       cached: false,

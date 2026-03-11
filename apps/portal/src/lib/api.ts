@@ -627,8 +627,9 @@ export type SalesStats = {
   }
 }
 
-export async function adminGetSalesStats(refresh = false) {
+export async function adminGetSalesStats(month?: string, refresh = false) {
   const params = new URLSearchParams()
+  if (month) params.set('month', month)
   if (refresh) params.set('refresh', 'true')
   const qs = params.toString() ? `?${params}` : ''
   const res = await apiFetch(`${getApiBaseUrl()}/admin/sales-stats${qs}`, { method: 'GET' })
@@ -716,8 +717,9 @@ export type CustomerSuccess = {
   }
 }
 
-export async function adminGetCustomerSuccess(refresh = false) {
+export async function adminGetCustomerSuccess(month?: string, refresh = false) {
   const params = new URLSearchParams()
+  if (month) params.set('month', month)
   if (refresh) params.set('refresh', 'true')
   const qs = params.toString() ? `?${params}` : ''
   const res = await apiFetch(`${getApiBaseUrl()}/admin/customer-success${qs}`, { method: 'GET' })
