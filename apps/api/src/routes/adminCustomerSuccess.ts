@@ -858,31 +858,25 @@ export const adminCustomerSuccessRoutes: FastifyPluginAsync = async (app) => {
     const refresh = (req.query as Record<string, string>).refresh === 'true'
 
     if (!refresh) {
-      // In-memory cache
-      if (memCache && Date.now() - memCache.ts < CACHE_TTL_MS) {
-        // Backfill fields added after cache was created
-        if (!memCache.data.atRiskCustomers) memCache.data.atRiskCustomers = []
-        if (!memCache.data.atRiskSummary) memCache.data.atRiskSummary = { high: 0, medium: 0, low: 0 }
-        if (!memCache.data.kpiSpark) memCache.data.kpiSpark = { paying: [], churned: [], retention: [], meetings: [], completed: [], noShow: [] }
-        if (!memCache.data.previousPeriod) memCache.data.previousPeriod = { totalPayingCustomers: 0, retentionRate: 0, churned: 0, meetingsMonth: 0, completedMonth: 0, noShowMonth: 0 }
-        if (!memCache.data.newCustomers) memCache.data.newCustomers = []
-        if (!memCache.data.earlyChurn) memCache.data.earlyChurn = { within60: 0, within90: 0, within120: 0, totalWithDates: 0 }
+      // In-memory cache (only serve if within TTL and has fresh fields)
+      if (
+        memCache &&
+        Date.now() - memCache.ts < CACHE_TTL_MS &&
+        memCache.data.kpiSpark && memCache.data.newCustomers
+      ) {
         return reply.send({
           stats: memCache.data,
           cached: true,
           cachedAt: new Date(memCache.ts).toISOString(),
         })
       }
-      // MongoDB cache
+      // MongoDB cache (only serve if within TTL and has fresh fields)
       const cached = await getCachedSuccess()
-      if (cached) {
-        // Backfill fields added after cache was created
-        if (!cached.data.atRiskCustomers) cached.data.atRiskCustomers = []
-        if (!cached.data.atRiskSummary) cached.data.atRiskSummary = { high: 0, medium: 0, low: 0 }
-        if (!cached.data.kpiSpark) cached.data.kpiSpark = { paying: [], churned: [], retention: [], meetings: [], completed: [], noShow: [] }
-        if (!cached.data.previousPeriod) cached.data.previousPeriod = { totalPayingCustomers: 0, retentionRate: 0, churned: 0, meetingsMonth: 0, completedMonth: 0, noShowMonth: 0 }
-        if (!cached.data.newCustomers) cached.data.newCustomers = []
-        if (!cached.data.earlyChurn) cached.data.earlyChurn = { within60: 0, within90: 0, within120: 0, totalWithDates: 0 }
+      if (
+        cached &&
+        Date.now() - cached.updatedAt.getTime() < CACHE_TTL_MS &&
+        cached.data.kpiSpark && cached.data.newCustomers
+      ) {
         memCache = { data: cached.data, ts: cached.updatedAt.getTime() }
         return reply.send({
           stats: cached.data,
