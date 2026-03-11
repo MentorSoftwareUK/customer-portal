@@ -491,29 +491,29 @@ onMounted(() => {
       <template v-else-if="stats">
         <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Live<br>customers</div>
+            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/60">Live<br>customers</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.liveCompanyCount.toLocaleString() }}</div>
-            <p class="mt-1 text-xs text-white/40">Companies set to live customer</p>
+            <p class="mt-1 text-xs text-white/50">Companies set to live customer</p>
           </div>
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Associated<br>contacts</div>
+            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/60">Associated<br>contacts</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.liveUserCount.toLocaleString() }}</div>
-            <p class="mt-1 text-xs text-white/40">HubSpot contacts at live companies</p>
+            <p class="mt-1 text-xs text-white/50">HubSpot contacts at live companies</p>
           </div>
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Total<br>homes</div>
+            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/60">Total<br>homes</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.totalHomes.toLocaleString() }}</div>
-            <p class="mt-1 text-xs text-white/40">All home types across live customers</p>
+            <p class="mt-1 text-xs text-white/50">All home types across live customers</p>
           </div>
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Children's<br>homes</div>
+            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/60">Children's<br>homes</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.totalChildrensHomes.toLocaleString() }}</div>
-            <p class="mt-1 text-xs text-white/40">number_of_homes (CH)</p>
+            <p class="mt-1 text-xs text-white/50">number_of_homes (CH)</p>
           </div>
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/50">Supported<br>accommodation</div>
+            <div class="h-8 text-xs font-semibold uppercase tracking-wide text-white/60">Supported<br>accommodation</div>
             <div class="mt-2 text-3xl font-semibold text-white">{{ stats.totalSupportedAccommodation.toLocaleString() }}</div>
-            <p class="mt-1 text-xs text-white/40">number_of_homes (SA)</p>
+            <p class="mt-1 text-xs text-white/50">number_of_homes (SA)</p>
           </div>
         </div>
       </template>
@@ -528,27 +528,27 @@ onMounted(() => {
           <div class="inline-flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
             <button
               class="relative rounded-md px-4 py-1.5 text-xs font-semibold transition-all duration-200"
-              :class="activeTab === 'marketing' ? 'bg-indigo-500/20 text-indigo-300 shadow-sm' : 'text-white/40 hover:text-white/60'"
+              :class="activeTab === 'marketing' ? 'bg-indigo-500/20 text-indigo-300 shadow-sm' : 'text-white/50 hover:text-white/80'"
               @click="activeTab = 'marketing'"
             >
               Marketing
             </button>
             <button
               class="relative rounded-md px-4 py-1.5 text-xs font-semibold transition-all duration-200"
-              :class="activeTab === 'sales' ? 'bg-emerald-500/20 text-emerald-300 shadow-sm' : 'text-white/40 hover:text-white/60'"
+              :class="activeTab === 'sales' ? 'bg-emerald-500/20 text-emerald-300 shadow-sm' : 'text-white/50 hover:text-white/80'"
               @click="activeTab = 'sales'"
             >
               Sales
             </button>
             <button
               class="relative rounded-md px-4 py-1.5 text-xs font-semibold transition-all duration-200"
-              :class="activeTab === 'success' ? 'bg-amber-500/20 text-amber-300 shadow-sm' : 'text-white/40 hover:text-white/60'"
+              :class="activeTab === 'success' ? 'bg-amber-500/20 text-amber-300 shadow-sm' : 'text-white/50 hover:text-white/80'"
               @click="activeTab = 'success'"
             >
               Success
             </button>
           </div>
-          <div v-if="activeTab === 'marketing'" class="text-xs text-white/40">{{ funnelMonthLabel }}</div>
+          <div v-if="activeTab === 'marketing'" class="text-xs text-white/50">{{ funnelMonthLabel }}</div>
         </div>
         <!-- Controls -->
         <div class="flex items-center gap-2">
@@ -574,13 +574,13 @@ onMounted(() => {
         </div>
       </div>
       <!-- Cache timestamp -->
-      <div v-if="activeTab === 'marketing' && cachedAt" class="mt-1 text-[10px] text-white/25">
+      <div v-if="activeTab === 'marketing' && cachedAt" class="mt-1 text-xs text-white/50">
         Last updated: {{ new Date(cachedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
       </div>
-      <div v-if="activeTab === 'sales' && salesCachedAt" class="mt-1 text-[10px] text-white/25">
+      <div v-if="activeTab === 'sales' && salesCachedAt" class="mt-1 text-xs text-white/50">
         Last updated: {{ new Date(salesCachedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
       </div>
-      <div v-if="activeTab === 'success' && successCachedAt" class="mt-1 text-[10px] text-white/25">
+      <div v-if="activeTab === 'success' && successCachedAt" class="mt-1 text-xs text-white/50">
         Last updated: {{ new Date(successCachedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
       </div>
 
@@ -606,30 +606,30 @@ onMounted(() => {
               class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.05]"
             >
               <div class="flex items-start justify-between">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">{{ card.label }}</div>
+                <div class="text-xs font-semibold uppercase tracking-wider text-white/60">{{ card.label }}</div>
                 <SparkLine :data="card.spark" :color="card.color" :width="64" :height="24" />
               </div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ card.val }}</div>
               <div class="mt-1.5 flex items-center gap-1.5">
                 <span
                   v-if="card.delta.dir !== 'flat'"
-                  class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                  class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-bold"
                   :class="card.delta.dir === 'up' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'"
                 >
                   <svg v-if="card.delta.dir === 'up'" class="h-2.5 w-2.5" fill="none" viewBox="0 0 10 10"><path d="M5 2v6M2.5 4.5 5 2l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   <svg v-else class="h-2.5 w-2.5" fill="none" viewBox="0 0 10 10"><path d="M5 8V2M2.5 5.5 5 8l2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   {{ card.delta.value }}{{ card.suffix }}
                 </span>
-                <span v-else class="text-[10px] text-white/20">—</span>
-                <span class="text-[10px] text-white/25">vs prev</span>
+                <span v-else class="text-xs text-white/50">—</span>
+                <span class="text-xs text-white/50">vs prev</span>
               </div>
-              <div class="mt-1 text-[10px] text-white/25">{{ card.sub }}</div>
+              <div class="mt-1 text-xs text-white/50">{{ card.sub }}</div>
             </div>
           </div>
 
           <!-- ── Visual funnel ── -->
           <div class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Funnel</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Funnel</div>
             <div class="mt-4 flex flex-col items-center gap-0">
               <template v-for="(step, idx) in funnelSteps" :key="step.label">
                 <div
@@ -650,7 +650,7 @@ onMounted(() => {
                 </div>
                 <div v-if="idx < funnelConversions.length" class="flex items-center gap-2 py-1.5">
                   <div class="h-3 w-px bg-white/10" />
-                  <span class="rounded-full border border-white/[0.06] bg-white/[0.03] px-2.5 py-0.5 text-[10px] font-bold tabular-nums text-white/40">
+                  <span class="rounded-full border border-white/[0.06] bg-white/[0.03] px-2.5 py-0.5 text-xs font-bold tabular-nums text-white/50">
                     {{ funnelConversions[idx] }}%
                   </span>
                   <div class="h-3 w-px bg-white/10" />
@@ -661,7 +661,7 @@ onMounted(() => {
 
           <!-- ── Per-form performance ── -->
           <div class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Form performance</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Form performance</div>
             <div class="mt-3 space-y-2">
               <div
                 v-for="(pf, idx) in funnel.perForm"
@@ -670,24 +670,24 @@ onMounted(() => {
               >
                 <div class="flex flex-wrap items-center justify-between gap-2">
                   <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-white/70">{{ pf.formName }}</span>
+                    <span class="text-sm font-medium text-white/80">{{ pf.formName }}</span>
                     <span
                       v-if="idx === bestFormIdx && pf.demos > 0"
-                      class="rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-400"
+                      class="rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-400"
                     >Best</span>
                   </div>
                   <div class="flex items-center gap-4 text-xs tabular-nums">
                     <div class="text-center">
                       <div class="font-bold text-white">{{ pf.submissions }}</div>
-                      <div class="text-[10px] text-white/30">Subs</div>
+                      <div class="text-xs text-white/50">Subs</div>
                     </div>
                     <div class="text-center">
                       <div class="font-bold text-emerald-400">{{ pf.sql }}</div>
-                      <div class="text-[10px] text-white/30">SQL</div>
+                      <div class="text-xs text-white/50">SQL</div>
                     </div>
                     <div class="text-center">
                       <div class="font-bold text-amber-400">{{ pf.demos }}</div>
-                      <div class="text-[10px] text-white/30">Demos</div>
+                      <div class="text-xs text-white/50">Demos</div>
                     </div>
                   </div>
                 </div>
@@ -698,7 +698,7 @@ onMounted(() => {
                       :style="{ width: (pf.submissions > 0 ? Math.round((pf.demos / pf.submissions) * 100) : 0) + '%', minWidth: pf.demos > 0 ? '4px' : '0' }"
                     />
                   </div>
-                  <span class="w-10 text-right text-[10px] font-semibold tabular-nums text-white/35">
+                  <span class="w-10 text-right text-xs font-semibold tabular-nums text-white/35">
                     {{ pf.submissions > 0 ? Math.round((pf.demos / pf.submissions) * 100) : 0 }}%
                   </span>
                 </div>
@@ -708,10 +708,10 @@ onMounted(() => {
 
           <!-- ── Lead pipeline (reference) ── -->
           <div v-if="funnel.byStage.length > 0" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Lead pipeline</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Lead pipeline</div>
             <div class="mt-3 space-y-1.5">
               <div v-for="s in funnel.byStage" :key="s.stageId" class="flex items-center gap-3">
-                <span class="w-32 shrink-0 text-right text-xs text-white/40 sm:w-40">{{ s.label }}</span>
+                <span class="w-32 shrink-0 text-right text-xs text-white/50 sm:w-40">{{ s.label }}</span>
                 <div class="h-5 flex-1 overflow-hidden rounded bg-white/[0.04]">
                   <div
                     class="h-full rounded bg-sky-500/30 transition-all duration-500"
@@ -725,11 +725,11 @@ onMounted(() => {
 
           <!-- ── Donut charts: Stage · Provision · Referral ── -->
           <div class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Breakdown insights</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Breakdown insights</div>
             <div class="mt-5 grid grid-cols-1 gap-6 md:grid-cols-3">
               <!-- Stage donut -->
               <div v-if="stageDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <div class="mb-3 text-xs font-semibold text-white/50">Registration Stage</div>
+                <div class="mb-3 text-xs font-semibold text-white/60">Registration Stage</div>
                 <DonutChart
                   :segments="stageDonut"
                   :size="160"
@@ -740,7 +740,7 @@ onMounted(() => {
               </div>
               <!-- Provision donut -->
               <div v-if="provisionDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <div class="mb-3 text-xs font-semibold text-white/50">Provision Type</div>
+                <div class="mb-3 text-xs font-semibold text-white/60">Provision Type</div>
                 <DonutChart
                   :segments="provisionDonut"
                   :size="160"
@@ -751,7 +751,7 @@ onMounted(() => {
               </div>
               <!-- Referral donut -->
               <div v-if="referralDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <div class="mb-3 text-xs font-semibold text-white/50">Where Did You Hear About Us</div>
+                <div class="mb-3 text-xs font-semibold text-white/60">Where Did You Hear About Us</div>
                 <DonutChart
                   :segments="referralDonut"
                   :size="160"
@@ -765,7 +765,7 @@ onMounted(() => {
 
           <!-- ── Weekly submissions line chart ── -->
           <div v-if="weeklyLinePoints.length > 1" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Submissions over time</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Submissions over time</div>
             <div class="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
               <LineChart :points="weeklyLinePoints" color="#818cf8" :height="200" />
             </div>
@@ -773,10 +773,10 @@ onMounted(() => {
 
           <!-- ── Traffic sources ── -->
           <div v-if="funnel.trafficSources && funnel.trafficSources.length > 0" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Traffic sources</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Traffic sources</div>
             <div class="mt-3 space-y-1.5">
               <div v-for="(t, ti) in funnel.trafficSources" :key="t.value" class="flex items-center gap-3">
-                <span class="w-32 shrink-0 text-right text-xs text-white/40 sm:w-40">{{ t.label }}</span>
+                <span class="w-32 shrink-0 text-right text-xs text-white/50 sm:w-40">{{ t.label }}</span>
                 <div class="h-5 flex-1 overflow-hidden rounded bg-white/[0.04]">
                   <div
                     class="h-full rounded transition-all duration-500"
@@ -817,57 +817,57 @@ onMounted(() => {
               class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.05]"
             >
               <div class="flex items-start justify-between">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">{{ card.label }}</div>
+                <div class="text-xs font-semibold uppercase tracking-wider text-white/60">{{ card.label }}</div>
                 <SparkLine v-if="card.spark.length > 0" :data="card.spark" :color="card.color" :width="64" :height="24" />
               </div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ card.val }}</div>
               <div class="mt-1.5 flex items-center gap-1.5">
                 <span
                   v-if="card.delta.dir !== 'flat'"
-                  class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                  class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-bold"
                   :class="card.delta.dir === 'up' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'"
                 >
                   <svg v-if="card.delta.dir === 'up'" class="h-2.5 w-2.5" fill="none" viewBox="0 0 10 10"><path d="M5 2v6M2.5 4.5 5 2l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   <svg v-else class="h-2.5 w-2.5" fill="none" viewBox="0 0 10 10"><path d="M5 8V2M2.5 5.5 5 8l2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   {{ card.delta.value }}{{ card.suffix }}
                 </span>
-                <span v-else class="text-[10px] text-white/20">—</span>
-                <span v-if="card.delta.dir !== 'flat'" class="text-[10px] text-white/25">vs prev</span>
+                <span v-else class="text-xs text-white/50">—</span>
+                <span v-if="card.delta.dir !== 'flat'" class="text-xs text-white/50">vs prev</span>
               </div>
-              <div class="mt-1 text-[10px] text-white/25">{{ card.sub }}</div>
+              <div class="mt-1 text-xs text-white/50">{{ card.sub }}</div>
             </div>
           </div>
 
           <!-- ── Agent breakdown ── -->
           <div v-if="sales.freeCustomers" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Free customers</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free customers</div>
             <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
               <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Total free</div>
+                <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Total free</div>
                 <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.totalFreeDeals }}</div>
-                <div class="mt-1 text-[10px] text-white/25">Unregistered / pre-reg deals</div>
+                <div class="mt-1 text-xs text-white/50">Unregistered / pre-reg deals</div>
               </div>
               <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">New free this month</div>
+                <div class="text-xs font-semibold uppercase tracking-wider text-white/60">New free this month</div>
                 <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.freeDealsThisMonth }}</div>
-                <div class="mt-1 text-[10px] text-white/25">Won this month at £0</div>
+                <div class="mt-1 text-xs text-white/50">Won this month at £0</div>
               </div>
               <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Converted</div>
+                <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Converted</div>
                 <div class="mt-2 text-2xl font-bold tabular-nums text-emerald-400">{{ sales.freeCustomers.convertedThisMonth }}</div>
-                <div class="mt-1 text-[10px] text-white/25">Became paying this month</div>
+                <div class="mt-1 text-xs text-white/50">Became paying this month</div>
               </div>
               <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Conversion value</div>
+                <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Conversion value</div>
                 <div class="mt-2 text-2xl font-bold tabular-nums text-emerald-400">{{ formatCurrency(sales.freeCustomers.convertedRevenue) }}</div>
-                <div class="mt-1 text-[10px] text-white/25">Revenue from conversions · {{ sales.freeCustomers.conversionRate }}% rate</div>
+                <div class="mt-1 text-xs text-white/50">Revenue from conversions · {{ sales.freeCustomers.conversionRate }}% rate</div>
               </div>
             </div>
           </div>
 
           <!-- ── Agent breakdown (original) ── -->
           <div v-if="filteredAgents.length > 0" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Performance by agent</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Performance by agent</div>
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div
                 v-for="agent in filteredAgents"
@@ -880,26 +880,26 @@ onMounted(() => {
                 </div>
                 <div class="mt-3 grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
                   <div>
-                    <div class="text-white/30">Won</div>
+                    <div class="text-white/50">Won</div>
                     <div class="text-lg font-bold tabular-nums text-emerald-400">{{ agent.won }}</div>
                   </div>
                   <div>
-                    <div class="text-white/30">Lost</div>
+                    <div class="text-white/50">Lost</div>
                     <div class="text-lg font-bold tabular-nums text-rose-400">{{ agent.lost }}</div>
                   </div>
                   <div>
-                    <div class="text-white/30">Revenue</div>
-                    <div class="font-bold tabular-nums text-white/70">{{ formatCurrency(agent.revenue) }}</div>
+                    <div class="text-white/50">Revenue</div>
+                    <div class="font-bold tabular-nums text-white/80">{{ formatCurrency(agent.revenue) }}</div>
                   </div>
                   <div>
-                    <div class="text-white/30">Open</div>
-                    <div class="font-bold tabular-nums text-white/70">{{ agent.openDeals }} ({{ formatCurrency(agent.openValue) }})</div>
+                    <div class="text-white/50">Open</div>
+                    <div class="font-bold tabular-nums text-white/80">{{ agent.openDeals }} ({{ formatCurrency(agent.openValue) }})</div>
                   </div>
                 </div>
                 <!-- Win rate mini bar -->
                 <div v-if="agent.won + agent.lost > 0" class="mt-3">
-                  <div class="flex items-center justify-between text-[10px]">
-                    <span class="text-white/30">Win rate</span>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-white/50">Win rate</span>
                     <span class="font-bold tabular-nums text-white/50">{{ Math.round((agent.won / (agent.won + agent.lost)) * 100) }}%</span>
                   </div>
                   <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-white/[0.04]">
@@ -915,16 +915,16 @@ onMounted(() => {
 
           <!-- ── Deal pipeline by stage ── -->
           <div v-if="sales.pipelineStages.length > 0" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Deal pipeline</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Deal pipeline</div>
             <div class="mt-3 space-y-1.5">
               <div v-for="s in sales.pipelineStages" :key="s.stageId" class="flex items-center gap-3">
-                <span class="w-40 shrink-0 text-right text-xs text-white/40 sm:w-48">{{ s.label }}</span>
+                <span class="w-40 shrink-0 text-right text-xs text-white/50 sm:w-48">{{ s.label }}</span>
                 <div class="h-6 flex-1 overflow-hidden rounded bg-white/[0.04]">
                   <div
                     class="flex h-full items-center rounded bg-emerald-500/25 px-2 transition-all duration-500"
                     :style="{ width: Math.round((s.count / maxPipelineStageCount) * 100) + '%', minWidth: s.count > 0 ? '32px' : '0' }"
                   >
-                    <span v-if="s.count > 0" class="text-[10px] font-semibold tabular-nums text-emerald-300">{{ formatCurrency(s.value) }}</span>
+                    <span v-if="s.count > 0" class="text-xs font-semibold tabular-nums text-emerald-300">{{ formatCurrency(s.value) }}</span>
                   </div>
                 </div>
                 <span class="w-7 text-right text-xs font-semibold tabular-nums text-white/60">{{ s.count }}</span>
@@ -934,7 +934,7 @@ onMounted(() => {
 
           <!-- ── MRR trend ── -->
           <div v-if="mrrLinePoints.length > 1" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Monthly recurring revenue trend</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Monthly recurring revenue trend</div>
             <div class="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
               <LineChart :points="mrrLinePoints" color="#34d399" :height="200" :format-value="formatCurrency" />
             </div>
@@ -942,16 +942,16 @@ onMounted(() => {
 
           <!-- ── Recent deals ── -->
           <div v-if="sales.recentDeals.length > 0" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Recent deals</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Recent deals</div>
             <div class="mt-3 overflow-x-auto">
               <table class="w-full text-left text-xs">
                 <thead>
                   <tr class="border-b border-white/[0.06]">
-                    <th class="pb-2 pr-4 font-semibold text-white/30">Deal</th>
-                    <th class="pb-2 pr-4 font-semibold text-white/30">Agent</th>
-                    <th class="pb-2 pr-4 text-right font-semibold text-white/30">Amount</th>
-                    <th class="pb-2 pr-4 font-semibold text-white/30">Stage</th>
-                    <th class="pb-2 text-right font-semibold text-white/30">Closed</th>
+                    <th class="pb-2 pr-4 font-semibold text-white/60">Deal</th>
+                    <th class="pb-2 pr-4 font-semibold text-white/60">Agent</th>
+                    <th class="pb-2 pr-4 text-right font-semibold text-white/60">Amount</th>
+                    <th class="pb-2 pr-4 font-semibold text-white/60">Stage</th>
+                    <th class="pb-2 text-right font-semibold text-white/60">Closed</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -960,22 +960,22 @@ onMounted(() => {
                     :key="deal.name + deal.closeDate"
                     class="border-b border-white/[0.03] last:border-0"
                   >
-                    <td class="max-w-[200px] truncate py-2.5 pr-4 text-white/70">{{ deal.name }}</td>
+                    <td class="max-w-[200px] truncate py-2.5 pr-4 text-white/80">{{ deal.name }}</td>
                     <td class="py-2.5 pr-4">
                       <span v-if="deal.agent" class="inline-flex items-center gap-1">
                         <span class="h-1.5 w-1.5 rounded-full" :style="{ backgroundColor: agentColor(deal.agent) }" />
                         <span class="text-white/50">{{ deal.agent }}</span>
                       </span>
-                      <span v-else class="text-white/25">—</span>
+                      <span v-else class="text-white/50">—</span>
                     </td>
                     <td class="py-2.5 pr-4 text-right tabular-nums text-white/60">£{{ deal.amount.toLocaleString('en-GB') }}</td>
                     <td class="py-2.5 pr-4">
                       <span
-                        class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        class="inline-flex rounded-full px-2 py-0.5 text-xs font-bold"
                         :class="deal.won ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'"
                       >{{ deal.stage }}</span>
                     </td>
-                    <td class="py-2.5 text-right text-white/40">{{ relativeDate(deal.closeDate) }}</td>
+                    <td class="py-2.5 text-right text-white/50">{{ relativeDate(deal.closeDate) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -1001,56 +1001,56 @@ onMounted(() => {
           <!-- ── KPI cards ── -->
           <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Paying customers</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Paying customers</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.totalPayingCustomers }}</div>
-              <div class="mt-1 text-[10px] text-white/25">Active paying accounts</div>
+              <div class="mt-1 text-xs text-white/50">Active paying accounts</div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Retention rate</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Retention rate</div>
               <div class="mt-3 text-2xl font-bold tabular-nums sm:text-3xl" :class="success.retentionRate >= 90 ? 'text-emerald-400' : success.retentionRate >= 75 ? 'text-amber-400' : 'text-rose-400'">{{ success.retentionRate }}%</div>
-              <div class="mt-1 text-[10px] text-white/25">Paying / total customer base</div>
+              <div class="mt-1 text-xs text-white/50">Paying / total customer base</div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Churned</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Churned</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-rose-400 sm:text-3xl">{{ success.totalChurned }}</div>
-              <div class="mt-1 text-[10px] text-white/25">
+              <div class="mt-1 text-xs text-white/50">
                 This month: {{ success.churnedThisMonth }} · Last 3mo: {{ success.churnedLast3Months }}
               </div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Off-boarding</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Off-boarding</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-amber-400 sm:text-3xl">{{ success.totalOffboarding }}</div>
-              <div class="mt-1 text-[10px] text-white/25">Cancellation in progress</div>
+              <div class="mt-1 text-xs text-white/50">Cancellation in progress</div>
             </div>
           </div>
 
           <!-- ── Tenure + meetings row ── -->
           <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Avg tenure</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Avg tenure</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.avgTenureMonths }}mo</div>
-              <div class="mt-1 text-[10px] text-white/25">Average customer lifetime</div>
+              <div class="mt-1 text-xs text-white/50">Average customer lifetime</div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Meetings (30d)</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Meetings (30d)</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ success.meetingsThisMonth }}</div>
-              <div class="mt-1 text-[10px] text-white/25">All meetings last 30 days</div>
+              <div class="mt-1 text-xs text-white/50">All meetings last 30 days</div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Completed</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Completed</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-emerald-400 sm:text-3xl">{{ success.meetingsCompleted }}</div>
-              <div class="mt-1 text-[10px] text-white/25">Meetings completed</div>
+              <div class="mt-1 text-xs text-white/50">Meetings completed</div>
             </div>
             <div class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">No-show</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">No-show</div>
               <div class="mt-3 text-2xl font-bold tabular-nums text-rose-400 sm:text-3xl">{{ success.meetingsNoShow }}</div>
-              <div class="mt-1 text-[10px] text-white/25">Customer no-shows</div>
+              <div class="mt-1 text-xs text-white/50">Customer no-shows</div>
             </div>
           </div>
 
           <!-- ── Success team ── -->
           <div v-if="success.meetingsByAgent.length > 0" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Success team (30d)</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Success team (30d)</div>
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div
                 v-for="agent in success.meetingsByAgent"
@@ -1063,26 +1063,26 @@ onMounted(() => {
                 </div>
                 <div class="mt-3 grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
                   <div>
-                    <div class="text-white/30">Companies</div>
+                    <div class="text-white/50">Companies</div>
                     <div class="text-lg font-bold tabular-nums text-white">{{ agent.companiesAssigned }}</div>
                   </div>
                   <div>
-                    <div class="text-white/30">Meetings</div>
+                    <div class="text-white/50">Meetings</div>
                     <div class="text-lg font-bold tabular-nums text-white">{{ agent.total }}</div>
                   </div>
                   <div>
-                    <div class="text-white/30">Completed</div>
+                    <div class="text-white/50">Completed</div>
                     <div class="text-lg font-bold tabular-nums text-emerald-400">{{ agent.completed }}</div>
                   </div>
                   <div>
-                    <div class="text-white/30">No-show</div>
+                    <div class="text-white/50">No-show</div>
                     <div class="text-lg font-bold tabular-nums text-rose-400">{{ agent.noShow }}</div>
                   </div>
                 </div>
                 <!-- Completion rate bar -->
                 <div v-if="agent.total > 0" class="mt-3">
-                  <div class="flex items-center justify-between text-[10px]">
-                    <span class="text-white/30">Completion rate</span>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-white/50">Completion rate</span>
                     <span class="font-bold tabular-nums text-white/50">{{ Math.round((agent.completed / agent.total) * 100) }}%</span>
                   </div>
                   <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-white/[0.04]">
@@ -1092,7 +1092,7 @@ onMounted(() => {
                     />
                   </div>
                 </div>
-                <div v-else class="mt-3 text-[10px] text-white/20">No meetings logged</div>
+                <div v-else class="mt-3 text-xs text-white/50">No meetings logged</div>
               </div>
             </div>
           </div>
@@ -1100,8 +1100,8 @@ onMounted(() => {
           <!-- ── At-risk customers ── -->
           <div v-if="success.atRiskCustomers?.length > 0" class="mt-8">
             <div class="flex items-center gap-3">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">At-risk customers</div>
-              <div class="flex items-center gap-2 text-[10px]">
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">At-risk customers</div>
+              <div class="flex items-center gap-2 text-xs">
                 <span v-if="success.atRiskSummary?.high > 0" class="rounded-full bg-rose-500/15 px-2 py-0.5 font-bold text-rose-400">{{ success.atRiskSummary.high }} high</span>
                 <span v-if="success.atRiskSummary?.medium > 0" class="rounded-full bg-amber-500/15 px-2 py-0.5 font-bold text-amber-400">{{ success.atRiskSummary.medium }} medium</span>
                 <span v-if="success.atRiskSummary?.low > 0" class="rounded-full bg-sky-500/15 px-2 py-0.5 font-bold text-sky-400">{{ success.atRiskSummary.low }} low</span>
@@ -1111,12 +1111,12 @@ onMounted(() => {
               <table class="w-full text-left text-xs">
                 <thead>
                   <tr class="border-b border-white/[0.06]">
-                    <th class="pb-2 pr-4 font-semibold text-white/30">Company</th>
-                    <th class="pb-2 pr-4 font-semibold text-white/30">Owner</th>
-                    <th class="pb-2 pr-4 text-center font-semibold text-white/30">Risk</th>
-                    <th class="pb-2 pr-4 text-right font-semibold text-white/30">Last contact</th>
-                    <th class="pb-2 pr-4 text-right font-semibold text-white/30">Last meeting</th>
-                    <th class="pb-2 font-semibold text-white/30">Reasons</th>
+                    <th class="pb-2 pr-4 font-semibold text-white/60">Company</th>
+                    <th class="pb-2 pr-4 font-semibold text-white/60">Owner</th>
+                    <th class="pb-2 pr-4 text-center font-semibold text-white/60">Risk</th>
+                    <th class="pb-2 pr-4 text-right font-semibold text-white/60">Last contact</th>
+                    <th class="pb-2 pr-4 text-right font-semibold text-white/60">Last meeting</th>
+                    <th class="pb-2 font-semibold text-white/60">Reasons</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1125,18 +1125,18 @@ onMounted(() => {
                     :key="c.companyId"
                     class="border-b border-white/[0.03] last:border-0"
                   >
-                    <td class="max-w-[180px] truncate py-2.5 pr-4 text-white/70">{{ c.name }}</td>
+                    <td class="max-w-[180px] truncate py-2.5 pr-4 text-white/80">{{ c.name }}</td>
                     <td class="py-2.5 pr-4 text-white/50">{{ c.owner }}</td>
                     <td class="py-2.5 pr-4 text-center">
                       <span
-                        class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        class="inline-flex rounded-full px-2 py-0.5 text-xs font-bold"
                         :class="c.riskLevel === 'high' ? 'bg-rose-500/15 text-rose-400' : c.riskLevel === 'medium' ? 'bg-amber-500/15 text-amber-400' : 'bg-sky-500/15 text-sky-400'"
                       >{{ c.riskScore }}</span>
                     </td>
-                    <td class="py-2.5 pr-4 text-right tabular-nums" :class="c.daysSinceLastContact !== null && c.daysSinceLastContact >= 90 ? 'text-rose-400' : c.daysSinceLastContact !== null && c.daysSinceLastContact >= 60 ? 'text-amber-400' : 'text-white/40'">
+                    <td class="py-2.5 pr-4 text-right tabular-nums" :class="c.daysSinceLastContact !== null && c.daysSinceLastContact >= 90 ? 'text-rose-400' : c.daysSinceLastContact !== null && c.daysSinceLastContact >= 60 ? 'text-amber-400' : 'text-white/50'">
                       {{ c.daysSinceLastContact !== null ? c.daysSinceLastContact + 'd' : '—' }}
                     </td>
-                    <td class="py-2.5 pr-4 text-right tabular-nums" :class="c.daysSinceLastMeeting !== null && c.daysSinceLastMeeting >= 90 ? 'text-rose-400' : c.daysSinceLastMeeting !== null && c.daysSinceLastMeeting >= 60 ? 'text-amber-400' : 'text-white/40'">
+                    <td class="py-2.5 pr-4 text-right tabular-nums" :class="c.daysSinceLastMeeting !== null && c.daysSinceLastMeeting >= 90 ? 'text-rose-400' : c.daysSinceLastMeeting !== null && c.daysSinceLastMeeting >= 60 ? 'text-amber-400' : 'text-white/50'">
                       {{ c.daysSinceLastMeeting !== null ? c.daysSinceLastMeeting + 'd' : 'Never' }}
                     </td>
                     <td class="max-w-[250px] py-2.5">
@@ -1144,7 +1144,7 @@ onMounted(() => {
                         <span
                           v-for="(r, ri) in c.reasons"
                           :key="ri"
-                          class="rounded bg-white/[0.06] px-1.5 py-0.5 text-[9px] text-white/40"
+                          class="rounded bg-white/[0.06] px-1.5 py-0.5 text-xs text-white/50"
                         >{{ r }}</span>
                       </div>
                     </td>
@@ -1156,14 +1156,14 @@ onMounted(() => {
 
           <!-- ── Churn vs new customers trend ── -->
           <div v-if="churnTrendLinePoints.length > 1" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Churn vs new customers (6 months)</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Churn vs new customers (6 months)</div>
             <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-                <div class="mb-2 text-[10px] font-semibold text-rose-400">Churned</div>
+                <div class="mb-2 text-xs font-semibold text-rose-400">Churned</div>
                 <LineChart :points="churnTrendLinePoints" color="#f472b6" :height="160" />
               </div>
               <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-                <div class="mb-2 text-[10px] font-semibold text-emerald-400">New customers</div>
+                <div class="mb-2 text-xs font-semibold text-emerald-400">New customers</div>
                 <LineChart :points="newCustTrendLinePoints" color="#34d399" :height="160" />
               </div>
             </div>
@@ -1171,10 +1171,10 @@ onMounted(() => {
 
           <!-- ── Donuts: Cancellation reasons · Tenure ── -->
           <div class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Breakdown insights</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Breakdown insights</div>
             <div class="mt-5 grid grid-cols-1 gap-6 md:grid-cols-2">
               <div v-if="churnReasonDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <div class="mb-3 text-xs font-semibold text-white/50">Cancellation reasons</div>
+                <div class="mb-3 text-xs font-semibold text-white/60">Cancellation reasons</div>
                 <DonutChart
                   :segments="churnReasonDonut"
                   :size="160"
@@ -1184,7 +1184,7 @@ onMounted(() => {
                 />
               </div>
               <div v-if="tenureDonut.length" class="flex flex-col items-center rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <div class="mb-3 text-xs font-semibold text-white/50">Customer tenure</div>
+                <div class="mb-3 text-xs font-semibold text-white/60">Customer tenure</div>
                 <DonutChart
                   :segments="tenureDonut"
                   :size="160"
@@ -1198,14 +1198,14 @@ onMounted(() => {
 
           <!-- ── Recently churned customers ── -->
           <div v-if="success.recentChurned.length > 0" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Recently churned</div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Recently churned</div>
             <div class="mt-3 overflow-x-auto">
               <table class="w-full text-left text-xs">
                 <thead>
                   <tr class="border-b border-white/[0.06]">
-                    <th class="pb-2 pr-4 font-semibold text-white/30">Company</th>
-                    <th class="pb-2 pr-4 font-semibold text-white/30">Date left</th>
-                    <th class="pb-2 font-semibold text-white/30">Reason</th>
+                    <th class="pb-2 pr-4 font-semibold text-white/60">Company</th>
+                    <th class="pb-2 pr-4 font-semibold text-white/60">Date left</th>
+                    <th class="pb-2 font-semibold text-white/60">Reason</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1214,8 +1214,8 @@ onMounted(() => {
                     :key="c.name + c.dateLeft"
                     class="border-b border-white/[0.03] last:border-0"
                   >
-                    <td class="max-w-[200px] truncate py-2.5 pr-4 text-white/70">{{ c.name }}</td>
-                    <td class="py-2.5 pr-4 text-white/40">{{ c.dateLeft ? new Date(c.dateLeft).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—' }}</td>
+                    <td class="max-w-[200px] truncate py-2.5 pr-4 text-white/80">{{ c.name }}</td>
+                    <td class="py-2.5 pr-4 text-white/50">{{ c.dateLeft ? new Date(c.dateLeft).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—' }}</td>
                     <td class="max-w-[300px] truncate py-2.5 text-white/50">{{ c.reason }}</td>
                   </tr>
                 </tbody>
