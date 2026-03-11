@@ -97,9 +97,11 @@ const labelStep = computed(() => Math.max(1, Math.ceil(props.points.length / 8))
         v-for="t in yTicks"
         :key="'yl' + t"
         :x="PAD_LEFT - 6"
-        :y="yPos(t) + 4"
+        :y="yPos(t) + 3"
         text-anchor="end"
-        class="fill-white/30 text-[10px]"
+        fill="rgba(255,255,255,0.3)"
+        font-size="9"
+        font-family="system-ui, sans-serif"
       >{{ formatValue(t) }}</text>
 
       <!-- Area -->
@@ -144,10 +146,13 @@ const labelStep = computed(() => Math.max(1, Math.ceil(props.points.length / 8))
         v-for="(c, i) in coords"
         :key="'v' + i"
         :x="c.x"
-        :y="c.y - 10"
+        :y="c.y - 8"
         text-anchor="middle"
-        class="fill-white/60 text-[10px] font-bold tabular-nums"
-        :class="animated ? 'opacity-100' : 'opacity-0'"
+        fill="rgba(255,255,255,0.6)"
+        font-size="8"
+        font-weight="700"
+        font-family="system-ui, sans-serif"
+        :opacity="animated ? 1 : 0"
         style="transition: opacity 0.7s"
       >{{ formatValue(c.value) }}</text>
 
@@ -156,10 +161,12 @@ const labelStep = computed(() => Math.max(1, Math.ceil(props.points.length / 8))
         v-for="(c, i) in coords"
         :key="'x' + i"
         :x="c.x"
-        :y="height - 6"
+        :y="height - 4"
         text-anchor="middle"
-        class="fill-white/30 text-[9px]"
-        :class="{ invisible: i % labelStep !== 0 }"
+        fill="rgba(255,255,255,0.3)"
+        font-size="8"
+        font-family="system-ui, sans-serif"
+        :visibility="i % labelStep === 0 ? 'visible' : 'hidden'"
       >{{ c.label }}</text>
     </svg>
   </div>

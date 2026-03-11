@@ -507,7 +507,7 @@ export const adminSalesFunnelRoutes: FastifyPluginAsync = async (app) => {
     /* ── Return cached data unless refresh requested ── */
     if (!wantsRefresh) {
       const cached = await getCachedFunnel(monthParam)
-      if (cached) {
+      if (cached && Array.isArray((cached.data as any).stageBreakdown)) {
         return { funnel: cached.data, cached: true, cachedAt: cached.updatedAt.toISOString() }
       }
     }

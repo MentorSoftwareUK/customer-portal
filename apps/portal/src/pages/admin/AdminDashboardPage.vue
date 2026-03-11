@@ -367,6 +367,11 @@ function agentColor(name: string): string {
   return AGENT_COLORS[name] ?? '#94a3b8'
 }
 
+const SHOW_AGENTS = new Set(['Naheed Dad', 'Raj Singh', 'Hope Schindler'])
+const filteredAgents = computed(() =>
+  (sales.value?.agentBreakdown ?? []).filter((a) => SHOW_AGENTS.has(a.name)),
+)
+
 function formatCurrency(v: number): string {
   if (v >= 1000) return `£${(v / 1000).toFixed(1)}k`
   return `£${v.toLocaleString('en-GB')}`
@@ -756,31 +761,12 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- ── Deal pipeline by stage ── -->
-          <div v-if="sales.pipelineStages.length > 0" class="mt-8">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Deal pipeline</div>
-            <div class="mt-3 space-y-1.5">
-              <div v-for="s in sales.pipelineStages" :key="s.stageId" class="flex items-center gap-3">
-                <span class="w-40 shrink-0 text-right text-xs text-white/40 sm:w-48">{{ s.label }}</span>
-                <div class="h-6 flex-1 overflow-hidden rounded bg-white/[0.04]">
-                  <div
-                    class="flex h-full items-center rounded bg-emerald-500/25 px-2 transition-all duration-500"
-                    :style="{ width: Math.round((s.count / maxPipelineStageCount) * 100) + '%', minWidth: s.count > 0 ? '32px' : '0' }"
-                  >
-                    <span v-if="s.count > 0" class="text-[10px] font-semibold tabular-nums text-emerald-300">{{ formatCurrency(s.value) }}</span>
-                  </div>
-                </div>
-                <span class="w-7 text-right text-xs font-semibold tabular-nums text-white/60">{{ s.count }}</span>
-              </div>
-            </div>
-          </div>
-
           <!-- ── Agent breakdown ── -->
-          <div v-if="sales.agentBreakdown && sales.agentBreakdown.length > 0" class="mt-8">
+          <div v-if="filteredAgents.length > 0" class="mt-8">
             <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Performance by agent</div>
-            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div
-                v-for="agent in sales.agentBreakdown"
+                v-for="agent in filteredAgents"
                 :key="agent.ownerId"
                 class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4"
               >
@@ -819,6 +805,25 @@ onMounted(() => {
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Deal pipeline by stage ── -->
+          <div v-if="sales.pipelineStages.length > 0" class="mt-8">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Deal pipeline</div>
+            <div class="mt-3 space-y-1.5">
+              <div v-for="s in sales.pipelineStages" :key="s.stageId" class="flex items-center gap-3">
+                <span class="w-40 shrink-0 text-right text-xs text-white/40 sm:w-48">{{ s.label }}</span>
+                <div class="h-6 flex-1 overflow-hidden rounded bg-white/[0.04]">
+                  <div
+                    class="flex h-full items-center rounded bg-emerald-500/25 px-2 transition-all duration-500"
+                    :style="{ width: Math.round((s.count / maxPipelineStageCount) * 100) + '%', minWidth: s.count > 0 ? '32px' : '0' }"
+                  >
+                    <span v-if="s.count > 0" class="text-[10px] font-semibold tabular-nums text-emerald-300">{{ formatCurrency(s.value) }}</span>
+                  </div>
+                </div>
+                <span class="w-7 text-right text-xs font-semibold tabular-nums text-white/60">{{ s.count }}</span>
               </div>
             </div>
           </div>
