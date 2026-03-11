@@ -159,6 +159,10 @@ const EnvSchema = z.object({
   SMTP_FROM: optionalString(),
   SENDGRID_API_KEY: optionalString(),
   
+  // Azure TTS (optional — audio stat explanations)
+  AZURE_TTS_KEY: optionalString(),
+  AZURE_TTS_REGION: z.string().trim().min(1).default('uksouth'),
+
   // Admin + background jobs
   ADMIN_EMAIL_ALLOWLIST: z.string().optional(),
   EMAIL_JOBS_ENABLED: z.coerce.boolean().default(true),
