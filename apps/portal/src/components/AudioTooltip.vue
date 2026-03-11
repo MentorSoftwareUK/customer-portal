@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount } from 'vue'
-import { getAdminAccessToken } from '../lib/auth'
+import * as sdk from 'microsoft-cognitiveservices-speech-sdk'
 
 const props = defineProps<{
   /** The explanation text to speak */
   text: string
-  /** Stable cache key so repeat clicks use server cache */
+  /** Stable cache key (unused now but kept for interface compat) */
   cacheKey?: string
 }>()
 
@@ -13,18 +13,27 @@ const playing = ref(false)
 const loading = ref(false)
 const bars = ref<number[]>([0, 0, 0, 0, 0])
 
-let audio: HTMLAudioElement | null = null
+let synthesizer: sdk.SpeechSynthesizer | null = null
+let player: sdk.SpeakerAudioDestination | null = null
 let audioCtx: AudioContext | null = null
 let analyser: AnalyserNode | null = null
 let animFrame = 0
-let sourceNode: MediaElementAudioSourceNode | null = null
+let mediaSource: MediaElementAudioSourceNode | null = null
 
-// In-browser blob cache (avoid re-downloading already-fetched audio)
-const blobCache = new Map<string, string>()
+// Cache synthesised audio blobs so repeat clicks are instant
+const blobCache = new Map<string, ArrayBuffer>()
 
-function getApiBaseUrl(): string {
-  const meta = (document.querySelector('meta[name="api-base-url"]') as HTMLMetaElement)?.content
-  return meta || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
+function getSpeechConfig(): sdk.SpeechConfig | null {
+  const key = import.meta.env.VITE_AZURE_TTS_KEY
+  const region = import.meta.env.VITE_AZURE_TTS_REGION || 'uksouth'
+  if (!key) {
+    console.warn('AudioTooltip: VITE_AZURE_TTS_KEY not set')
+    return null
+  }
+  const cfg = sdk.SpeechConfig.fromSubscription(key, region)
+  cfg.speechSynthesisVoiceName = 'en-GB-SoniaNeural'
+  cfg.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio16Khz128KBitRateMonoMp3
+  return cfg
 }
 
 function updateBars() {
@@ -48,60 +57,79 @@ function updateBars() {
   animFrame = requestAnimationFrame(updateBars)
 }
 
+async function playFromBuffer(buffer: ArrayBuffer) {
+  const blob = new Blob([buffer], { type: 'audio/mpeg' })
+  const url = URL.createObjectURL(blob)
+  const audio = new Audio(url)
+
+  if (!audioCtx) audioCtx = new AudioContext()
+  if (audioCtx.state === 'suspended') await audioCtx.resume()
+
+  analyser = audioCtx.createAnalyser()
+  analyser.fftSize = 64
+  analyser.smoothingTimeConstant = 0.7
+
+  mediaSource = audioCtx.createMediaElementSource(audio)
+  mediaSource.connect(analyser)
+  analyser.connect(audioCtx.destination)
+
+  audio.addEventListener('ended', stop)
+  audio.addEventListener('error', stop)
+
+  await audio.play()
+  playing.value = true
+  animFrame = requestAnimationFrame(updateBars)
+
+  // Store ref for stop()
+  ;(window as any).__audioTooltipAudio = audio
+}
+
 async function toggle() {
   if (playing.value) {
     stop()
     return
   }
 
+  const speechConfig = getSpeechConfig()
+  if (!speechConfig) return
+
   loading.value = true
 
   try {
     const key = props.cacheKey || props.text.slice(0, 60)
-    let blobUrl = blobCache.get(key)
 
-    if (!blobUrl) {
-      const token = getAdminAccessToken()
-      const response = await fetch(`${getApiBaseUrl()}/admin/tts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ text: props.text, key }),
-      })
-
-      if (!response.ok) {
-        const errBody = await response.json().catch(() => ({ error: 'unknown' }))
-        throw new Error(errBody.error || `TTS failed: ${response.status}`)
-      }
-
-      const blob = await response.blob()
-      blobUrl = URL.createObjectURL(blob)
-      blobCache.set(key, blobUrl)
+    // Use cached audio if available
+    const cached = blobCache.get(key)
+    if (cached) {
+      loading.value = false
+      await playFromBuffer(cached)
+      return
     }
 
-    audio = new Audio(blobUrl)
+    // Synthesise to ArrayBuffer using pull stream
+    synthesizer = new sdk.SpeechSynthesizer(speechConfig, null as any)
 
-    // Web Audio analyser for visualiser
-    if (!audioCtx) audioCtx = new AudioContext()
-    if (audioCtx.state === 'suspended') await audioCtx.resume()
+    const result = await new Promise<sdk.SpeechSynthesisResult>((resolve, reject) => {
+      synthesizer!.speakTextAsync(
+        props.text,
+        (r) => resolve(r),
+        (err) => reject(new Error(String(err))),
+      )
+    })
 
-    analyser = audioCtx.createAnalyser()
-    analyser.fftSize = 64
-    analyser.smoothingTimeConstant = 0.7
+    if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
+      const buffer = result.audioData
+      blobCache.set(key, buffer)
+      loading.value = false
+      await playFromBuffer(buffer)
+    } else {
+      console.error('TTS synthesis failed:', result.reason, result.errorDetails)
+    }
 
-    sourceNode = audioCtx.createMediaElementSource(audio)
-    sourceNode.connect(analyser)
-    analyser.connect(audioCtx.destination)
-
-    audio.addEventListener('ended', stop)
-    await audio.play()
-
-    playing.value = true
-    animFrame = requestAnimationFrame(updateBars)
+    synthesizer.close()
+    synthesizer = null
   } catch (err) {
-    console.error('TTS playback error:', err)
+    console.error('TTS error:', err)
     stop()
   } finally {
     loading.value = false
@@ -113,20 +141,27 @@ function stop() {
   cancelAnimationFrame(animFrame)
   bars.value = [0, 0, 0, 0, 0]
 
+  const audio = (window as any).__audioTooltipAudio as HTMLAudioElement | undefined
   if (audio) {
     audio.pause()
     audio.currentTime = 0
     audio.removeEventListener('ended', stop)
+    audio.removeEventListener('error', stop)
+    ;(window as any).__audioTooltipAudio = null
   }
-  if (sourceNode) {
-    sourceNode.disconnect()
-    sourceNode = null
+
+  if (mediaSource) {
+    mediaSource.disconnect()
+    mediaSource = null
   }
   if (analyser) {
     analyser.disconnect()
     analyser = null
   }
-  audio = null
+  if (synthesizer) {
+    synthesizer.close()
+    synthesizer = null
+  }
 }
 
 watch(() => props.text, () => {
