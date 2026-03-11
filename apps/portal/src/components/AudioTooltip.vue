@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount } from 'vue'
+import { ref, watch, onBeforeUnmount, computed } from 'vue'
 
 const props = defineProps<{
   /** The explanation text to speak */
   text?: string
-  /** Stable cache key (unused now but kept for interface compat) */
+  /** Stable cache key */
   cacheKey?: string
 }>()
 
@@ -17,8 +17,9 @@ let analyser: AnalyserNode | null = null
 let animFrame = 0
 let mediaSource: MediaElementAudioSourceNode | null = null
 let currentAudio: HTMLAudioElement | null = null
+let currentUrl: string | null = null
 
-// Cache fetched audio blobs so repeat clicks are instant
+// In-memory blob cache for instant replays
 const blobCache = new Map<string, ArrayBuffer>()
 
 function getApiBaseUrl(): string {
@@ -45,7 +46,7 @@ function updateBars() {
     for (let j = i * sliceSize; j < (i + 1) * sliceSize; j++) {
       sum += data[j] || 0
     }
-    newBars.push(Math.min(1, (sum / sliceSize / 255) * 1.8))
+    newBars.push(Math.min(1, (sum / sliceSize / 255) * 2.2))
   }
   bars.value = newBars
   animFrame = requestAnimationFrame(updateBars)
@@ -54,14 +55,16 @@ function updateBars() {
 async function playFromBuffer(buffer: ArrayBuffer) {
   const blob = new Blob([buffer], { type: 'audio/mpeg' })
   const url = URL.createObjectURL(blob)
+  currentUrl = url
   const audio = new Audio(url)
+  audio.crossOrigin = 'anonymous'
 
   if (!audioCtx) audioCtx = new AudioContext()
   if (audioCtx.state === 'suspended') await audioCtx.resume()
 
   analyser = audioCtx.createAnalyser()
   analyser.fftSize = 64
-  analyser.smoothingTimeConstant = 0.7
+  analyser.smoothingTimeConstant = 0.75
 
   mediaSource = audioCtx.createMediaElementSource(audio)
   mediaSource.connect(analyser)
@@ -81,15 +84,13 @@ async function toggle() {
     stop()
     return
   }
-
   if (!props.text) return
 
   loading.value = true
 
   try {
-    const key = props.cacheKey || props.text.slice(0, 60)
+    const key = props.cacheKey || props.text.slice(0, 80)
 
-    // Use cached audio if available
     const cached = blobCache.get(key)
     if (cached) {
       loading.value = false
@@ -97,7 +98,6 @@ async function toggle() {
       return
     }
 
-    // Fetch from backend Edge TTS route
     const token = getAdminToken()
     const res = await fetch(`${getApiBaseUrl()}/admin/tts`, {
       method: 'POST',
@@ -108,7 +108,7 @@ async function toggle() {
       body: JSON.stringify({ text: props.text }),
     })
 
-    if (!res.ok) throw new Error(`TTS request failed: ${res.status}`)
+    if (!res.ok) throw new Error(`TTS ${res.status}`)
 
     const buffer = await res.arrayBuffer()
     blobCache.set(key, buffer)
@@ -134,128 +134,132 @@ function stop() {
     currentAudio.removeEventListener('error', stop)
     currentAudio = null
   }
-
+  if (currentUrl) {
+    URL.revokeObjectURL(currentUrl)
+    currentUrl = null
+  }
   if (mediaSource) {
-    mediaSource.disconnect()
+    try { mediaSource.disconnect() } catch {}
     mediaSource = null
   }
   if (analyser) {
-    analyser.disconnect()
+    try { analyser.disconnect() } catch {}
     analyser = null
   }
 }
 
-watch(() => props.text, () => {
-  if (playing.value) stop()
-})
+watch(() => props.text, () => { if (playing.value) stop() })
 
 onBeforeUnmount(() => {
   stop()
-  if (audioCtx) {
-    audioCtx.close()
-    audioCtx = null
-  }
+  if (audioCtx) { audioCtx.close(); audioCtx = null }
+})
+
+const label = computed(() => {
+  if (loading.value) return 'Loading…'
+  if (playing.value) return 'Stop'
+  return 'Listen'
 })
 </script>
 
 <template>
   <button
+    v-if="text"
     @click.stop="toggle"
     :disabled="loading"
     :title="playing ? 'Stop explanation' : 'Listen to explanation'"
-    class="audio-btn"
-    :class="{ 'is-playing': playing, 'is-loading': loading }"
+    class="voice-pill"
+    :class="{ playing, loading }"
   >
-    <!-- Idle: speaker icon -->
-    <svg
-      v-if="!playing && !loading"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      class="icon"
-    >
-      <path
-        d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217z"
-      />
-      <path
-        d="M12.293 7.293a1 1 0 011.414 0 4.002 4.002 0 010 5.414 1 1 0 01-1.414-1.414 2.002 2.002 0 000-2.586 1 1 0 010-1.414z"
-      />
+    <!-- Idle / loading icon -->
+    <svg v-if="!playing" viewBox="0 0 16 16" fill="none" class="pill-icon">
+      <template v-if="loading">
+        <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"
+          stroke-dasharray="24 12" stroke-linecap="round" class="animate-spin origin-center" />
+      </template>
+      <template v-else>
+        <!-- play triangle -->
+        <path d="M5.5 3.5v9l7-4.5-7-4.5z" fill="currentColor" />
+      </template>
     </svg>
 
-    <!-- Loading spinner -->
-    <svg
-      v-else-if="loading"
-      viewBox="0 0 20 20"
-      class="icon animate-spin"
-    >
-      <circle
-        cx="10" cy="10" r="7"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-dasharray="30 14"
-        stroke-linecap="round"
-      />
-    </svg>
-
-    <!-- Playing: visualiser bars -->
-    <svg
-      v-else
-      viewBox="0 0 20 20"
-      class="icon"
-    >
-      <rect
+    <!-- Playing: animated waveform bars -->
+    <span v-else class="wave-bars">
+      <span
         v-for="(h, i) in bars"
         :key="i"
-        :x="2 + i * 3.6"
-        :y="10 - Math.max(h, 0.15) * 8"
-        width="2"
-        :height="Math.max(h, 0.15) * 16"
-        rx="1"
-        fill="currentColor"
         class="bar"
+        :style="{
+          height: Math.max(h, 0.18) * 14 + 'px',
+          animationDelay: i * 0.06 + 's',
+        }"
       />
-    </svg>
+    </span>
+
+    <span class="pill-label">{{ label }}</span>
   </button>
 </template>
 
 <style scoped>
-.audio-btn {
+.voice-pill {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border: none;
-  border-radius: 5px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.2);
+  gap: 5px;
+  height: 24px;
+  padding: 0 10px 0 7px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
-  transition: color 0.2s, background 0.2s;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.voice-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.voice-pill.playing {
+  background: rgba(129, 140, 248, 0.12);
+  border-color: rgba(129, 140, 248, 0.25);
+  color: #a5b4fc;
+}
+
+.voice-pill.loading {
+  cursor: wait;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.pill-icon {
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
 }
 
-.audio-btn:hover {
-  color: rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.06);
+.pill-label {
+  line-height: 1;
 }
 
-.audio-btn.is-playing {
-  color: #818cf8;
-  background: rgba(129, 140, 248, 0.1);
-}
-
-.audio-btn.is-loading {
-  color: rgba(255, 255, 255, 0.25);
-  cursor: wait;
-}
-
-.icon {
-  width: 13px;
-  height: 13px;
+/* Waveform bars */
+.wave-bars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
 }
 
 .bar {
-  transition: y 0.08s ease, height 0.08s ease;
+  width: 2.5px;
+  min-height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  transition: height 0.1s ease;
 }
 </style>
