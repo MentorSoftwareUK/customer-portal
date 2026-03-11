@@ -416,14 +416,19 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
 
   /* ── 11. Customer tenure ── */
   const tenureMonths: number[] = []
+  let noStartDateCount = 0
   for (const c of paying) {
     const start = c.properties.contract_start_date
-    if (!start) continue
+    if (!start) {
+      noStartDateCount++
+      continue
+    }
     const months =
       (now.getTime() - new Date(start).getTime()) / (30.44 * 86_400_000)
-    if (months > 0) tenureMonths.push(months)
+    tenureMonths.push(Math.max(0, months))
   }
 
+  // Average tenure only among customers with a known start date
   const avgTenureMonths =
     tenureMonths.length > 0
       ? Math.round(
@@ -442,6 +447,10 @@ async function buildCustomerSuccessStats(): Promise<CustomerSuccessDto> {
     bucket: b.bucket,
     count: tenureMonths.filter((t) => t >= b.min && t < b.max).length,
   }))
+  // Include customers missing a contract_start_date so grand total matches paying count
+  if (noStartDateCount > 0) {
+    customersByTenure.push({ bucket: 'No start date', count: noStartDateCount })
+  }
 
   /* ── 12. At-risk customers ── */
   const OWNER_NAMES: Record<string, string> = {
