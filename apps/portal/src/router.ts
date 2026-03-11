@@ -33,6 +33,9 @@ const AdminLoginPage = () => import('./pages/admin/AdminLoginPage.vue')
 const AdminHubspotAuditPage = () => import('./pages/admin/AdminHubspotAuditPage.vue')
 const AdminTicketStatsPage = () => import('./pages/admin/AdminTicketStatsPage.vue')
 const AdminDashboardPage = () => import('./pages/admin/AdminDashboardPage.vue')
+const AdminMarketingPage = () => import('./pages/admin/AdminMarketingPage.vue')
+const AdminSalesPage = () => import('./pages/admin/AdminSalesPage.vue')
+const AdminSuccessPage = () => import('./pages/admin/AdminSuccessPage.vue')
 
 export const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/login' },
@@ -71,6 +74,9 @@ export const routes: RouteRecordRaw[] = [
     children: [
       { path: '', redirect: '/admin/dashboard' },
       { path: 'dashboard', component: AdminDashboardPage },
+      { path: 'marketing', component: AdminMarketingPage },
+      { path: 'sales', component: AdminSalesPage },
+      { path: 'success', component: AdminSuccessPage },
       { path: 'events', component: AdminEventsPage },
       { path: 'events/:id', component: AdminEventDetailPage },
       { path: 'reports', component: AdminReportsPage },

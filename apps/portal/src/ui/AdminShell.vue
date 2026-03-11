@@ -12,7 +12,10 @@ const isMac = typeof navigator !== 'undefined' && navigator.platform.toLowerCase
 const route = useRoute()
 const router = useRouter()
 const currentPath = computed(() => route.path)
-const isDashboardPage = computed(() => route.path.endsWith('/dashboard'))
+const isDashboardPage = computed(() => {
+  const p = route.path
+  return p === '/admin/dashboard' || p === '/admin/marketing' || p === '/admin/sales' || p === '/admin/success'
+})
 
 const isActive = (to: string) => {
   return currentPath.value === to || currentPath.value.startsWith(`${to}/`)
@@ -28,7 +31,10 @@ type QuickFindItem = {
 }
 
 const findItems: QuickFindItem[] = [
-  { label: 'Admin: Dashboard', to: '/admin/dashboard', description: 'Customer overview stats', keywords: ['home', 'stats', 'companies', 'homes'] },
+  { label: 'Admin: Dashboard', to: '/admin/dashboard', description: 'Director overview', keywords: ['home', 'stats', 'companies', 'homes', 'overview'] },
+  { label: 'Admin: Marketing', to: '/admin/marketing', description: 'Lead gen & funnel analytics', keywords: ['mqls', 'demos', 'funnel', 'forms', 'traffic'] },
+  { label: 'Admin: Sales', to: '/admin/sales', description: 'Deals, pipeline & revenue', keywords: ['deals', 'pipeline', 'revenue', 'agents', 'mrr'] },
+  { label: 'Admin: Success', to: '/admin/success', description: 'Retention, churn & at-risk', keywords: ['retention', 'churn', 'at-risk', 'meetings', 'onboarding'] },
   { label: 'Admin: Events', to: '/admin/events', description: 'Manage events and pricing', keywords: ['sessions', 'webinars'] },
   { label: 'Admin: Reports', to: '/admin/reports', description: 'Event performance snapshots', keywords: ['analytics', 'metrics'] },
   { label: 'Admin: Email', to: '/admin/email', description: 'Email templates and schedules', keywords: ['notifications'] },
@@ -368,7 +374,7 @@ onUnmounted(() => {
             <RouterLink
               to="/admin/dashboard"
               class="group flex items-center rounded-lg p-2 text-base font-medium"
-              :class="isActive('/admin/dashboard') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+              :class="['/admin/dashboard', '/admin/marketing', '/admin/sales', '/admin/success'].includes(currentPath) ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
             >
               <svg
                 aria-hidden="true"
@@ -382,6 +388,35 @@ onUnmounted(() => {
                 ></path>
               </svg>
               <span class="ml-3">Dashboard</span>
+            </RouterLink>
+          </li>
+
+          <!-- Analytics sub-nav -->
+          <li>
+            <RouterLink
+              to="/admin/marketing"
+              class="group flex items-center rounded-lg p-2 pl-11 text-sm font-medium"
+              :class="currentPath === '/admin/marketing' ? 'bg-indigo-500/10 text-indigo-300' : 'text-white/60 hover:bg-white/10 hover:text-white'"
+            >
+              <span>Marketing</span>
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
+              to="/admin/sales"
+              class="group flex items-center rounded-lg p-2 pl-11 text-sm font-medium"
+              :class="currentPath === '/admin/sales' ? 'bg-emerald-500/10 text-emerald-300' : 'text-white/60 hover:bg-white/10 hover:text-white'"
+            >
+              <span>Sales</span>
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
+              to="/admin/success"
+              class="group flex items-center rounded-lg p-2 pl-11 text-sm font-medium"
+              :class="currentPath === '/admin/success' ? 'bg-amber-500/10 text-amber-300' : 'text-white/60 hover:bg-white/10 hover:text-white'"
+            >
+              <span>Success</span>
             </RouterLink>
           </li>
 
