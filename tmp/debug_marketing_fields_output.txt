@@ -1,0 +1,438 @@
+=== FORM DEFINITIONS ===
+
+--- selfScheduling (b189dcc1-fe5a-40a6-b016-5844ec22f082) ---
+  firstname | label: "First name" | type: single_line_text
+  lastname | label: "Last name" | type: single_line_text
+  jobtitle | label: "Job title" | type: single_line_text
+  email | label: "Email" | type: email
+  phone | label: "Phone number" | type: phone
+  company | label: "Company name" | type: single_line_text
+  provision_type | label: "Provision Type " | type: multiple_checkboxes
+    -> "Children's Home" (value: Children's Home)
+    -> "Supported Accommodation" (value: Supported Accommodation)
+    -> "18 Plus" (value: 18 Plus)
+  what_stage_are_you_at_ | label: "What stage are you at?" | type: radio
+    -> "Pre-Registration" (value: No Home)
+    -> " Awaiting Ofsted Registration" (value: OFSTED Inspection)
+    -> "Newly Registered" (value: Just Opened)
+    -> "Registered – Single Home" (value: Single Home)
+    -> "Registered – Multiple Homes" (value: Multi Home)
+  number_of_homes | label: "Total Number of Homes" | type: single_line_text
+  where_did_you_hear_about_mentor | label: "Where did you hear about Mentor" | type: dropdown
+    -> "Google Search" (value: Internet Search)
+    -> "Instagram" (value: Instagram)
+    -> "LinkedIn" (value: Linked In)
+    -> "Facebook" (value: Facebook)
+    -> "Word of mouth" (value: Word of mouth)
+    -> "Whatsapp group" (value: Whatsapp group)
+    -> "Conference or Event" (value: Conference or Event)
+  would_you_like_to_access_mentor_for_free_until_you_re_registered_ | label: "Would you like to access Mentor for free until you're registered?" | type: single_checkbox
+
+--- checklist (3bdbd33d-bf01-47a2-8020-cc81c353a3be) ---
+  firstname | label: "First Name" | type: single_line_text
+  email | label: "Email" | type: email
+  name | label: "Company name" | type: single_line_text
+  phone | label: "Phone Number" | type: phone
+  what_stage_are_you_at_in_your_registration_journey__ | label: "What stage are you at in your registration journey?:" | type: dropdown
+    -> "Just starting" (value: Just starting)
+    -> "Awaiting pre-registration visit" (value: Awaiting pre-registration visit)
+    -> "Had visit, awaiting outcome" (value: Had visit, awaiting outcome)
+    -> "Recently registered" (value: Recently registered)
+  what_type_of_provision_are_you_setting_up_ | label: "What type of provision are you setting up?" | type: dropdown
+    -> "Children’s Residential Home" (value: Children’s Residential Home)
+    -> "Supported Accommodation" (value: Supported Accommodation)
+    -> "Family Assessment Centre" (value: Family Assessment Centre)
+    -> "Semi-Independent Living (16+)" (value: Semi-Independent Living (16+))
+    -> "Crisis/Short Term Provision" (value: Crisis/Short Term Provision)
+    -> "Not sure yet" (value: Not sure yet)
+  would_you_like_to_access_mentor_for_free_until_you_re_registered_ | label: "Would you like to access Mentor for free until you're registered?" | type: single_checkbox
+
+--- reg32 (68e78eba-b6a5-4900-8f59-613a0aec400c) ---
+  firstname | label: "First Name" | type: single_line_text
+  company | label: "Company Name" | type: single_line_text
+  email | label: "Email" | type: email
+  phone | label: "Phone Number" | type: phone
+  honeypot | label: "What colour is the sky?" | type: single_line_text
+
+--- contact (2e2ce646-a095-46a9-9cc9-94bfdec91dc2) ---
+  firstname | label: "First Name" | type: single_line_text
+  company | label: "Company Name" | type: single_line_text
+  email | label: "Email" | type: email
+  phone | label: "Phone Number" | type: phone
+  department | label: "Select a department" | type: dropdown
+    -> "Sales" (value: Sales)
+    -> "Free Trial (pre-registered)" (value: Free Trial (pre-registered))
+    -> "Support" (value: Support)
+    -> "Customer Success" (value: Customer Succes)
+    -> "Training" (value: Training)
+    -> "Careers" (value: Careers)
+  where_did_you_hear_about_mentor | label: "Where did you hear about Mentor" | type: dropdown
+    -> "Google Search" (value: Internet Search)
+    -> "Instagram" (value: Instagram)
+    -> "Linked In" (value: Linked In)
+    -> "Facebook" (value: Facebook)
+    -> "Word of mouth" (value: Word of mouth)
+    -> "Whatsapp group" (value: Whatsapp group)
+    -> "Conference or Event" (value: Conference or Event)
+  message | label: "How can we help?" | type: multi_line_text
+  honeypot | label: "What colour is the sky?" | type: single_line_text
+
+
+=== SAMPLE SUBMISSIONS (Self Scheduling) ===
+
+Submission at 2026-03-10T17:30:10.722Z:
+  firstname = "Kwaku"
+  lastname = "Amoateng"
+  jobtitle = "Director"
+  email = "kagyare41@gmail.com"
+  phone = "07771587288"
+  company = "Harmonie Support Limited"
+  provision_type = "Supported Accommodation"
+  what_stage_are_you_at_ = "No Home"
+  where_did_you_hear_about_mentor = "Internet Search"
+  would_you_like_to_access_mentor_for_free_until_you_re_registered_ = "true"
+  lifecyclestage = "marketingqualifiedlead"
+
+Submission at 2026-03-10T13:22:06.742Z:
+  firstname = "Greg"
+  lastname = "Everest"
+  jobtitle = "Responsible Individual"
+  email = "info@freshstartcs.org"
+  phone = "07375120218"
+  company = "Freshstart Care Solutions"
+  provision_type = "Children's Home"
+  what_stage_are_you_at_ = "Multi Home"
+  where_did_you_hear_about_mentor = "Internet Search"
+  would_you_like_to_access_mentor_for_free_until_you_re_registered_ = "false"
+  lifecyclestage = "marketingqualifiedlead"
+
+Submission at 2026-03-10T13:05:39.242Z:
+  firstname = "Gibson"
+  lastname = "Fugede"
+  jobtitle = "Home Manager"
+  email = "gibson@vineyardhomeslimited.co.uk"
+  phone = "07930723812"
+  company = "Vineyard Homes Limited"
+  provision_type = "Supported Accommodation"
+  what_stage_are_you_at_ = "Multi Home"
+  where_did_you_hear_about_mentor = "Word of mouth"
+  would_you_like_to_access_mentor_for_free_until_you_re_registered_ = "false"
+  lifecyclestage = "marketingqualifiedlead"
+
+Submission at 2026-03-07T08:21:27.611Z:
+  firstname = "Daniel"
+  lastname = "Nwabueze"
+  jobtitle = "Responsible Individual"
+  email = "danielnwabueze010@gmail.com"
+  phone = "07089117760"
+  company = "Dean's LTD"
+  provision_type = "18 Plus"
+  what_stage_are_you_at_ = "Just Opened"
+  where_did_you_hear_about_mentor = "Facebook"
+  would_you_like_to_access_mentor_for_free_until_you_re_registered_ = "false"
+  lifecyclestage = "marketingqualifiedlead"
+
+Submission at 2026-03-07T07:25:26.279Z:
+  firstname = "Murja"
+  lastname = "Bishir"
+  jobtitle = "Home Manager"
+  email = "murjabishirmlf2021@gmail.com"
+  phone = "08139287915"
+  company = "Jannat"
+  provision_type = "Children's Home"
+  what_stage_are_you_at_ = "No Home"
+  where_did_you_hear_about_mentor = "Internet Search"
+  would_you_like_to_access_mentor_for_free_until_you_re_registered_ = "true"
+  lifecyclestage = "marketingqualifiedlead"
+
+
+=== SAMPLE SUBMISSIONS (Contact Form) ===
+
+Submission at 2026-03-04T17:39:18.186Z:
+  firstname = "Chandra"
+  company = "Wedgefield Baptist Church"
+  email = "wh4koffice@gmail.com"
+  phone = "+18034942933"
+  department = "Sales"
+  where_did_you_hear_about_mentor = "Internet Search"
+  message = "I see that you are UK-based. Are you available in the United States? We are in South Carolina, USA.  We are a small children's home that opened in November. Thank you for your assistance.
+
+Sincerely,
+
+Chandra Johnson"
+
+Submission at 2026-03-03T11:42:38.660Z:
+  firstname = "Samina"
+  company = "ISUPPORT CHILDRENS SERVICES LTD"
+  email = "samina@isupportchildrensservices.co.uk"
+  phone = "+447508800054"
+  department = "Sales"
+  where_did_you_hear_about_mentor = "Internet Search"
+  message = "Book a demo"
+
+Submission at 2026-02-19T17:09:53.771Z:
+  firstname = "Krunal"
+  email = "mailtokrunalbarot@gmail.com"
+  phone = "+4407442084297"
+  department = "Careers"
+  where_did_you_hear_about_mentor = "Linked In"
+  message = "I  am a seasoned .net developer with over a 10 years experience  in designing, developing and maintaining enterprise applications across a variety of industries. During my career, I extensively worked with ASP.NET core 8.0, mvc architecture, Web API, SQL Server, entity framework and modern frontend framework. I have a strong background in SQL Server to minimise the query performance, improve the output of the query by 60% of the runtime. I have strong experience working with SQL Server, data analysis, data manipulation etc. I have a strong background in delivering scalable, secure and high performance solutions and I particularly enjoy the environment where code quality, performance and maintainability are priorities.  I have strong knowledge in developing the Web API in building scalable, secure and high performance using .net core and SQL Server entity framework, I am specially interested to bid this task because It aligns closely with my experience and strength."
+
+Submission at 2026-02-19T07:41:26.003Z:
+  firstname = "Godfrey"
+  company = "LKEE Care Services Ltd"
+  email = "lkeecareservices@gmail.com"
+  phone = "+447713675535"
+  department = "Free Trial (pre-registered)"
+  where_did_you_hear_about_mentor = "Word of mouth"
+  message = "I want to get familiar with the software before getting registered with ofsted."
+
+Submission at 2026-02-13T13:02:23.189Z:
+  firstname = "faizan"
+  company = "Fort Care Services Limited"
+  email = "hello@fortcare.co.uk"
+  phone = "+447917851447"
+  department = "Free Trial (pre-registered)"
+  where_did_you_hear_about_mentor = "Internet Search"
+  message = "We are opening our first children’s home in Milton Keynes (6-bed property for 4 children, supported by 8–12 staff). A Registered Manager will oversee daily operations, with the RI and Directors requiring compliance and performance oversight.
+
+We are also planning to open two additional homes within the next 6–12 months, so we are looking for a scalable software solution to support Ofsted compliance, care records, staff management, and reporting.
+
+Please could we arrange a demo and receive information on your pricing options?"
+
+
+=== DEAL OWNERS ===
+  29248247 | Shaun Ward | training@mentorsoftware.co.uk
+  29285963 | Dean Bennett | dean.bennett@mentorsoftware.co.uk
+  29515722 | Mai  | ca172fb5-f363-4b9b-b4cf-4600b0ada65c-145032754@aichatbot.eu1.hubspot.com
+  29673690 | Marketing Team | marketing@mentorsoftware.co.uk
+  29727673 | Support Team | support@mentorsoftware.co.uk
+  29942907 | Josh Ireland | josh@mentorsoftware.co.uk
+  29942910 | Rishad Alam | rishad.s.a@gmail.com
+  63731868 | Daniel Grevatt | daniel@bbdboom.com
+  76698186 | Ahmad Pilwar | ahmad@mentorsoftware.co.uk
+  78021788 | Jonathan Hebbes | jonathan@mentorsoftware.co.uk
+  78916596 | Laura Frain | laura.frain@mentorsoftware.co.uk
+  96948957 | Rupert Barraclough | rupert@mentorsoftware.co.uk
+  146100483 | Simone Mills | simone@mentorsoftware.co.uk
+  193457719 | Liam Kotecha | liam@mentorsoftware.co.uk
+  231709811 | Joe Hardstaff | joe@mentorsoftware.co.uk
+  241387748 | Debbie Ellis | accounts@mentorsoftware.co.uk
+  508706004 | Ian Born | ian@mentorsoftware.co.uk
+  588615646 | Hope Schindler | renewals-retention@mentorsoftware.co.uk
+  621363283 | Sam Hui | sam@mentorsoftware.co.uk
+  711739855 | Naheed Dad | naheed@mentorsoftware.co.uk
+  1376808953 | Jason Hicking | jason@mentorsoftware.co.uk
+  1774092550 | Raj Singh | sales@mentorsoftware.co.uk
+
+
+=== RECENT DEALS WITH OWNERS ===
+  I Support Children's ServicesLtd - New Deal | owner: 1774092550 | stage: contractsent | amount: 5990.4 | mrr: 166.40
+  Netpex Ltd - New Deal | owner: 1774092550 | stage: closedwon | amount: 1040 | mrr: 208.00
+  Youth Inspire Ltd - New Deal | owner: 1774092550 | stage: contractsent | amount: 0 | mrr: 0.00
+  Youth Inspire Ltd - New Deal | owner: 1774092550 | stage: contractsent | amount: 2496 | mrr: 208.00
+  Hearts and Haven Childcare LTD - New Deal | owner: 588615646 | stage: closedwon | amount: 5990.4 | mrr: 166.40
+  LKEE Care Services Ltd - New Deal | owner: 711739855 | stage: decisionmakerboughtin | amount: null | mrr: null
+  I Support Children's Services Limited - New Deal | owner: 1774092550 | stage: decisionmakerboughtin | amount: 5990.4 | mrr: 166.40
+  Collective Care Ltd - New Deal | owner: 588615646 | stage: closedlost | amount: 4992 | mrr: 416.00
+  Achieving for Children Community Interest Company - New Deal | owner: 1774092550 | stage: contractsent | amount: 4492.8 | mrr: 187.20
+  Footsteps a Path to Change 08 Ltd - New Deal | owner: 588615646 | stage: closedwon | amount: 13478.4 | mrr: 561.60
+
+
+=== CONTACT PROPERTIES (provision/hear) ===
+  engagements_last_meeting_booked_source | "Source of last booking in meetings tool" | type: string | fieldType: text
+  hs_analytics_source | "Original Traffic Source" | type: enumeration | fieldType: select
+    -> "Organic Search" (value: ORGANIC_SEARCH)
+    -> "Paid Search" (value: PAID_SEARCH)
+    -> "Email Marketing" (value: EMAIL_MARKETING)
+    -> "Organic Social" (value: SOCIAL_MEDIA)
+    -> "Referrals" (value: REFERRALS)
+    -> "Other Campaigns" (value: OTHER_CAMPAIGNS)
+    -> "Direct Traffic" (value: DIRECT_TRAFFIC)
+    -> "Offline Sources" (value: OFFLINE)
+    -> "Paid Social" (value: PAID_SOCIAL)
+    -> "AI Referrals" (value: AI_REFERRALS)
+  hs_analytics_source_composite_data | "Original Traffic Source Composite Data" | type: string | fieldType: text
+  hs_analytics_source_data_1 | "Original Traffic Source Drill-Down 1" | type: string | fieldType: text
+  hs_analytics_source_data_2 | "Original Traffic Source Drill-Down 2" | type: string | fieldType: text
+  hs_chat_assistant_source | "Chat Assistant Source" | type: enumeration | fieldType: select
+    -> "Customer Support" (value: customer_support)
+    -> "Breeze" (value: breeze)
+  hs_contact_creation_legal_basis_source_instance_id | "Contact creation legal basis source instance ID" | type: string | fieldType: text
+  hs_journey_stage | "Journey Stage" | type: enumeration | fieldType: radio
+    -> "New Contact" (value: new_contact)
+    -> "In Nurturing" (value: in_nurturing)
+    -> "Low-Intent" (value: low_intent)
+    -> "Mid-Intent" (value: mid_intent)
+    -> "High-Intent" (value: high_intent)
+    -> "Unqualified" (value: unqualified)
+    -> "Qualified" (value: qualified)
+    -> "Onboarding" (value: onboarding)
+    -> "Post Onboarding" (value: post_onboarding)
+    -> "Engaged" (value: engaged)
+    -> "Unengaged" (value: unengaged)
+  hs_latest_source | "Latest Traffic Source" | type: enumeration | fieldType: select
+    -> "Organic Search" (value: ORGANIC_SEARCH)
+    -> "Paid Search" (value: PAID_SEARCH)
+    -> "Email Marketing" (value: EMAIL_MARKETING)
+    -> "Organic Social" (value: SOCIAL_MEDIA)
+    -> "Referrals" (value: REFERRALS)
+    -> "Other Campaigns" (value: OTHER_CAMPAIGNS)
+    -> "Direct Traffic" (value: DIRECT_TRAFFIC)
+    -> "Offline Sources" (value: OFFLINE)
+    -> "Paid Social" (value: PAID_SOCIAL)
+    -> "AI Referrals" (value: AI_REFERRALS)
+  hs_latest_source_composite_data | "Latest Traffic Source Composite Data" | type: string | fieldType: text
+  hs_latest_source_data_1 | "Latest Traffic Source Drill-Down 1" | type: string | fieldType: text
+  hs_latest_source_data_2 | "Latest Traffic Source Drill-Down 2" | type: string | fieldType: text
+  hs_latest_source_timestamp | "Latest Traffic Source Date" | type: datetime | fieldType: date
+  hs_marketable_reason_id | "Marketing contact status source name" | type: string | fieldType: text
+  hs_marketable_reason_type | "Marketing contact status source type" | type: enumeration | fieldType: select
+    -> "Ad" (value: AD)
+    -> "Contact Import" (value: CONTACT_IMPORT)
+    -> "Conversation" (value: CONVERSATION)
+    -> "Form Submission" (value: FORM_SUBMISSION)
+    -> "Initial State" (value: INITIAL_STATE)
+    -> "Integrator Set" (value: INTEGRATOR_SET)
+    -> "User Set" (value: USER_SET)
+    -> "Workflow" (value: WORKFLOW)
+    -> "Email" (value: EMAIL)
+    -> "Sample Contact" (value: SAMPLE_CONTACT)
+    -> "Feedback Submission" (value: FEEDBACK_SUBMISSION)
+  hs_object_source | "Record creation source" | type: string | fieldType: text
+  hs_object_source_detail_1 | "Record source detail 1" | type: string | fieldType: text
+  hs_object_source_detail_2 | "Record source detail 2" | type: string | fieldType: text
+  hs_object_source_detail_3 | "Record source detail 3" | type: string | fieldType: text
+  hs_object_source_id | "Record creation source ID" | type: string | fieldType: text
+  hs_object_source_label | "Record source" | type: enumeration | fieldType: select
+  hs_object_source_user_id | "Record creation source user ID" | type: number | fieldType: number
+  hs_source_object_id | "Source Object ID" | type: number | fieldType: number
+  hs_source_portal_id | "Source Portal ID" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_2520059085 | "Cumulative time in "Pre-Registration Customer (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_2550946019 | "Cumulative time in "Quote Sent (Pending Response) (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_4964231395 | "Cumulative time in "Ex-Customer (engaged) (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_4964556022 | "Cumulative time in "Ex-Customer (do not contact) (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_customer | "Cumulative time in "Customer (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_lead | "Cumulative time in "Lead (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_marketingqualifiedlead | "Cumulative time in "Marketing Qualified Lead (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_opportunity | "Cumulative time in "Opportunity (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_other | "Cumulative time in "Other (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_salesqualifiedlead | "Cumulative time in "Sales Qualified Lead (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_cumulative_time_in_subscriber | "Cumulative time in "Subscriber (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_date_entered_2520059085 | "Date entered "Pre-Registration Customer (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_entered_2550946019 | "Date entered "Quote Sent (Pending Response) (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_entered_4964231395 | "Date entered "Ex-Customer (engaged) (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_entered_4964556022 | "Date entered "Ex-Customer (do not contact) (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_entered_current_stage | "Date entered current stage" | type: datetime | fieldType: calculation_equation
+  hs_v2_date_entered_customer | "Date entered "Customer (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_entered_lead | "Date entered "Lead (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_entered_marketingqualifiedlead | "Date entered "Marketing Qualified Lead (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_entered_opportunity | "Date entered "Opportunity (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_entered_other | "Date entered "Other (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_entered_salesqualifiedlead | "Date entered "Sales Qualified Lead (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_entered_subscriber | "Date entered "Subscriber (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_2520059085 | "Date exited "Pre-Registration Customer (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_2550946019 | "Date exited "Quote Sent (Pending Response) (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_4964231395 | "Date exited "Ex-Customer (engaged) (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_4964556022 | "Date exited "Ex-Customer (do not contact) (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_customer | "Date exited "Customer (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_lead | "Date exited "Lead (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_marketingqualifiedlead | "Date exited "Marketing Qualified Lead (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_opportunity | "Date exited "Opportunity (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_other | "Date exited "Other (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_salesqualifiedlead | "Date exited "Sales Qualified Lead (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_date_exited_subscriber | "Date exited "Subscriber (Lifecycle Stage Pipeline)"" | type: datetime | fieldType: date
+  hs_v2_latest_time_in_2520059085 | "Latest time in "Pre-Registration Customer (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_latest_time_in_2550946019 | "Latest time in "Quote Sent (Pending Response) (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_latest_time_in_4964231395 | "Latest time in "Ex-Customer (engaged) (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_latest_time_in_4964556022 | "Latest time in "Ex-Customer (do not contact) (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_latest_time_in_customer | "Latest time in "Customer (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_latest_time_in_lead | "Latest time in "Lead (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_latest_time_in_marketingqualifiedlead | "Latest time in "Marketing Qualified Lead (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_latest_time_in_opportunity | "Latest time in "Opportunity (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_latest_time_in_other | "Latest time in "Other (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_latest_time_in_salesqualifiedlead | "Latest time in "Sales Qualified Lead (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_latest_time_in_subscriber | "Latest time in "Subscriber (Lifecycle Stage Pipeline)"" | type: number | fieldType: number
+  hs_v2_time_in_current_stage | "Time in current stage" | type: datetime | fieldType: calculation_equation
+  i_agree_to_receive_emails_from_mentor_software_about_resources__product_updates__and_support_for_ch | "I agree to receive emails from Mentor Software about resources, product updates, and support for children’s residential services. I can unsubscribe at any time." | type: enumeration | fieldType: booleancheckbox
+    -> "Yes" (value: true)
+    -> "No" (value: false)
+  lead_source_event | "Lead Source: Event" | type: enumeration | fieldType: select
+    -> "NCCTC" (value: NCCTC)
+    -> "CHA Conference" (value: CHA Conference)
+    -> "Children & Young People Conference" (value: Children & Young People Conference)
+    -> "NASAP" (value: NASAP)
+    -> "NCASC" (value: NCASC)
+    -> "Other" (value: Other)
+  lifecyclestage | "Lifecycle Stage" | type: enumeration | fieldType: radio
+    -> "Subscriber" (value: subscriber)
+    -> "Lead" (value: lead)
+    -> "Marketing Qualified Lead" (value: marketingqualifiedlead)
+    -> "Sales Qualified Lead" (value: salesqualifiedlead)
+    -> "Opportunity" (value: opportunity)
+    -> "Customer" (value: customer)
+    -> "Other" (value: other)
+    -> "Pre-Registration Customer" (value: 2520059085)
+    -> "Quote Sent (Pending Response)" (value: 2550946019)
+    -> "Ex-Customer (do not contact)" (value: 4964556022)
+    -> "Ex-Customer (engaged)" (value: 4964231395)
+  mentor_event_source | "mentor_event_source" | type: string | fieldType: text
+  provision_type | "Provision Type " | type: enumeration | fieldType: checkbox
+    -> "Children's Home" (value: Children's Home)
+    -> "Supported Accommodation" (value: Supported Accommodation)
+    -> "18 Plus" (value: 18 Plus)
+    -> "" (value: )
+  what_stage_are_you_at_ | "What stage are you at?" | type: enumeration | fieldType: radio
+    -> "No Home" (value: No Home)
+    -> "OFSTED Inspection" (value: OFSTED Inspection)
+    -> "Just Opened" (value: Just Opened)
+    -> "Single Home" (value: Single Home)
+    -> "Multi Home" (value: Multi Home)
+  what_stage_are_you_at_in_your_registration_journey__ | "What stage are you at in your registration journey?:" | type: enumeration | fieldType: select
+    -> "Just starting" (value: Just starting)
+    -> "Awaiting pre-registration visit" (value: Awaiting pre-registration visit)
+    -> "Had visit, awaiting outcome" (value: Had visit, awaiting outcome)
+    -> "Recently registered" (value: Recently registered)
+  what_type_of_provision_are_you_setting_up_ | "What type of provision are you setting up?" | type: enumeration | fieldType: select
+    -> "Children’s Residential Home" (value: Children’s Residential Home)
+    -> "Supported Accommodation" (value: Supported Accommodation)
+    -> "Family Assessment Centre" (value: Family Assessment Centre)
+    -> "Semi-Independent Living (16+)" (value: Semi-Independent Living (16+))
+    -> "Crisis/Short Term Provision" (value: Crisis/Short Term Provision)
+    -> "Not sure yet" (value: Not sure yet)
+  where_did_you_hear_about_mentor | "Where did you hear about Mentor" | type: enumeration | fieldType: select
+    -> "Google Search" (value: Internet Search)
+    -> "Instagram" (value: Instagram)
+    -> "LinkedIn" (value: Linked In)
+    -> "Facebook" (value: Facebook)
+    -> "Referral" (value: Referral)
+    -> "Word of mouth" (value: Word of mouth)
+    -> "Whatsapp group" (value: Whatsapp group)
+    -> "Mentor Website" (value: Mentor Website)
+    -> "Conference or Event" (value: Conference or Event)
+
+
+=== ALL FORMS ===
+  02ccb6c0-723b-4190-b961-7dec430429ce | "New form (May 16, 2025 5:52:21 PM BST)" | created: 2025-05-16T16:52:21.222Z
+  14412984-0541-4e56-979d-8a1aa70be303 | "New contact us form (August 19, 2024 4:23:03 PM EDT)" | created: 2024-08-19T20:23:03.364Z
+  1b0c5e85-5deb-4216-8d4f-386eb7800a0e | "New form (June 25, 2025 9:49:04 PM BST)" | created: 2025-06-25T20:49:04.653Z
+  2e2ce646-a095-46a9-9cc9-94bfdec91dc2 | "New Site - Contact" | created: 2025-05-02T13:20:41.509Z
+  3bdbd33d-bf01-47a2-8020-cc81c353a3be | "Download Your Free Ofsted Registration Checklist" | created: 2025-07-22T11:31:48.075Z
+  58ab3379-872a-4e30-b6e4-2651cce1905f | "New website funnel" | created: 2025-08-19T20:40:23.533Z
+  5df5f763-0e02-47c3-9324-ceacbc3124d3 | "Reg 32 Webinar" | created: 2025-11-26T14:08:27.990Z
+  5ea8da11-40a4-47f5-8597-af8aee7b4fc0 | "Daily Recordings (Webinar)" | created: 2026-02-13T16:21:57.081Z
+  5fadb2a4-1595-4cbc-8251-cc897b9b8cc0 | "Funnel - landing page ( Do not delete or edit )" | created: 2025-02-06T16:04:46.579Z
+  68e78eba-b6a5-4900-8f59-613a0aec400c | "Reg 32 template download" | created: 2026-02-18T09:22:04.753Z
+  6d8a8c05-132c-4485-81e9-cb3580afd809 | "My Name is Riley (Webinar)" | created: 2026-01-13T09:12:46.710Z
+  831be65d-8da0-4361-bc66-a82b73647e78 | "CYP Conference 8/10/25" | created: 2025-10-07T16:17:42.066Z
+  917d4b3b-69f9-4909-9216-3c78945a8efb | "New Website - Pricing Page" | created: 2025-08-15T16:22:54.306Z
+  92447c6b-71a5-4b38-a074-c004c511106c | "Bullying Workshop Webinar Registration" | created: 2025-10-02T08:56:11.988Z
+  9f4e1a7c-a9d9-4b5a-b858-7090f2dcd387 | "Gravity Forms - Contact ( Do not delete or edit )" | created: 2025-02-03T13:37:21.932Z
+  af3e0080-db75-4a8e-bf37-477eec336b2c | "Lunch & Learn Register - Linked Events (V2)" | created: 2025-10-28T14:10:16.073Z
+  b189dcc1-fe5a-40a6-b016-5844ec22f082 | "Self Scheduling Form Map (DO NOT EDIT)" | created: 2025-11-20T12:54:59.052Z
+  d0058d2c-3848-4b6a-b9e1-fc59df8ed68b | "Lunch & Learn Register - Medication Managementanagement" | created: 2025-08-22T10:15:51.435Z
+  d172d54b-58ad-45a2-bf6c-3759cde6167e | "Group 1 - ready for migration" | created: 2025-11-18T17:02:58.063Z
+  dbaabfba-ecff-435e-8e88-e491e8f289e8 | "Group 1 - Next steps - Migration Setup" | created: 2026-01-08T12:52:37.271Z
+  e2ca929c-e0a6-411b-9d0a-a850ccc79cca | "Lost customer feedback - Rentention " | created: 2026-02-09T14:27:23.085Z
+  ef883f07-05ad-4084-b2c4-32716e0ab8d6 | "Trauma Informed Practice Registration" | created: 2025-11-03T08:52:22.335Z
+  f80e7f23-02cb-4d86-a9c7-5dccb25af81c | "Fire Safety Webinar Registration" | created: 2025-08-25T12:00:47.603Z

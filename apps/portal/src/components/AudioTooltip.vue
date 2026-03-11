@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount } from 'vue'
-import * as sdk from 'microsoft-cognitiveservices-speech-sdk'
 
 const props = defineProps<{
   /** The explanation text to speak */
@@ -13,27 +12,22 @@ const playing = ref(false)
 const loading = ref(false)
 const bars = ref<number[]>([0, 0, 0, 0, 0])
 
-let synthesizer: sdk.SpeechSynthesizer | null = null
-let player: sdk.SpeakerAudioDestination | null = null
 let audioCtx: AudioContext | null = null
 let analyser: AnalyserNode | null = null
 let animFrame = 0
 let mediaSource: MediaElementAudioSourceNode | null = null
+let currentAudio: HTMLAudioElement | null = null
 
-// Cache synthesised audio blobs so repeat clicks are instant
+// Cache fetched audio blobs so repeat clicks are instant
 const blobCache = new Map<string, ArrayBuffer>()
 
-function getSpeechConfig(): sdk.SpeechConfig | null {
-  const key = import.meta.env.VITE_AZURE_TTS_KEY
-  const region = import.meta.env.VITE_AZURE_TTS_REGION || 'uksouth'
-  if (!key) {
-    console.warn('AudioTooltip: VITE_AZURE_TTS_KEY not set')
-    return null
-  }
-  const cfg = sdk.SpeechConfig.fromSubscription(key, region)
-  cfg.speechSynthesisVoiceName = 'en-GB-SoniaNeural'
-  cfg.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio16Khz128KBitRateMonoMp3
-  return cfg
+function getApiBaseUrl(): string {
+  const envBase = import.meta.env.VITE_API_BASE_URL as string | undefined
+  return (envBase && envBase.trim()) || 'http://localhost:3001'
+}
+
+function getAdminToken(): string | null {
+  try { return localStorage.getItem('admin_access_token') } catch { return null }
 }
 
 function updateBars() {
@@ -76,12 +70,10 @@ async function playFromBuffer(buffer: ArrayBuffer) {
   audio.addEventListener('ended', stop)
   audio.addEventListener('error', stop)
 
+  currentAudio = audio
   await audio.play()
   playing.value = true
   animFrame = requestAnimationFrame(updateBars)
-
-  // Store ref for stop()
-  ;(window as any).__audioTooltipAudio = audio
 }
 
 async function toggle() {
@@ -89,9 +81,6 @@ async function toggle() {
     stop()
     return
   }
-
-  const speechConfig = getSpeechConfig()
-  if (!speechConfig) return
 
   loading.value = true
 
@@ -106,28 +95,23 @@ async function toggle() {
       return
     }
 
-    // Synthesise to ArrayBuffer using pull stream
-    synthesizer = new sdk.SpeechSynthesizer(speechConfig, null as any)
-
-    const result = await new Promise<sdk.SpeechSynthesisResult>((resolve, reject) => {
-      synthesizer!.speakTextAsync(
-        props.text,
-        (r) => resolve(r),
-        (err) => reject(new Error(String(err))),
-      )
+    // Fetch from backend Edge TTS route
+    const token = getAdminToken()
+    const res = await fetch(`${getApiBaseUrl()}/admin/tts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ text: props.text }),
     })
 
-    if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
-      const buffer = result.audioData
-      blobCache.set(key, buffer)
-      loading.value = false
-      await playFromBuffer(buffer)
-    } else {
-      console.error('TTS synthesis failed:', result.reason, result.errorDetails)
-    }
+    if (!res.ok) throw new Error(`TTS request failed: ${res.status}`)
 
-    synthesizer.close()
-    synthesizer = null
+    const buffer = await res.arrayBuffer()
+    blobCache.set(key, buffer)
+    loading.value = false
+    await playFromBuffer(buffer)
   } catch (err) {
     console.error('TTS error:', err)
     stop()
@@ -141,13 +125,12 @@ function stop() {
   cancelAnimationFrame(animFrame)
   bars.value = [0, 0, 0, 0, 0]
 
-  const audio = (window as any).__audioTooltipAudio as HTMLAudioElement | undefined
-  if (audio) {
-    audio.pause()
-    audio.currentTime = 0
-    audio.removeEventListener('ended', stop)
-    audio.removeEventListener('error', stop)
-    ;(window as any).__audioTooltipAudio = null
+  if (currentAudio) {
+    currentAudio.pause()
+    currentAudio.currentTime = 0
+    currentAudio.removeEventListener('ended', stop)
+    currentAudio.removeEventListener('error', stop)
+    currentAudio = null
   }
 
   if (mediaSource) {
@@ -157,10 +140,6 @@ function stop() {
   if (analyser) {
     analyser.disconnect()
     analyser = null
-  }
-  if (synthesizer) {
-    synthesizer.close()
-    synthesizer = null
   }
 }
 
