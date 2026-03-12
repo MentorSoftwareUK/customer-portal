@@ -49,12 +49,6 @@ async function loadSalesStats(refresh = false) {
   }
 }
 
-/* ── Period label ── */
-const periodLabel = computed(() => {
-  const opt = monthOptions.value.find(o => o.value === selectedMonth.value)
-  return opt?.label ?? selectedMonth.value
-})
-
 /* ── KPI cards ── */
 const salesKpiCards = computed(() => {
   if (!sales.value) return []

@@ -28,11 +28,6 @@ const monthOptions = computed(() => {
   return opts
 })
 
-const periodLabel = computed(() => {
-  const opt = monthOptions.value.find(o => o.value === selectedMonth.value)
-  return opt?.label ?? selectedMonth.value
-})
-
 /* ------------------------------------------------------------------ */
 /*  State                                                              */
 /* ------------------------------------------------------------------ */
