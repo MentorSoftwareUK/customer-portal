@@ -229,6 +229,7 @@ const COMPANY_PROPERTIES = [
   'name',
   'salesstatus',
   'contract_start_date',
+  'installdate',
   'date_left',
   'hubspot_owner_id',
   'what_prompted_you_to_consider_cancelling_mentor_software',
@@ -468,7 +469,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
       return monthKey(new Date(dl)) === mk
     }).length
     const newCustCount = paying.filter((c) => {
-      const cs = c.properties.contract_start_date
+      const cs = c.properties.installdate ?? c.properties.contract_start_date
       if (!cs) return false
       return monthKey(new Date(cs)) === mk
     }).length
@@ -479,7 +480,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   const tenureMonths: number[] = []
   let noStartDateCount = 0
   for (const c of paying) {
-    const start = c.properties.contract_start_date
+    const start = c.properties.installdate ?? c.properties.contract_start_date
     if (!start) {
       noStartDateCount++
       continue
@@ -508,7 +509,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     bucket: b.bucket,
     count: tenureMonths.filter((t) => t >= b.min && t < b.max).length,
   }))
-  // Include customers missing a contract_start_date so grand total matches paying count
+  // Include customers missing an installdate/contract_start_date so grand total matches paying count
   if (noStartDateCount > 0) {
     customersByTenure.push({ bucket: 'No start date', count: noStartDateCount })
   }
@@ -539,8 +540,8 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     const daysSinceContact = daysSince(c.properties.notes_last_contacted)
     const daysSinceMeeting = daysSince(c.properties.hs_latest_meeting_activity)
     const daysSinceActivity = daysSince(c.properties.hs_last_sales_activity_timestamp)
-    const tenure = c.properties.contract_start_date
-      ? Math.floor((refDate.getTime() - new Date(c.properties.contract_start_date).getTime()) / (30.44 * 86_400_000))
+    const tenure = (c.properties.installdate ?? c.properties.contract_start_date)
+      ? Math.floor((refDate.getTime() - new Date((c.properties.installdate ?? c.properties.contract_start_date)!).getTime()) / (30.44 * 86_400_000))
       : null
     const salesActivities = parseInt(c.properties.num_notes ?? '0', 10) || 0
 
@@ -604,7 +605,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
       daysSinceLastMeeting: daysSinceMeeting,
       daysSinceLastActivity: daysSinceActivity,
       tenureMonths: tenure,
-      contractStartDate: c.properties.contract_start_date ?? null,
+      contractStartDate: c.properties.installdate ?? c.properties.contract_start_date ?? null,
     })
   }
 
@@ -687,7 +688,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   const sixtyDaysAgo = new Date(refDate.getTime() - 60 * 86_400_000)
 
   const newCustCandidates = paying.filter((c) => {
-    const start = c.properties.contract_start_date
+    const start = c.properties.installdate ?? c.properties.contract_start_date
     if (!start) return false
     return new Date(start) >= sixtyDaysAgo
   })
@@ -758,7 +759,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
           /* association fetch failed – treat as no meetings */
         }
 
-        const startDate = c.properties.contract_start_date!
+        const startDate = (c.properties.installdate ?? c.properties.contract_start_date)!
         return {
           name: c.properties.name ?? 'Unknown',
           companyId: c.id,
@@ -790,7 +791,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   let within120 = 0
   let totalWithDates = 0
   for (const c of churned) {
-    const start = c.properties.contract_start_date
+    const start = c.properties.installdate ?? c.properties.contract_start_date
     const left = c.properties.date_left
     if (!start || !left) continue
     totalWithDates++
