@@ -21,6 +21,9 @@ const isActive = (to: string) => {
   return currentPath.value === to || currentPath.value.startsWith(`${to}/`)
 }
 
+const toolsOpen = ref(currentPath.value.startsWith('/admin/tools'))
+watch(currentPath, (p) => { if (p.startsWith('/admin/tools')) toolsOpen.value = true })
+
 const findOpen = ref(false)
 const findSeed = ref('')
 type QuickFindItem = {
@@ -42,7 +45,8 @@ const findItems: QuickFindItem[] = [
   { label: 'Admin: Users', to: '/admin/users', description: 'Portal user access', keywords: ['accounts'] },
   { label: 'Admin: Notifications', to: '/admin/notifications', description: 'Global portal banners', keywords: ['alerts', 'outage', 'maintenance'] },
   { label: 'Admin: Settings', to: '/admin/settings', description: 'System configuration', keywords: ['config'] },
-  { label: 'Admin: HubSpot Audit', to: '/admin/hubspot-audit', description: 'Form contact corruption audit', keywords: ['hubspot', 'audit', 'data', 'corruption'] },
+  { label: 'Admin: HubSpot Audit', to: '/admin/tools/hubspot-audit', description: 'Form contact corruption audit', keywords: ['hubspot', 'audit', 'data', 'corruption'] },
+  { label: 'Admin: Provider Scraper', to: '/admin/tools/provider-scraper', description: 'Scrape children\'s homes & supported accommodation', keywords: ['scrape', 'providers', 'google', 'children', 'homes', 'accommodation'] },
   { label: 'Portal dashboard', to: '/app/dashboard', description: 'Back to the portal' },
 ]
 
@@ -536,11 +540,13 @@ onUnmounted(() => {
             </RouterLink>
           </li>
 
+          <!-- Tools group -->
           <li>
-            <RouterLink
-              to="/admin/hubspot-audit"
-              class="group flex items-center rounded-lg p-2 text-base font-medium"
-              :class="isActive('/admin/hubspot-audit') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+            <button
+              type="button"
+              class="group flex w-full items-center rounded-lg p-2 text-base font-medium transition duration-75"
+              :class="isActive('/admin/tools') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+              @click="toolsOpen = !toolsOpen"
             >
               <svg
                 aria-hidden="true"
@@ -549,10 +555,31 @@ onUnmounted(() => {
                 viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
               </svg>
-              <span class="ml-3">HubSpot audit</span>
-            </RouterLink>
+              <span class="ml-3 flex-1 text-left whitespace-nowrap">Tools</span>
+              <svg class="h-4 w-4 transition-transform" :class="toolsOpen ? 'rotate-180' : ''" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+            </button>
+            <ul v-show="toolsOpen" class="space-y-1 py-1">
+              <li>
+                <RouterLink
+                  to="/admin/tools/hubspot-audit"
+                  class="group flex items-center rounded-lg p-2 pl-11 text-sm font-medium"
+                  :class="isActive('/admin/tools/hubspot-audit') ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'"
+                >
+                  <span>HubSpot Audit</span>
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink
+                  to="/admin/tools/provider-scraper"
+                  class="group flex items-center rounded-lg p-2 pl-11 text-sm font-medium"
+                  :class="isActive('/admin/tools/provider-scraper') ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'"
+                >
+                  <span>Provider Scraper</span>
+                </RouterLink>
+              </li>
+            </ul>
           </li>
 
           <li>

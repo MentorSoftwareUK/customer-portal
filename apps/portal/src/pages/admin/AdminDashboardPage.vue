@@ -218,9 +218,12 @@ function loadAllMonthData() {
 
 watch(selectedMonth, () => loadAllMonthData())
 
-onMounted(() => {
-  void loadStats()
-  loadAllMonthData()
+onMounted(async () => {
+  await loadStats()
+  // Stagger calls to avoid HubSpot rate-limit (429) from concurrent requests
+  await loadFunnel()
+  await loadSales()
+  await loadSuccess()
 })
 </script>
 

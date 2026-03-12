@@ -16,7 +16,7 @@ export type AdminDashboardStatsDto = {
 
 // Cache (HubSpot calls are expensive)
 let statsCache: { ts: number; data: AdminDashboardStatsDto } | null = null
-const CACHE_TTL_MS = 5 * 60_000 // 5 minutes
+const CACHE_TTL_MS = 15 * 60_000 // 15 minutes
 
 function rateLimitPause(ms = 350): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))

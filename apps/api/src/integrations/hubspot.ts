@@ -34,7 +34,9 @@ function requireHubSpotToken() {
   return token
 }
 
-async function hubspotFetch(path: string, init?: RequestInit) {
+const MAX_RETRIES = 3
+
+async function hubspotFetch(path: string, init?: RequestInit, _retryCount = 0): Promise<Response> {
   // Check if this is a Knowledge Base API call
   const isKbEndpoint = path.includes('/knowledge-base/') || path.includes('/cms/v3/knowledge-base')
   
@@ -88,6 +90,17 @@ async function hubspotFetch(path: string, init?: RequestInit) {
       signal: controller.signal,
       headers: finalHeaders,
     })
+
+    // Retry on 429 rate limit with exponential backoff
+    if (res.status === 429 && _retryCount < MAX_RETRIES) {
+      clearTimeout(timeout)
+      const retryAfter = res.headers.get('retry-after')
+      const baseDelay = retryAfter ? parseInt(retryAfter, 10) * 1000 : 1000
+      const delay = baseDelay * Math.pow(2, _retryCount) + Math.random() * 500
+      console.warn(`[hubspot] 429 rate limited on ${path}, retrying in ${Math.round(delay)}ms (attempt ${_retryCount + 1}/${MAX_RETRIES})`)
+      await new Promise((r) => setTimeout(r, delay))
+      return hubspotFetch(path, init, _retryCount + 1)
+    }
 
     if (!res.ok) {
       const text = await res.text().catch(() => '')

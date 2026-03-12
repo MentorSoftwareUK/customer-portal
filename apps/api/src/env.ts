@@ -160,6 +160,10 @@ const EnvSchema = z.object({
   SENDGRID_API_KEY: optionalString(),
   
   // Admin + background jobs
+  // Google Custom Search (for provider scraper tool)
+  GOOGLE_API_KEY: optionalString(),
+  GOOGLE_CSE_ID: optionalString(),
+
   ADMIN_EMAIL_ALLOWLIST: z.string().optional(),
   EMAIL_JOBS_ENABLED: z.coerce.boolean().default(true),
   EMAIL_JOBS_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(5_000),
