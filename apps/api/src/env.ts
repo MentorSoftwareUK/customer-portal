@@ -160,9 +160,8 @@ const EnvSchema = z.object({
   SENDGRID_API_KEY: optionalString(),
   
   // Admin + background jobs
-  // Google Custom Search (for provider scraper tool)
-  GOOGLE_API_KEY: optionalString(),
-  GOOGLE_CSE_ID: optionalString(),
+  // Companies House API (for provider scraper tool — free at https://developer.company-information.service.gov.uk)
+  COMPANIES_HOUSE_API_KEY: optionalString(),
 
   ADMIN_EMAIL_ALLOWLIST: z.string().optional(),
   EMAIL_JOBS_ENABLED: z.coerce.boolean().default(true),

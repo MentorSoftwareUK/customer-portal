@@ -69,6 +69,9 @@ export async function ensureIndexes(): Promise<void> {
       database.collection('email_template_overrides').createIndex({ _id: 1 }, { unique: true }),
       database.collection('notifications').createIndex({ enabled: 1, startsAtIso: 1, endsAtIso: 1 }),
       database.collection('notifications').createIndex({ createdAtIso: -1 }),
+      database.collection('scraped_providers').createIndex({ companyNumber: 1 }, { unique: true, sparse: true }),
+      database.collection('scraped_providers').createIndex({ providerCategory: 1 }),
+      database.collection('scraped_providers').createIndex({ registeredAddress: 'text', name: 'text' }),
     ])
   } catch (err) {
     console.error('[mongo] failed to create indexes', err)

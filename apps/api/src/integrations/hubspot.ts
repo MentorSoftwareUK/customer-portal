@@ -1470,7 +1470,6 @@ export async function hubspotBatchReadTicketCompanyAssociations(
         body: JSON.stringify({
           inputs: chunk.map((id) => ({ id })),
         }),
-        timeout: 15_000,
       },
     )
 
