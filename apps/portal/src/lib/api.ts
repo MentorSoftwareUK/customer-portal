@@ -764,6 +764,15 @@ export type OpsStats = {
   teamActivity: Array<{
     ownerId: string
     name: string
+    department: string
+    tasks: number
+    calls: number
+    emails: number
+    notes: number
+  }>
+  departmentActivity: Array<{
+    department: string
+    members: string[]
     tasks: number
     calls: number
     emails: number

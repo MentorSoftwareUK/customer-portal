@@ -115,11 +115,27 @@ const kpiCards = computed(() => {
   ]
 })
 
-/* ── Team activity total for bar widths ── */
-const maxTeamTotal = computed(() => {
+/* ── Department activity max for bar widths ── */
+const maxDeptTotal = computed(() => {
   if (!ops.value) return 1
-  return Math.max(...ops.value.teamActivity.map((t) => t.tasks + t.calls + t.emails + t.notes), 1)
+  return Math.max(...ops.value.departmentActivity.map((d) => d.tasks + d.calls + d.emails + d.notes), 1)
 })
+
+const expandedDepts = ref<Set<string>>(new Set())
+function toggleDept(dept: string) {
+  if (expandedDepts.value.has(dept)) expandedDepts.value.delete(dept)
+  else expandedDepts.value.add(dept)
+}
+
+const DEPT_COLORS: Record<string, string> = {
+  Sales: '#34d399',
+  Success: '#fbbf24',
+  Training: '#818cf8',
+  Retention: '#f472b6',
+  Support: '#38bdf8',
+  Marketing: '#a855f7',
+  Other: '#94a3b8',
+}
 
 /* ── Activity-type icon/color mapping ── */
 const activityMeta: Record<string, { icon: string; color: string; bg: string }> = {
@@ -220,59 +236,59 @@ onMounted(() => void loadOps())
           </div>
         </div>
 
-        <!-- ═══ Team Activity Breakdown ═══ -->
-        <div v-if="ops.teamActivity.length > 0" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Team activity</div>
-          <div class="mt-3 overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead>
-                <tr class="border-b border-white/[0.06]">
-                  <th class="pb-2 pr-4 font-semibold text-white/60">Team member</th>
-                  <th class="pb-2 pr-4 text-center font-semibold text-white/60">Tasks</th>
-                  <th class="pb-2 pr-4 text-center font-semibold text-white/60">Calls</th>
-                  <th class="pb-2 pr-4 text-center font-semibold text-white/60">Emails</th>
-                  <th class="pb-2 pr-4 text-center font-semibold text-white/60">Notes</th>
-                  <th class="pb-2 font-semibold text-white/60">Activity</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="member in ops.teamActivity"
+        <!-- ═══ Team Activity by Department ═══ -->
+        <div v-if="ops.departmentActivity.length > 0" class="mt-8">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Activity by department</div>
+          <div class="mt-3 space-y-2">
+            <div
+              v-for="dept in ops.departmentActivity"
+              :key="dept.department"
+              class="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden"
+            >
+              <!-- Department row -->
+              <button
+                class="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.03]"
+                @click="toggleDept(dept.department)"
+              >
+                <div class="h-3 w-3 rounded-full shrink-0" :style="{ backgroundColor: DEPT_COLORS[dept.department] ?? '#94a3b8' }" />
+                <div class="flex-1">
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-sm font-semibold text-white/90">{{ dept.department }}</span>
+                    <span class="text-xs text-white/40">{{ dept.members.length }} {{ dept.members.length === 1 ? 'person' : 'people' }}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-4 text-xs tabular-nums">
+                  <div class="text-center"><span class="text-emerald-400 font-bold">{{ dept.tasks }}</span><span class="text-white/30 ml-1">tasks</span></div>
+                  <div class="text-center"><span class="text-indigo-400 font-bold">{{ dept.calls }}</span><span class="text-white/30 ml-1">calls</span></div>
+                  <div class="text-center"><span class="text-sky-400 font-bold">{{ dept.emails }}</span><span class="text-white/30 ml-1">emails</span></div>
+                  <div class="text-center"><span class="text-purple-400 font-bold">{{ dept.notes }}</span><span class="text-white/30 ml-1">notes</span></div>
+                </div>
+                <div class="ml-2 flex-1 max-w-[200px]">
+                  <div class="flex h-3 overflow-hidden rounded-full bg-white/[0.04]">
+                    <div class="h-full bg-emerald-500/50" :style="{ width: (dept.tasks / maxDeptTotal * 100) + '%' }" />
+                    <div class="h-full bg-indigo-500/50" :style="{ width: (dept.calls / maxDeptTotal * 100) + '%' }" />
+                    <div class="h-full bg-sky-500/50" :style="{ width: (dept.emails / maxDeptTotal * 100) + '%' }" />
+                    <div class="h-full bg-purple-500/50" :style="{ width: (dept.notes / maxDeptTotal * 100) + '%' }" />
+                  </div>
+                </div>
+                <svg class="h-4 w-4 text-white/30 transition-transform" :class="{ 'rotate-180': expandedDepts.has(dept.department) }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+              </button>
+
+              <!-- Individual members (expanded) -->
+              <div v-if="expandedDepts.has(dept.department)" class="border-t border-white/[0.04] bg-white/[0.01]">
+                <div
+                  v-for="member in ops.teamActivity.filter((m) => m.department === dept.department)"
                   :key="member.ownerId"
-                  class="border-b border-white/[0.03] last:border-0"
+                  class="flex items-center gap-3 px-4 py-2 pl-10 text-xs border-b border-white/[0.03] last:border-0"
                 >
-                  <td class="py-2.5 pr-4 text-white/80 font-medium">{{ member.name }}</td>
-                  <td class="py-2.5 pr-4 text-center tabular-nums text-emerald-400">{{ member.tasks }}</td>
-                  <td class="py-2.5 pr-4 text-center tabular-nums text-indigo-400">{{ member.calls }}</td>
-                  <td class="py-2.5 pr-4 text-center tabular-nums text-sky-400">{{ member.emails }}</td>
-                  <td class="py-2.5 pr-4 text-center tabular-nums text-purple-400">{{ member.notes }}</td>
-                  <td class="py-2.5">
-                    <div class="flex h-4 overflow-hidden rounded-full bg-white/[0.04]">
-                      <div
-                        class="h-full bg-emerald-500/50"
-                        :style="{ width: (member.tasks / maxTeamTotal * 100) + '%' }"
-                        :title="`${member.tasks} tasks`"
-                      />
-                      <div
-                        class="h-full bg-indigo-500/50"
-                        :style="{ width: (member.calls / maxTeamTotal * 100) + '%' }"
-                        :title="`${member.calls} calls`"
-                      />
-                      <div
-                        class="h-full bg-sky-500/50"
-                        :style="{ width: (member.emails / maxTeamTotal * 100) + '%' }"
-                        :title="`${member.emails} emails`"
-                      />
-                      <div
-                        class="h-full bg-purple-500/50"
-                        :style="{ width: (member.notes / maxTeamTotal * 100) + '%' }"
-                        :title="`${member.notes} notes`"
-                      />
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  <span class="w-32 shrink-0 text-white/60">{{ member.name }}</span>
+                  <span class="w-12 text-center tabular-nums text-emerald-400/80">{{ member.tasks }}</span>
+                  <span class="w-12 text-center tabular-nums text-indigo-400/80">{{ member.calls }}</span>
+                  <span class="w-12 text-center tabular-nums text-sky-400/80">{{ member.emails }}</span>
+                  <span class="w-12 text-center tabular-nums text-purple-400/80">{{ member.notes }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

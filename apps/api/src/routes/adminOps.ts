@@ -35,6 +35,17 @@ export type OpsDto = {
   teamActivity: Array<{
     ownerId: string
     name: string
+    department: string
+    tasks: number
+    calls: number
+    emails: number
+    notes: number
+  }>
+
+  /* Department summary */
+  departmentActivity: Array<{
+    department: string
+    members: string[]
     tasks: number
     calls: number
     emails: number
@@ -416,13 +427,63 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
   tally(emailsFocus, 'emails')
   tally(notesFocus, 'notes')
 
+  /* ── Department mapping (first name → department) ── */
+  const DEPT_MAP: Record<string, string> = {
+    raj: 'Sales',
+    naheed: 'Sales',
+    simone: 'Success',
+    shaun: 'Training',
+    hope: 'Retention',
+    jason: 'Support',
+    ian: 'Support',
+    ahmad: 'Support',
+    sam: 'Support',
+    joe: 'Support',
+    rupert: 'Support',
+    liam: 'Marketing',
+    josh: 'Sales',
+    jonathan: 'Sales',
+    dean: 'Support',
+  }
+
+  function getDept(fullName: string): string {
+    const first = fullName.split(' ')[0]?.toLowerCase() ?? ''
+    return DEPT_MAP[first] ?? 'Other'
+  }
+
   const teamActivity = [...teamMap.entries()]
-    .map(([ownerId, counts]) => ({
-      ownerId,
-      name: owners.get(ownerId) ?? `Owner ${ownerId}`,
-      ...counts,
-    }))
+    .map(([ownerId, counts]) => {
+      const name = owners.get(ownerId) ?? `Owner ${ownerId}`
+      return { ownerId, name, department: getDept(name), ...counts }
+    })
     .sort((a, b) => (b.tasks + b.calls + b.emails + b.notes) - (a.tasks + a.calls + a.emails + a.notes))
+
+  /* ── Department aggregation ── */
+  const deptMap = new Map<string, { members: Set<string>; tasks: number; calls: number; emails: number; notes: number }>()
+  for (const m of teamActivity) {
+    let d = deptMap.get(m.department)
+    if (!d) {
+      d = { members: new Set(), tasks: 0, calls: 0, emails: 0, notes: 0 }
+      deptMap.set(m.department, d)
+    }
+    d.members.add(m.name)
+    d.tasks += m.tasks
+    d.calls += m.calls
+    d.emails += m.emails
+    d.notes += m.notes
+  }
+
+  const DEPT_ORDER = ['Sales', 'Success', 'Training', 'Retention', 'Support', 'Marketing', 'Other']
+  const departmentActivity = [...deptMap.entries()]
+    .map(([department, d]) => ({
+      department,
+      members: [...d.members],
+      tasks: d.tasks,
+      calls: d.calls,
+      emails: d.emails,
+      notes: d.notes,
+    }))
+    .sort((a, b) => DEPT_ORDER.indexOf(a.department) - DEPT_ORDER.indexOf(b.department))
 
   /* ── Recent activity feed (last 20 across all types) ── */
   type ActivityItem = { type: 'task' | 'call' | 'email' | 'note'; subject: string; owner: string; timestamp: string; associatedCompany: string | null }
@@ -523,6 +584,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       notes: sparkNotes,
     },
     teamActivity,
+    departmentActivity,
     recentActivity,
     sequences: {
       available: false,
