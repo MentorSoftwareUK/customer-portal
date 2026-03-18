@@ -271,8 +271,8 @@ onMounted(() => {
             </div>
             <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Not yet converted</div>
-              <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.notConvertedCount }}</div>
-              <div class="mt-1 text-xs text-white/50">Pipeline value: {{ formatCurrency(sales.freeCustomers.notConvertedPipelineValue) }}</div>
+              <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.notConvertedCount ?? 0 }}</div>
+              <div class="mt-1 text-xs text-white/50">Pipeline value: {{ formatCurrency(sales.freeCustomers.notConvertedPipelineValue ?? 0) }}</div>
             </div>
           </div>
         </div>

@@ -687,7 +687,7 @@ export const adminSalesStatsRoutes: FastifyPluginAsync = async (app) => {
       }
       // MongoDB cache fallback
       const cached = await getCachedStats(cacheKey)
-      if (cached && cached.data.freeCustomers) {
+      if (cached && cached.data.freeCustomers?.notConvertedPipelineValue !== undefined) {
         memCacheMap.set(cacheKey, { data: cached.data, ts: cached.updatedAt.getTime() })
         return reply.send({
           stats: cached.data,
