@@ -63,18 +63,15 @@ export type SalesStatsDto = {
   /* MRR trend (last 6 months) */
   mrrTrend: Array<{ month: string; mrr: number }>
 
-  /* Free customer stats */
+  /* Free customer conversion stats (all-time, company-level) */
   freeCustomers: {
-    totalFreeDeals: number
     totalFreeCompanies: number
-    freeDealsThisMonth: number
-    convertedAllTime: number
-    convertedAllTimeRevenue: number
-    convertedThisMonth: number
+    converted: number
     convertedRevenue: number
+    convertedThisMonth: number
+    convertedRevenueThisMonth: number
+    notConverted: number
     conversionRate: number
-    notConvertedCount: number
-    notConvertedPipelineValue: number
   }
 
   /* Trend — last 6 months, oldest → newest */
@@ -345,6 +342,19 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     DEAL_PROPERTIES,
   )
 
+  /* ── Query 4: ALL closedwon deals (no date filter) for accurate free→paid analysis ── */
+  const allTimeWonDeals = await searchDeals(
+    [
+      {
+        filters: [
+          { propertyName: 'pipeline', operator: 'EQ', value: MAIN_PIPELINE_ID },
+          { propertyName: 'dealstage', operator: 'EQ', value: 'closedwon' },
+        ],
+      },
+    ],
+    DEAL_PROPERTIES,
+  )
+
   /* ── Helpers ── */
   const amt = (d: HsDeal) => parseFloat(d.properties.amount ?? '0') || 0
   const isWon = (d: HsDeal) =>
@@ -572,31 +582,21 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
       }
     : null
 
-  /* ── Free customer stats (company-level) ── */
-  const allWonDeals = closedDeals.filter(isWon)
+  /* ── Free customer stats (company-level, all-time) ── */
   const preRegWon = preRegClosedDeals.filter((d) => d.properties.dealstage === '4014021838')
-  // Free deal = in pre-reg pipeline OR closedwon at £0 in default pipeline
-  const isFree = (d: HsDeal) =>
-    d.properties.pipeline === PREREG_PIPELINE_ID || (isWon(d) && amt(d) === 0)
-  const allFreeWon = [...allWonDeals.filter((d) => amt(d) === 0), ...preRegWon]
-  // Deduplicate by deal id
-  const freeWonIds = new Set<string>()
-  const allFreeWonDeduped = allFreeWon.filter((d) => {
-    if (freeWonIds.has(d.id)) return false
-    freeWonIds.add(d.id)
-    return true
-  })
-  const freeWonThisMonth = allFreeWonDeduped.filter((d) => monthOfDeal(d) === currentMonthKey)
+  const isFreeWon = (d: HsDeal) =>
+    d.properties.pipeline === PREREG_PIPELINE_ID
+      ? d.properties.dealstage === '4014021838'
+      : (d.properties.dealstage === 'closedwon' && amt(d) === 0)
 
-  // Fetch deal→company associations so we can track free→paid per company
-  const allDealsForFree = [...closedDeals, ...openDeals, ...preRegClosedDeals, ...preRegOpenDeals]
-  const allDealIds = allDealsForFree.map((d) => d.id)
-  const uniqueDealIds = [...new Set(allDealIds)]
+  // Combine all-time won deals + pre-reg won for the full picture
+  const allDealsForFree = [...allTimeWonDeals, ...preRegWon, ...openDeals, ...preRegOpenDeals]
+  const uniqueDealIds = [...new Set(allDealsForFree.map((d) => d.id))]
   const dealToCompany = uniqueDealIds.length > 0
     ? await batchDealCompanyMap(uniqueDealIds)
     : new Map<string, string>()
 
-  // Group all deals by company
+  // Group all deals by company (deduplicated)
   const companyDeals = new Map<string, HsDeal[]>()
   const seenDealIds = new Set<string>()
   for (const deal of allDealsForFree) {
@@ -608,70 +608,49 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     companyDeals.get(cid)!.push(deal)
   }
 
-  // "Free company" = has at least one free deal (pre-reg pipeline or closedwon £0)
+  // "Free company" = has at least one free won deal
   const freeCompanyIds = new Set<string>()
   for (const [cid, deals] of companyDeals) {
-    if (deals.some((d) => isFree(d))) freeCompanyIds.add(cid)
+    if (deals.some(isFreeWon)) freeCompanyIds.add(cid)
   }
 
-  // All-time converted = free company with ANY non-free paying won deal ever
-  const allTimeConvertedIds = new Set<string>()
-  let allTimeConvertedRevenue = 0
-  for (const cid of freeCompanyIds) {
-    const deals = companyDeals.get(cid)!
-    const payingWon = deals.filter((d) => isWon(d) && !isFree(d) && amt(d) > 0)
-    if (payingWon.length > 0) {
-      allTimeConvertedIds.add(cid)
-      allTimeConvertedRevenue += payingWon.reduce((s, d) => s + amt(d), 0)
-    }
-  }
-
-  // Converted this month = subset of all-time that converted this month specifically
-  const convertedThisMonthIds = new Set<string>()
+  // Converted = free company that ALSO has a paying closedwon deal
+  const convertedIds = new Set<string>()
+  let convertedRevenue = 0
+  let convertedThisMonthCount = 0
   let convertedRevenueThisMonth = 0
   for (const cid of freeCompanyIds) {
     const deals = companyDeals.get(cid)!
-    const payingThisMonth = deals.filter(
-      (d) => isWon(d) && !isFree(d) && amt(d) > 0 && monthOfDeal(d) === currentMonthKey,
+    const payingWon = deals.filter(
+      (d) => d.properties.dealstage === 'closedwon'
+        && d.properties.pipeline === MAIN_PIPELINE_ID
+        && amt(d) > 0,
     )
-    if (payingThisMonth.length > 0) {
-      convertedThisMonthIds.add(cid)
-      convertedRevenueThisMonth += payingThisMonth.reduce((s, d) => s + amt(d), 0)
+    if (payingWon.length > 0) {
+      convertedIds.add(cid)
+      convertedRevenue += payingWon.reduce((s, d) => s + amt(d), 0)
+      // Check if any paying deal closed in the selected month
+      const payingThisMonth = payingWon.filter((d) => monthOfDeal(d) === currentMonthKey)
+      if (payingThisMonth.length > 0) {
+        convertedThisMonthCount++
+        convertedRevenueThisMonth += payingThisMonth.reduce((s, d) => s + amt(d), 0)
+      }
     }
   }
 
-  // Not-yet-converted = free companies with no paying won deal ever
-  let notConvertedPipelineValue = 0
-  let notConvertedCount = 0
-  for (const cid of freeCompanyIds) {
-    if (allTimeConvertedIds.has(cid)) continue
-    notConvertedCount++
-    const deals = companyDeals.get(cid)!
-    // Sum their open deal values (check both pipeline stage conventions)
-    const opens = deals.filter(
-      (d) => d.properties.dealstage !== 'closedwon' && d.properties.dealstage !== 'closedlost'
-        && d.properties.dealstage !== '4014021838' && d.properties.dealstage !== '4014021839',
-    )
-    notConvertedPipelineValue += opens.reduce((s, d) => s + amt(d), 0)
-  }
-
-  const totalFreeAllTime = allFreeWonDeduped.length
-  const freeConversionRate =
-    freeCompanyIds.size > 0
-      ? Math.round((allTimeConvertedIds.size / freeCompanyIds.size) * 100)
-      : 0
+  const notConvertedCount = freeCompanyIds.size - convertedIds.size
+  const conversionRate = freeCompanyIds.size > 0
+    ? Math.round((convertedIds.size / freeCompanyIds.size) * 100)
+    : 0
 
   const freeCustomers = {
-    totalFreeDeals: totalFreeAllTime,
     totalFreeCompanies: freeCompanyIds.size,
-    freeDealsThisMonth: freeWonThisMonth.length,
-    convertedAllTime: allTimeConvertedIds.size,
-    convertedAllTimeRevenue: Math.round(allTimeConvertedRevenue * 100) / 100,
-    convertedThisMonth: convertedThisMonthIds.size,
-    convertedRevenue: Math.round(convertedRevenueThisMonth * 100) / 100,
-    conversionRate: freeConversionRate,
-    notConvertedCount,
-    notConvertedPipelineValue: Math.round(notConvertedPipelineValue * 100) / 100,
+    converted: convertedIds.size,
+    convertedRevenue: Math.round(convertedRevenue * 100) / 100,
+    convertedThisMonth: convertedThisMonthCount,
+    convertedRevenueThisMonth: Math.round(convertedRevenueThisMonth * 100) / 100,
+    notConverted: notConvertedCount,
+    conversionRate,
   }
 
   return {
@@ -751,7 +730,7 @@ export const adminSalesStatsRoutes: FastifyPluginAsync = async (app) => {
       }
       // MongoDB cache fallback
       const cached = await getCachedStats(cacheKey)
-      if (cached && cached.data.freeCustomers?.convertedAllTime !== undefined) {
+      if (cached && cached.data.freeCustomers?.converted !== undefined && !('convertedAllTime' in (cached.data.freeCustomers ?? {}))) {
         memCacheMap.set(cacheKey, { data: cached.data, ts: cached.updatedAt.getTime() })
         return reply.send({
           stats: cached.data,

@@ -245,76 +245,55 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- ── Free → Paid funnel ── -->
-        <div v-if="sales.freeCustomers" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free → Paid conversion</div>
-
-          <!-- Summary bar -->
-          <div class="mt-3 flex items-center gap-4 rounded-lg border border-white/[0.06] bg-white/[0.02] px-5 py-3 text-sm">
-            <span class="text-white/50">{{ sales.freeCustomers.totalFreeCompanies ?? sales.freeCustomers.totalFreeDeals }} free companies</span>
-            <span class="text-white/20">→</span>
-            <span class="text-emerald-400 font-semibold">{{ sales.freeCustomers.convertedAllTime ?? 0 }} converted</span>
-            <span class="text-white/30">·</span>
-            <span class="text-emerald-400/70">{{ formatCurrency(sales.freeCustomers.convertedAllTimeRevenue ?? 0) }} total revenue</span>
-            <span class="text-white/20">|</span>
-            <span class="text-amber-400 font-semibold">{{ sales.freeCustomers.notConvertedCount ?? 0 }} still free</span>
-            <span class="text-white/30">·</span>
-            <span class="text-white/50">{{ sales.freeCustomers.conversionRate }}% conversion rate</span>
+        <!-- ── Free → Paid Conversion ── -->
+        <div v-if="sales.freeCustomers" class="mt-8 rounded-xl border border-white/[0.06] bg-white/[0.03] p-6">
+          <div class="flex items-center justify-between">
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free → Paid Conversion</div>
           </div>
 
-          <!-- Funnel: 3 stage cards with arrows -->
-          <div class="mt-3 grid grid-cols-1 gap-0 lg:grid-cols-[1fr_auto_1fr_auto_1fr] items-stretch">
-            <!-- Stage 1: The pool -->
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-5">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free companies</div>
-              <div class="mt-2 flex items-baseline gap-3">
-                <span class="text-3xl font-bold tabular-nums text-white">{{ sales.freeCustomers.totalFreeCompanies ?? sales.freeCustomers.totalFreeDeals }}</span>
-                <span class="text-sm text-white/40">total</span>
-              </div>
-              <div class="mt-2 flex items-center gap-2 text-xs text-white/50">
-                <span class="inline-block h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                {{ sales.freeCustomers.freeDealsThisMonth }} new this month
-              </div>
-            </div>
+          <!-- Hero: conversion rate + context -->
+          <div class="mt-4 flex items-end gap-6">
+            <span class="text-5xl font-bold tabular-nums text-white">{{ sales.freeCustomers.conversionRate ?? 0 }}<span class="text-3xl text-white/40">%</span></span>
+            <span class="mb-1 text-sm text-white/50">
+              {{ sales.freeCustomers.converted ?? 0 }} of {{ sales.freeCustomers.totalFreeCompanies ?? 0 }} free companies converted to paid
+            </span>
+          </div>
 
-            <!-- Arrow -->
-            <div class="hidden lg:flex items-center px-2 text-white/20">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </div>
+          <!-- Progress bar -->
+          <div class="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/[0.06]">
+            <div
+              class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700"
+              :style="{ width: (sales.freeCustomers.conversionRate ?? 0) + '%' }"
+            ></div>
+          </div>
+          <div class="mt-1 flex justify-between text-xs text-white/30">
+            <span>0%</span>
+            <span>100%</span>
+          </div>
 
-            <!-- Stage 2: Awaiting conversion -->
-            <div class="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-5">
-              <div class="text-xs font-semibold uppercase tracking-wider text-amber-400/80">Still free</div>
-              <div class="mt-2 flex items-baseline gap-3">
-                <span class="text-3xl font-bold tabular-nums text-amber-400">{{ sales.freeCustomers.notConvertedCount ?? 0 }}</span>
-                <span class="text-sm text-white/40">companies</span>
-              </div>
-              <div class="mt-2 flex items-center gap-2 text-xs text-white/50">
-                <span class="inline-block h-1.5 w-1.5 rounded-full bg-amber-400"></span>
-                {{ formatCurrency(sales.freeCustomers.notConvertedPipelineValue ?? 0) }} open pipeline
-              </div>
-            </div>
-
-            <!-- Arrow -->
-            <div class="hidden lg:flex items-center px-2 text-white/20">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </div>
-
-            <!-- Stage 3: Converted -->
-            <div class="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-5">
+          <!-- Two KPI boxes -->
+          <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <!-- Converted -->
+            <div class="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.05] px-5 py-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-emerald-400/80">Converted to paid</div>
               <div class="mt-2 flex items-baseline gap-3">
-                <span class="text-3xl font-bold tabular-nums text-emerald-400">{{ sales.freeCustomers.convertedAllTime ?? 0 }}</span>
-                <span class="text-sm text-white/40">total</span>
+                <span class="text-3xl font-bold tabular-nums text-emerald-400">{{ sales.freeCustomers.converted ?? 0 }}</span>
+                <span class="text-sm text-white/40">companies</span>
               </div>
-              <div class="mt-2 flex items-center gap-2 text-xs text-white/50">
-                <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                {{ formatCurrency(sales.freeCustomers.convertedAllTimeRevenue ?? 0) }} total revenue
+              <div class="mt-1 text-sm text-emerald-400/70">{{ formatCurrency(sales.freeCustomers.convertedRevenue ?? 0) }} total revenue</div>
+              <div v-if="(sales.freeCustomers.convertedThisMonth ?? 0) > 0" class="mt-2 text-xs text-white/40">
+                +{{ sales.freeCustomers.convertedThisMonth }} this month · {{ formatCurrency(sales.freeCustomers.convertedRevenueThisMonth ?? 0) }}
               </div>
-              <div class="mt-1 flex items-center gap-2 text-xs text-white/50">
-                <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400/50"></span>
-                {{ sales.freeCustomers.convertedThisMonth }} this month · {{ formatCurrency(sales.freeCustomers.convertedRevenue) }}
+            </div>
+
+            <!-- Still free -->
+            <div class="rounded-lg border border-amber-500/20 bg-amber-500/[0.05] px-5 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wider text-amber-400/80">Still on free</div>
+              <div class="mt-2 flex items-baseline gap-3">
+                <span class="text-3xl font-bold tabular-nums text-amber-400">{{ sales.freeCustomers.notConverted ?? 0 }}</span>
+                <span class="text-sm text-white/40">companies</span>
               </div>
+              <div class="mt-1 text-sm text-amber-400/70">Awaiting conversion</div>
             </div>
           </div>
         </div>

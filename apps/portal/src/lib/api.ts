@@ -619,16 +619,13 @@ export type SalesStats = {
   agentBreakdown: SalesAgentBreakdown[]
   mrrTrend: MrrTrendItem[]
   freeCustomers?: {
-    totalFreeDeals: number
     totalFreeCompanies: number
-    freeDealsThisMonth: number
-    convertedAllTime: number
-    convertedAllTimeRevenue: number
-    convertedThisMonth: number
+    converted: number
     convertedRevenue: number
+    convertedThisMonth: number
+    convertedRevenueThisMonth: number
+    notConverted: number
     conversionRate: number
-    notConvertedCount: number
-    notConvertedPipelineValue: number
   }
 }
 
