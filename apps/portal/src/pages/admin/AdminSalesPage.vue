@@ -249,13 +249,26 @@ onMounted(() => {
         <div v-if="sales.freeCustomers" class="mt-8">
           <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free → Paid conversion</div>
 
+          <!-- Summary bar -->
+          <div class="mt-3 flex items-center gap-4 rounded-lg border border-white/[0.06] bg-white/[0.02] px-5 py-3 text-sm">
+            <span class="text-white/50">{{ sales.freeCustomers.totalFreeCompanies ?? sales.freeCustomers.totalFreeDeals }} free companies</span>
+            <span class="text-white/20">→</span>
+            <span class="text-emerald-400 font-semibold">{{ sales.freeCustomers.convertedAllTime ?? 0 }} converted</span>
+            <span class="text-white/30">·</span>
+            <span class="text-emerald-400/70">{{ formatCurrency(sales.freeCustomers.convertedAllTimeRevenue ?? 0) }} total revenue</span>
+            <span class="text-white/20">|</span>
+            <span class="text-amber-400 font-semibold">{{ sales.freeCustomers.notConvertedCount ?? 0 }} still free</span>
+            <span class="text-white/30">·</span>
+            <span class="text-white/50">{{ sales.freeCustomers.conversionRate }}% conversion rate</span>
+          </div>
+
           <!-- Funnel: 3 stage cards with arrows -->
-          <div class="mt-3 grid grid-cols-1 gap-0 lg:grid-cols-[1fr_auto_1fr_auto_1fr]  items-stretch">
+          <div class="mt-3 grid grid-cols-1 gap-0 lg:grid-cols-[1fr_auto_1fr_auto_1fr] items-stretch">
             <!-- Stage 1: The pool -->
             <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-5">
               <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free companies</div>
               <div class="mt-2 flex items-baseline gap-3">
-                <span class="text-3xl font-bold tabular-nums text-white">{{ sales.freeCustomers.totalFreeDeals }}</span>
+                <span class="text-3xl font-bold tabular-nums text-white">{{ sales.freeCustomers.totalFreeCompanies ?? sales.freeCustomers.totalFreeDeals }}</span>
                 <span class="text-sm text-white/40">total</span>
               </div>
               <div class="mt-2 flex items-center gap-2 text-xs text-white/50">
@@ -271,7 +284,7 @@ onMounted(() => {
 
             <!-- Stage 2: Awaiting conversion -->
             <div class="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-5">
-              <div class="text-xs font-semibold uppercase tracking-wider text-amber-400/80">Awaiting conversion</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-amber-400/80">Still free</div>
               <div class="mt-2 flex items-baseline gap-3">
                 <span class="text-3xl font-bold tabular-nums text-amber-400">{{ sales.freeCustomers.notConvertedCount ?? 0 }}</span>
                 <span class="text-sm text-white/40">companies</span>
@@ -289,18 +302,18 @@ onMounted(() => {
 
             <!-- Stage 3: Converted -->
             <div class="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-5">
-              <div class="text-xs font-semibold uppercase tracking-wider text-emerald-400/80">Converted this month</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-emerald-400/80">Converted to paid</div>
               <div class="mt-2 flex items-baseline gap-3">
-                <span class="text-3xl font-bold tabular-nums text-emerald-400">{{ sales.freeCustomers.convertedThisMonth }}</span>
-                <span class="text-sm text-white/40">companies</span>
+                <span class="text-3xl font-bold tabular-nums text-emerald-400">{{ sales.freeCustomers.convertedAllTime ?? 0 }}</span>
+                <span class="text-sm text-white/40">total</span>
               </div>
               <div class="mt-2 flex items-center gap-2 text-xs text-white/50">
                 <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                {{ formatCurrency(sales.freeCustomers.convertedRevenue) }} revenue
+                {{ formatCurrency(sales.freeCustomers.convertedAllTimeRevenue ?? 0) }} total revenue
               </div>
               <div class="mt-1 flex items-center gap-2 text-xs text-white/50">
                 <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400/50"></span>
-                {{ sales.freeCustomers.conversionRate }}% conversion rate
+                {{ sales.freeCustomers.convertedThisMonth }} this month · {{ formatCurrency(sales.freeCustomers.convertedRevenue) }}
               </div>
             </div>
           </div>

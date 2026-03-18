@@ -620,7 +620,10 @@ export type SalesStats = {
   mrrTrend: MrrTrendItem[]
   freeCustomers?: {
     totalFreeDeals: number
+    totalFreeCompanies: number
     freeDealsThisMonth: number
+    convertedAllTime: number
+    convertedAllTimeRevenue: number
     convertedThisMonth: number
     convertedRevenue: number
     conversionRate: number

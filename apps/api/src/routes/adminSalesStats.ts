@@ -66,7 +66,10 @@ export type SalesStatsDto = {
   /* Free customer stats */
   freeCustomers: {
     totalFreeDeals: number
+    totalFreeCompanies: number
     freeDealsThisMonth: number
+    convertedAllTime: number
+    convertedAllTimeRevenue: number
     convertedThisMonth: number
     convertedRevenue: number
     conversionRate: number
@@ -611,49 +614,61 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     if (deals.some((d) => isFree(d))) freeCompanyIds.add(cid)
   }
 
-  // Converted = free company with a non-free paying deal won this month
-  const convertedCompanyIds = new Set<string>()
-  let convertedRevenue = 0
+  // All-time converted = free company with ANY non-free paying won deal ever
+  const allTimeConvertedIds = new Set<string>()
+  let allTimeConvertedRevenue = 0
+  for (const cid of freeCompanyIds) {
+    const deals = companyDeals.get(cid)!
+    const payingWon = deals.filter((d) => isWon(d) && !isFree(d) && amt(d) > 0)
+    if (payingWon.length > 0) {
+      allTimeConvertedIds.add(cid)
+      allTimeConvertedRevenue += payingWon.reduce((s, d) => s + amt(d), 0)
+    }
+  }
+
+  // Converted this month = subset of all-time that converted this month specifically
+  const convertedThisMonthIds = new Set<string>()
+  let convertedRevenueThisMonth = 0
   for (const cid of freeCompanyIds) {
     const deals = companyDeals.get(cid)!
     const payingThisMonth = deals.filter(
       (d) => isWon(d) && !isFree(d) && amt(d) > 0 && monthOfDeal(d) === currentMonthKey,
     )
     if (payingThisMonth.length > 0) {
-      convertedCompanyIds.add(cid)
-      convertedRevenue += payingThisMonth.reduce((s, d) => s + amt(d), 0)
+      convertedThisMonthIds.add(cid)
+      convertedRevenueThisMonth += payingThisMonth.reduce((s, d) => s + amt(d), 0)
     }
   }
 
-  // Not-yet-converted = free companies with no paying won deal (ever, within 6-month window)
+  // Not-yet-converted = free companies with no paying won deal ever
   let notConvertedPipelineValue = 0
   let notConvertedCount = 0
   for (const cid of freeCompanyIds) {
-    if (convertedCompanyIds.has(cid)) continue
+    if (allTimeConvertedIds.has(cid)) continue
+    notConvertedCount++
     const deals = companyDeals.get(cid)!
-    const hasPayingWon = deals.some((d) => isWon(d) && !isFree(d) && amt(d) > 0)
-    if (!hasPayingWon) {
-      notConvertedCount++
-      // Sum their open deal values (check both pipeline stage conventions)
-      const opens = deals.filter(
-        (d) => d.properties.dealstage !== 'closedwon' && d.properties.dealstage !== 'closedlost'
-          && d.properties.dealstage !== '4014021838' && d.properties.dealstage !== '4014021839',
-      )
-      notConvertedPipelineValue += opens.reduce((s, d) => s + amt(d), 0)
-    }
+    // Sum their open deal values (check both pipeline stage conventions)
+    const opens = deals.filter(
+      (d) => d.properties.dealstage !== 'closedwon' && d.properties.dealstage !== 'closedlost'
+        && d.properties.dealstage !== '4014021838' && d.properties.dealstage !== '4014021839',
+    )
+    notConvertedPipelineValue += opens.reduce((s, d) => s + amt(d), 0)
   }
 
   const totalFreeAllTime = allFreeWonDeduped.length
   const freeConversionRate =
     freeCompanyIds.size > 0
-      ? Math.round((convertedCompanyIds.size / freeCompanyIds.size) * 100)
+      ? Math.round((allTimeConvertedIds.size / freeCompanyIds.size) * 100)
       : 0
 
   const freeCustomers = {
     totalFreeDeals: totalFreeAllTime,
+    totalFreeCompanies: freeCompanyIds.size,
     freeDealsThisMonth: freeWonThisMonth.length,
-    convertedThisMonth: convertedCompanyIds.size,
-    convertedRevenue: Math.round(convertedRevenue * 100) / 100,
+    convertedAllTime: allTimeConvertedIds.size,
+    convertedAllTimeRevenue: Math.round(allTimeConvertedRevenue * 100) / 100,
+    convertedThisMonth: convertedThisMonthIds.size,
+    convertedRevenue: Math.round(convertedRevenueThisMonth * 100) / 100,
     conversionRate: freeConversionRate,
     notConvertedCount,
     notConvertedPipelineValue: Math.round(notConvertedPipelineValue * 100) / 100,
@@ -736,7 +751,7 @@ export const adminSalesStatsRoutes: FastifyPluginAsync = async (app) => {
       }
       // MongoDB cache fallback
       const cached = await getCachedStats(cacheKey)
-      if (cached && cached.data.freeCustomers?.notConvertedPipelineValue !== undefined) {
+      if (cached && cached.data.freeCustomers?.convertedAllTime !== undefined) {
         memCacheMap.set(cacheKey, { data: cached.data, ts: cached.updatedAt.getTime() })
         return reply.send({
           stats: cached.data,
