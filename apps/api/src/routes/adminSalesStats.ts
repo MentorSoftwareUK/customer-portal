@@ -78,6 +78,7 @@ export type SalesStatsDto = {
       status: 'converted' | 'free'
       revenue: number
       freeDealName: string
+      convertedDate: string | null
     }>
   }
 
@@ -175,7 +176,7 @@ async function batchDealCompanyMap(dealIds: string[]): Promise<Map<string, strin
     }
     for (const r of json.results) {
       if (r.to.length > 0) {
-        map.set(r.from.id, r.to[0]!.toObjectId)
+        map.set(r.from.id, String(r.to[0]!.toObjectId))
       }
     }
   }
@@ -669,7 +670,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   }
 
   // Build detail list sorted: converted first (by revenue desc), then free (alpha)
-  const companies: Array<{ companyId: string; name: string; status: 'converted' | 'free'; revenue: number; freeDealName: string }> = []
+  const companies: Array<{ companyId: string; name: string; status: 'converted' | 'free'; revenue: number; freeDealName: string; convertedDate: string | null }> = []
   for (const cid of freeCompanyIds) {
     const deals = companyDeals.get(cid)!
     const freeDeal = deals.find(isFreeWon)
@@ -679,12 +680,23 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
         && amt(d) > 0,
     )
     const rev = payingWon.reduce((s, d) => s + amt(d), 0)
+    // Earliest paying deal close date = conversion date
+    let convertedDate: string | null = null
+    if (payingWon.length > 0) {
+      const dates = payingWon
+        .map((d) => d.properties.hs_v2_date_entered_closedwon ?? d.properties.closedate)
+        .filter(Boolean)
+        .map((s) => new Date(s!))
+        .sort((a, b) => a.getTime() - b.getTime())
+      if (dates.length > 0) convertedDate = dates[0]!.toISOString()
+    }
     companies.push({
       companyId: cid,
       name: companyNames.get(cid) ?? `Company ${cid}`,
       status: convertedIds.has(cid) ? 'converted' : 'free',
       revenue: Math.round(rev * 100) / 100,
       freeDealName: freeDeal?.properties.dealname ?? '',
+      convertedDate,
     })
   }
   companies.sort((a, b) => {

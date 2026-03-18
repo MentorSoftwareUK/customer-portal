@@ -34,6 +34,7 @@ const salesLoading = ref(true)
 const salesError = ref<string | null>(null)
 const sales = ref<SalesStats | null>(null)
 const salesCachedAt = ref<string | null>(null)
+const freeTableExpanded = ref(false)
 
 async function loadSalesStats(refresh = false) {
   salesLoading.value = true
@@ -312,19 +313,18 @@ onMounted(() => {
               <thead>
                 <tr class="border-b border-white/[0.06] bg-white/[0.03] text-xs uppercase tracking-wider text-white/40">
                   <th class="px-4 py-2.5 font-semibold">Company</th>
-                  <th class="px-4 py-2.5 font-semibold">Free deal</th>
                   <th class="px-4 py-2.5 font-semibold text-center">Status</th>
+                  <th class="px-4 py-2.5 font-semibold text-center">Converted</th>
                   <th class="px-4 py-2.5 font-semibold text-right">Paid revenue</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
-                  v-for="co in sales.freeCustomers.companies"
+                  v-for="co in (freeTableExpanded ? sales.freeCustomers.companies : sales.freeCustomers.companies.slice(0, 5))"
                   :key="co.companyId"
                   class="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors"
                 >
                   <td class="px-4 py-2.5 text-white/80">{{ co.name }}</td>
-                  <td class="px-4 py-2.5 text-white/50 text-xs">{{ co.freeDealName }}</td>
                   <td class="px-4 py-2.5 text-center">
                     <span
                       class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
@@ -333,10 +333,18 @@ onMounted(() => {
                         : 'bg-amber-500/10 text-amber-400'"
                     >{{ co.status === 'converted' ? 'Converted' : 'Free' }}</span>
                   </td>
+                  <td class="px-4 py-2.5 text-center text-xs tabular-nums text-white/50">{{ co.convertedDate ? new Date(co.convertedDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—' }}</td>
                   <td class="px-4 py-2.5 text-right tabular-nums" :class="co.revenue > 0 ? 'text-emerald-400/80' : 'text-white/30'">{{ co.revenue > 0 ? formatCurrency(co.revenue) : '—' }}</td>
                 </tr>
               </tbody>
             </table>
+            <button
+              v-if="sales.freeCustomers.companies.length > 5"
+              class="w-full border-t border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-xs font-semibold text-white/50 hover:text-white/80 hover:bg-white/[0.04] transition-colors"
+              @click="freeTableExpanded = !freeTableExpanded"
+            >
+              {{ freeTableExpanded ? 'Show less' : `Show all ${sales.freeCustomers.companies.length} companies` }}
+            </button>
           </div>
         </div>
 

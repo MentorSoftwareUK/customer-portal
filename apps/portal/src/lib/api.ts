@@ -632,6 +632,7 @@ export type SalesStats = {
       status: 'converted' | 'free'
       revenue: number
       freeDealName: string
+      convertedDate: string | null
     }>
   }
 }
