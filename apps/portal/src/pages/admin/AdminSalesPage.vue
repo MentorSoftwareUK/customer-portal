@@ -248,7 +248,7 @@ onMounted(() => {
         <!-- ── Free customers ── -->
         <div v-if="sales.freeCustomers" class="mt-8">
           <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free customers</div>
-          <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-5">
             <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Total free</div>
               <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.totalFreeDeals }}</div>
@@ -262,12 +262,17 @@ onMounted(() => {
             <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Converted</div>
               <div class="mt-2 text-2xl font-bold tabular-nums text-emerald-400">{{ sales.freeCustomers.convertedThisMonth }}</div>
-              <div class="mt-1 text-xs text-white/50">Became paying this month</div>
+              <div class="mt-1 text-xs text-white/50">Free → paid this month</div>
             </div>
             <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Conversion value</div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free→Paid value</div>
               <div class="mt-2 text-2xl font-bold tabular-nums text-emerald-400">{{ formatCurrency(sales.freeCustomers.convertedRevenue) }}</div>
               <div class="mt-1 text-xs text-white/50">Revenue from conversions · {{ sales.freeCustomers.conversionRate }}% rate</div>
+            </div>
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Not yet converted</div>
+              <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.notConvertedCount }}</div>
+              <div class="mt-1 text-xs text-white/50">Pipeline value: {{ formatCurrency(sales.freeCustomers.notConvertedPipelineValue) }}</div>
             </div>
           </div>
         </div>

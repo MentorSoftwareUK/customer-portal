@@ -70,6 +70,8 @@ export type SalesStatsDto = {
     convertedThisMonth: number
     convertedRevenue: number
     conversionRate: number
+    notConvertedCount: number
+    notConvertedPipelineValue: number
   }
 
   /* Trend — last 6 months, oldest → newest */
@@ -148,6 +150,28 @@ const STAGE_MAP: Record<string, { label: string; order: number }> = {
 interface HsDeal {
   id: string
   properties: Record<string, string | null>
+}
+
+/** Batch-fetch deal → company associations from HubSpot v4 API */
+async function batchDealCompanyMap(dealIds: string[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>() // dealId → companyId
+  const BATCH = 100
+  for (let i = 0; i < dealIds.length; i += BATCH) {
+    const batch = dealIds.slice(i, i + BATCH)
+    const res = await hsFetch('/crm/v4/associations/deals/companies/batch/read', {
+      method: 'POST',
+      body: JSON.stringify({ inputs: batch.map((id) => ({ id })) }),
+    })
+    const json = (await res.json()) as {
+      results: Array<{ from: { id: string }; to: Array<{ toObjectId: string }> }>
+    }
+    for (const r of json.results) {
+      if (r.to.length > 0) {
+        map.set(r.from.id, r.to[0]!.toObjectId)
+      }
+    }
+  }
+  return map
 }
 
 async function searchDeals(
@@ -513,30 +537,77 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
       }
     : null
 
-  /* ── Free customer stats ── */
-  // Free = closedwon deals with amount = 0
+  /* ── Free customer stats (company-level) ── */
   const allWonDeals = closedDeals.filter(isWon)
   const allFreeWon = allWonDeals.filter((d) => amt(d) === 0)
   const freeWonThisMonth = allFreeWon.filter((d) => monthOfDeal(d) === currentMonthKey)
 
-  // "Converted" = company that had a free deal in the past and now has a paying deal this month
-  // Simple proxy: paying deals this month where there exists a free deal with earlier close date
-  // More practical: just count paying deals with amount > 0 won this month
-  const payingWonThisMonth = wonThisMonth.filter((d) => amt(d) > 0)
-  const convertedRevenue = payingWonThisMonth.reduce((s, d) => s + amt(d), 0)
+  // Fetch deal→company associations so we can track free→paid per company
+  const allDealIds = [...closedDeals, ...openDeals].map((d) => d.id)
+  const dealToCompany = allDealIds.length > 0
+    ? await batchDealCompanyMap(allDealIds)
+    : new Map<string, string>()
+
+  // Group all deals by company
+  const companyDeals = new Map<string, HsDeal[]>()
+  for (const deal of [...closedDeals, ...openDeals]) {
+    const cid = dealToCompany.get(deal.id)
+    if (!cid) continue
+    if (!companyDeals.has(cid)) companyDeals.set(cid, [])
+    companyDeals.get(cid)!.push(deal)
+  }
+
+  // "Free company" = has at least one closed-won deal with amount = 0
+  const freeCompanyIds = new Set<string>()
+  for (const [cid, deals] of companyDeals) {
+    if (deals.some((d) => isWon(d) && amt(d) === 0)) freeCompanyIds.add(cid)
+  }
+
+  // Converted = free company with a paying deal won this month
+  const convertedCompanyIds = new Set<string>()
+  let convertedRevenue = 0
+  for (const cid of freeCompanyIds) {
+    const deals = companyDeals.get(cid)!
+    const payingThisMonth = deals.filter(
+      (d) => isWon(d) && amt(d) > 0 && monthOfDeal(d) === currentMonthKey,
+    )
+    if (payingThisMonth.length > 0) {
+      convertedCompanyIds.add(cid)
+      convertedRevenue += payingThisMonth.reduce((s, d) => s + amt(d), 0)
+    }
+  }
+
+  // Not-yet-converted = free companies with no paying won deal (ever, within 6-month window)
+  let notConvertedPipelineValue = 0
+  let notConvertedCount = 0
+  for (const cid of freeCompanyIds) {
+    if (convertedCompanyIds.has(cid)) continue
+    const deals = companyDeals.get(cid)!
+    const hasPayingWon = deals.some((d) => isWon(d) && amt(d) > 0)
+    if (!hasPayingWon) {
+      notConvertedCount++
+      // Sum their open deal values
+      const opens = deals.filter(
+        (d) => d.properties.dealstage !== 'closedwon' && d.properties.dealstage !== 'closedlost',
+      )
+      notConvertedPipelineValue += opens.reduce((s, d) => s + amt(d), 0)
+    }
+  }
 
   const totalFreeAllTime = allFreeWon.length
   const freeConversionRate =
-    totalFreeAllTime > 0
-      ? Math.round((payingWonThisMonth.length / totalFreeAllTime) * 100)
+    freeCompanyIds.size > 0
+      ? Math.round((convertedCompanyIds.size / freeCompanyIds.size) * 100)
       : 0
 
   const freeCustomers = {
     totalFreeDeals: totalFreeAllTime,
     freeDealsThisMonth: freeWonThisMonth.length,
-    convertedThisMonth: payingWonThisMonth.length,
+    convertedThisMonth: convertedCompanyIds.size,
     convertedRevenue: Math.round(convertedRevenue * 100) / 100,
     conversionRate: freeConversionRate,
+    notConvertedCount,
+    notConvertedPipelineValue: Math.round(notConvertedPipelineValue * 100) / 100,
   }
 
   return {

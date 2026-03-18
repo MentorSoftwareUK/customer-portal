@@ -624,6 +624,8 @@ export type SalesStats = {
     convertedThisMonth: number
     convertedRevenue: number
     conversionRate: number
+    notConvertedCount: number
+    notConvertedPipelineValue: number
   }
 }
 
