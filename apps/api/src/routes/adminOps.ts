@@ -75,7 +75,7 @@ export type OpsDto = {
 
 const HUBSPOT_BASE = 'https://api.hubapi.com'
 
-async function hsFetch(path: string, init?: RequestInit) {
+async function hsFetch(path: string, init?: RequestInit, _retry = 0): Promise<Response> {
   const token = env.HUBSPOT_PRIVATE_APP_TOKEN
   if (!token) throw new Error('Missing HUBSPOT_PRIVATE_APP_TOKEN')
   const res = await fetch(`${HUBSPOT_BASE}${path}`, {
@@ -87,6 +87,11 @@ async function hsFetch(path: string, init?: RequestInit) {
     },
     signal: AbortSignal.timeout(20_000),
   })
+  if (res.status === 429 && _retry < 4) {
+    const wait = Math.min(1000 * 2 ** _retry, 8000)
+    await new Promise((r) => setTimeout(r, wait))
+    return hsFetch(path, init, _retry + 1)
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     throw new Error(`HubSpot ${res.status}: ${text}`)
@@ -330,24 +335,21 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
 
   const engProps = ['hs_timestamp', 'hubspot_owner_id', 'hs_call_title', 'hs_email_subject', 'hs_note_body']
 
-  const [callsFocus, callsPrevRaw, emailsFocus, emailsPrevRaw, notesFocus, notesPrevRaw] =
-    await Promise.all([
-      countEngagements('calls', focusStart, focusEnd, engProps),
-      countEngagements('calls', prevStart, prevEnd, engProps),
-      countEngagements('emails', focusStart, focusEnd, engProps),
-      countEngagements('emails', prevStart, prevEnd, engProps),
-      countEngagements('notes', focusStart, focusEnd, engProps),
-      countEngagements('notes', prevStart, prevEnd, engProps),
-    ])
+  // Serialise engagement fetches to avoid 429 rate limits
+  const callsFocus = await countEngagements('calls', focusStart, focusEnd, engProps)
+  const callsPrevRaw = await countEngagements('calls', prevStart, prevEnd, engProps)
+  const emailsFocus = await countEngagements('emails', focusStart, focusEnd, engProps)
+  const emailsPrevRaw = await countEngagements('emails', prevStart, prevEnd, engProps)
+  const notesFocus = await countEngagements('notes', focusStart, focusEnd, engProps)
+  const notesPrevRaw = await countEngagements('notes', prevStart, prevEnd, engProps)
 
-  /* ── Sparkline data (6 months) ── */
+  /* ── Sparkline data (6 months) — serialised per month to avoid 429s ── */
   const sparkTasks: number[] = []
   const sparkCalls: number[] = []
   const sparkEmails: number[] = []
   const sparkNotes: number[] = []
 
   for (const mk of spark6) {
-    const { startIso: s, endIso: e } = monthBounds(mk)
     if (mk === focusMonth) {
       sparkTasks.push(tasksCompletedThisMonth)
       sparkCalls.push(callsFocus.length)
@@ -359,21 +361,20 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       sparkEmails.push(emailsPrevRaw.length)
       sparkNotes.push(notesPrevRaw.length)
     } else {
-      // Fetch each engagement type for this sparkline month
-      const [tc, cc, ec, nc] = await Promise.all([
-        safeSearch('tasks', {
-          filterGroups: [{
-            filters: [
-              { propertyName: 'hs_task_status', operator: 'EQ', value: 'COMPLETED' },
-              { propertyName: 'hs_task_completion_date', operator: 'GTE', value: s },
-              { propertyName: 'hs_task_completion_date', operator: 'LT', value: e },
-            ],
-          }],
-        }, ['hs_task_subject']),
-        countEngagements('calls', s, e, ['hs_timestamp']),
-        countEngagements('emails', s, e, ['hs_timestamp']),
-        countEngagements('notes', s, e, ['hs_timestamp']),
-      ])
+      const { startIso: s, endIso: e } = monthBounds(mk)
+      // Fetch sequentially per type to stay within rate limits
+      const tc = await safeSearch('tasks', {
+        filterGroups: [{
+          filters: [
+            { propertyName: 'hs_task_status', operator: 'EQ', value: 'COMPLETED' },
+            { propertyName: 'hs_task_completion_date', operator: 'GTE', value: s },
+            { propertyName: 'hs_task_completion_date', operator: 'LT', value: e },
+          ],
+        }],
+      }, ['hs_task_subject'])
+      const cc = await countEngagements('calls', s, e, ['hs_timestamp'])
+      const ec = await countEngagements('emails', s, e, ['hs_timestamp'])
+      const nc = await countEngagements('notes', s, e, ['hs_timestamp'])
       sparkTasks.push(tc.length)
       sparkCalls.push(cc.length)
       sparkEmails.push(ec.length)

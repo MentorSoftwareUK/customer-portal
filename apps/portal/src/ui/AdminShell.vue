@@ -14,7 +14,7 @@ const router = useRouter()
 const currentPath = computed(() => route.path)
 const isDashboardPage = computed(() => {
   const p = route.path
-  return p === '/admin/dashboard' || p === '/admin/marketing' || p === '/admin/sales' || p === '/admin/success'
+  return p === '/admin/dashboard' || p === '/admin/marketing' || p === '/admin/sales' || p === '/admin/success' || p === '/admin/ops'
 })
 
 const isActive = (to: string) => {
