@@ -268,19 +268,19 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     'hs_v2_date_entered_closedlost',
   ]
 
-  /* ── Query 1: All closed deals in last 6 months ── */
+  /* ── Query 1: All closed deals in last 6 months (by actual stage-entry date) ── */
   const closedDeals = await searchDeals(
     [
       {
         filters: [
           { propertyName: 'pipeline', operator: 'EQ', value: MAIN_PIPELINE_ID },
           {
-            propertyName: 'closedate',
+            propertyName: 'hs_v2_date_entered_closedwon',
             operator: 'GTE',
             value: sixMonthsAgo.toISOString(),
           },
           ...(isHistorical ? [{
-            propertyName: 'closedate',
+            propertyName: 'hs_v2_date_entered_closedwon',
             operator: 'LT',
             value: endOfMonth.toISOString(),
           }] : []),
@@ -291,12 +291,12 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
         filters: [
           { propertyName: 'pipeline', operator: 'EQ', value: MAIN_PIPELINE_ID },
           {
-            propertyName: 'closedate',
+            propertyName: 'hs_v2_date_entered_closedlost',
             operator: 'GTE',
             value: sixMonthsAgo.toISOString(),
           },
           ...(isHistorical ? [{
-            propertyName: 'closedate',
+            propertyName: 'hs_v2_date_entered_closedlost',
             operator: 'LT',
             value: endOfMonth.toISOString(),
           }] : []),
