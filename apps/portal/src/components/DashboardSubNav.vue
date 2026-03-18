@@ -10,6 +10,7 @@ const tabs = [
   { to: '/admin/marketing', label: 'Marketing', activeClass: 'bg-indigo-500/20 text-indigo-300 shadow-sm' },
   { to: '/admin/sales', label: 'Sales', activeClass: 'bg-emerald-500/20 text-emerald-300 shadow-sm' },
   { to: '/admin/success', label: 'Success', activeClass: 'bg-amber-500/20 text-amber-300 shadow-sm' },
+  { to: '/admin/ops', label: 'Ops', activeClass: 'bg-cyan-500/20 text-cyan-300 shadow-sm' },
 ]
 </script>
 

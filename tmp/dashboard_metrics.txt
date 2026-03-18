@@ -1,0 +1,63 @@
+ADMIN DASHBOARD METRICS — ALL TABS
+===================================
+
+DASHBOARD (Overview)
+--------------------
+ #  Metric                    Value               Delta
+ 1  Live Customers            Count               —
+ 2  Associated Contacts       Count               —
+ 3  Total Homes               Count               —
+ 4  Children's Homes          Count               —
+ 5  Supported Accommodation   Count               —
+ 6  MQLs                      Count               % vs prev month
+ 7  Demos                     Count               % vs prev month
+ 8  MQL → Demo Conversion     %                   % change
+ 9  Deals Won                 Count               % vs prev month
+10  Revenue Won               £                   % vs prev month
+11  Win Rate                  %                   % change
+12  Open Pipeline             £                   —
+13  Paying Customers          Count               % vs prev month
+14  Retention Rate            %                   % change
+15  Churned (Month)           Count               absolute change
+16  At-Risk                   Count               —
+
+
+SALES TAB
+---------
+ #  Metric                    Value                           Delta
+ 1  Deals Won                 Count (+ today / this week)     % vs prev month
+ 2  Revenue Won               £                               % vs prev month
+ 3  Win Rate                  %                               % change
+ 4  Avg Close Time            Days                            absolute change
+ 5  Open Pipeline             £ (+ deal count)                —
+ 6  Lose Rate                 %                               % change
+ 7  MRR line chart            12mo trend + current £/mo       —
+ 8  Free→Paid conversion      % (hero) + progress bar         —
+ 9  Converted to Paid         Count + £ total revenue         —
+10  Converted This Month      Count + £ revenue               —
+11  Still on Free             Count                           —
+12  Company detail table      Name, status, date, revenue     —
+13  Pipeline stages           Stage → count + £ value (bars)  —
+14  Agent breakdown           Won/lost/revenue/open per agent —
+15  Recent deals table        Name, agent, £, stage, date     —
+
+
+CUSTOMER SUCCESS TAB
+--------------------
+ #  Metric                    Value                           Delta
+ 1  Paying Customers          Count                           % vs prev month
+ 2  Retention Rate            % (colour-coded)                % change
+ 3  Churned                   Total + this month + last 3mo   absolute change
+ 4  Off-boarding              Count                           —
+ 5  Avg Tenure                Months                          —
+ 6  Meetings (30d)            Count                           sparkline
+ 7  Completed meetings        Count                           sparkline
+ 8  No-show                   Count                           sparkline
+ 9  Success team breakdown    Companies, meetings, rate/person —
+10  New customers (60d)       Name, owner, training/success   —
+11  Early churn breakdown     Within 60/90/120 days (count+%) —
+12  At-risk customers table   Name, owner, risk, reasons      —
+13  Churn trend line chart    6mo churned + new customers     —
+14  Cancellation reasons      Donut chart by reason           —
+15  Customer tenure           Donut chart by tenure bucket    —
+16  Recently churned table    Name, date left, reason         —

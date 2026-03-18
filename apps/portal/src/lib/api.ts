@@ -740,6 +740,68 @@ export async function adminGetCustomerSuccess(month?: string, refresh = false) {
   return (await res.json()) as { stats: CustomerSuccess; cached?: boolean; cachedAt?: string }
 }
 
+/* ── Ops ── */
+
+export type OpsStats = {
+  openTasks: number
+  overdueTasks: number
+  tasksCompletedThisMonth: number
+  tasksCompletedPrev: number
+  avgTaskCompletionDays: number
+  avgTaskCompletionDaysPrev: number
+  callsThisMonth: number
+  callsPrev: number
+  emailsThisMonth: number
+  emailsPrev: number
+  notesThisMonth: number
+  notesPrev: number
+  kpiSpark: {
+    tasksCompleted: number[]
+    calls: number[]
+    emails: number[]
+    notes: number[]
+  }
+  teamActivity: Array<{
+    ownerId: string
+    name: string
+    tasks: number
+    calls: number
+    emails: number
+    notes: number
+  }>
+  recentActivity: Array<{
+    type: 'task' | 'call' | 'email' | 'note'
+    subject: string
+    owner: string
+    timestamp: string
+    associatedCompany: string | null
+  }>
+  sequences: {
+    available: false
+    note: string
+  }
+  dataQuality: {
+    companiesMissingOwner: number
+    companiesMissingIndustry: number
+    dealsMissingAmount: number
+    dealsMissingCloseDate: number
+    contactsMissingEmail: number
+  }
+}
+
+export async function adminGetOps(month?: string, refresh = false) {
+  const params = new URLSearchParams()
+  if (month) params.set('month', month)
+  if (refresh) params.set('refresh', 'true')
+  const qs = params.toString() ? `?${params}` : ''
+  const res = await apiFetch(`${getApiBaseUrl()}/admin/ops${qs}`, { method: 'GET' })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Ops stats failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  return (await res.json()) as { stats: OpsStats; cached?: boolean; cachedAt?: string }
+}
+
 export async function trackSessionStart(path?: string) {
   const res = await apiFetch(`${getApiBaseUrl()}/activity/session/start`, {
     method: 'POST',
