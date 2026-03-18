@@ -212,6 +212,35 @@ async function searchDeals(
   return all
 }
 
+interface HsCompany {
+  id: string
+  properties: Record<string, string | null>
+}
+
+async function searchCompanies(
+  filterGroups: unknown[],
+  properties: string[],
+): Promise<HsCompany[]> {
+  const all: HsCompany[] = []
+  let after: string | undefined
+  for (;;) {
+    const body: Record<string, unknown> = { filterGroups, properties, limit: 100 }
+    if (after) body.after = after
+    const res = await hsFetch('/crm/v3/objects/companies/search', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+    const json = (await res.json()) as {
+      results: HsCompany[]
+      paging?: { next?: { after: string } }
+    }
+    all.push(...json.results)
+    after = json.paging?.next?.after
+    if (!after) break
+  }
+  return all
+}
+
 /* ------------------------------------------------------------------ */
 /*  Build stats from raw HubSpot data                                 */
 /* ------------------------------------------------------------------ */
@@ -363,6 +392,21 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     DEAL_PROPERTIES,
   )
 
+  /* ── Query 5: Live paying companies (for MRR calculation) ── */
+  const liveCompanies = await searchCompanies(
+    [{ filters: [{ propertyName: 'salesstatus', operator: 'EQ', value: 'paying_customer' }] }],
+    ['name'],
+  )
+  const liveCompanyIds = new Set(liveCompanies.map((c) => c.id))
+
+  /* Deal → company associations for all-time won deals */
+  const dealCompanyMap = await batchDealCompanyMap(allTimeWonDeals.map((d) => d.id))
+  /* Deals belonging to currently-live paying companies */
+  const liveDeals = allTimeWonDeals.filter((d) => {
+    const cid = dealCompanyMap.get(d.id)
+    return cid != null && liveCompanyIds.has(cid)
+  })
+
   /* ── Helpers ── */
   const amt = (d: HsDeal) => parseFloat(d.properties.amount ?? '0') || 0
   const isWon = (d: HsDeal) =>
@@ -424,17 +468,14 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
         )
       : 0
 
-  /* ── MRR: sum of hs_mrr for all customers active in the current month ── */
+  /* ── MRR: sum of hs_mrr for all live paying customers (won date onwards) ── */
   let mrr = 0
-  for (const d of allTimeWonDeals) {
+  for (const d of liveDeals) {
     const dealMrr = parseFloat(d.properties.hs_mrr ?? '0') || 0
     if (dealMrr === 0) continue
     const startRaw = d.properties.hs_v2_date_entered_closedwon
     if (!startRaw) continue
-    const startMk = monthKey(new Date(startRaw))
-    const endRaw = d.properties.closedate
-    const endMk = endRaw ? monthKey(new Date(endRaw)) : '2099-01'
-    if (currentMonthKey >= startMk && currentMonthKey <= endMk) {
+    if (currentMonthKey >= monthKey(new Date(startRaw))) {
       mrr += dealMrr
     }
   }
@@ -512,9 +553,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     .map(([ownerId, a]) => ({ ...a, ownerId }))
     .sort((a, b) => b.revenue - a.revenue)
 
-  /* ── MRR trend (cumulative: all active customers contributing hs_mrr each month) ── */
-  // A deal contributes hs_mrr in every month from start (hs_v2_date_entered_closedwon)
-  // to end (closedate = contract end), capped at current month
+  /* ── MRR trend (cumulative: live paying customers contributing hs_mrr each month) ── */
   const mrrTrendMap = new Map<string, number>()
   const trendMonths = 12
   for (let i = trendMonths - 1; i >= 0; i--) {
@@ -522,24 +561,16 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     mrrTrendMap.set(monthKey(d), 0)
   }
   const mrrMonthKeys = [...mrrTrendMap.keys()]
-  const mrrFirstMonth = mrrMonthKeys[0]!
-  const mrrLastMonth = mrrMonthKeys[mrrMonthKeys.length - 1]!
 
-  for (const d of allTimeWonDeals) {
+  for (const d of liveDeals) {
     const dealMrr = parseFloat(d.properties.hs_mrr ?? '0') || 0
     if (dealMrr === 0) continue
     const startRaw = d.properties.hs_v2_date_entered_closedwon
     if (!startRaw) continue
-    const startDate = new Date(startRaw)
-    const startMk = monthKey(startDate)
-    // End = closedate (contract end) or far future if missing
-    const endRaw = d.properties.closedate
-    const endDate = endRaw ? new Date(endRaw) : new Date(2099, 0, 1)
-    const endMk = monthKey(endDate)
+    const startMk = monthKey(new Date(startRaw))
 
-    // Only iterate over the months we care about
     for (const mk of mrrMonthKeys) {
-      if (mk >= startMk && mk <= endMk) {
+      if (mk >= startMk) {
         mrrTrendMap.set(mk, mrrTrendMap.get(mk)! + dealMrr)
       }
     }
