@@ -257,6 +257,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     'hubspot_owner_id',
     'hs_v2_date_entered_closedwon',
     'hs_v2_date_entered_closedlost',
+    'registration_status',
   ]
 
   /* ── Query 1: All closed deals in last 6 months ── */
@@ -539,7 +540,8 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
   /* ── Free customer stats (company-level) ── */
   const allWonDeals = closedDeals.filter(isWon)
-  const allFreeWon = allWonDeals.filter((d) => amt(d) === 0)
+  const isFree = (d: HsDeal) => d.properties.registration_status === 'Pre-registered (Free)'
+  const allFreeWon = allWonDeals.filter(isFree)
   const freeWonThisMonth = allFreeWon.filter((d) => monthOfDeal(d) === currentMonthKey)
 
   // Fetch deal→company associations so we can track free→paid per company
@@ -557,19 +559,19 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     companyDeals.get(cid)!.push(deal)
   }
 
-  // "Free company" = has at least one closed-won deal with amount = 0
+  // "Free company" = has at least one closed-won deal with registration_status = 'Pre-registered (Free)'
   const freeCompanyIds = new Set<string>()
   for (const [cid, deals] of companyDeals) {
-    if (deals.some((d) => isWon(d) && amt(d) === 0)) freeCompanyIds.add(cid)
+    if (deals.some((d) => isWon(d) && isFree(d))) freeCompanyIds.add(cid)
   }
 
-  // Converted = free company with a paying deal won this month
+  // Converted = free company with a non-free paying deal won this month
   const convertedCompanyIds = new Set<string>()
   let convertedRevenue = 0
   for (const cid of freeCompanyIds) {
     const deals = companyDeals.get(cid)!
     const payingThisMonth = deals.filter(
-      (d) => isWon(d) && amt(d) > 0 && monthOfDeal(d) === currentMonthKey,
+      (d) => isWon(d) && !isFree(d) && amt(d) > 0 && monthOfDeal(d) === currentMonthKey,
     )
     if (payingThisMonth.length > 0) {
       convertedCompanyIds.add(cid)
@@ -583,7 +585,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   for (const cid of freeCompanyIds) {
     if (convertedCompanyIds.has(cid)) continue
     const deals = companyDeals.get(cid)!
-    const hasPayingWon = deals.some((d) => isWon(d) && amt(d) > 0)
+    const hasPayingWon = deals.some((d) => isWon(d) && !isFree(d) && amt(d) > 0)
     if (!hasPayingWon) {
       notConvertedCount++
       // Sum their open deal values
