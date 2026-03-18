@@ -283,7 +283,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     ],
     COMPANY_PROPERTIES,
   )
-  const totalPayingCustomers = paying.length
+  const livePayingCount = paying.length
 
   /* ── 2. Churned customers ── */
   const churned = await searchCompanies(
@@ -316,10 +316,10 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   const totalOffboarding = offboarding.length
 
   /* ── 4. Retention rate ── */
-  const totalCustomerBase = totalPayingCustomers + totalChurned + totalOffboarding
+  const totalCustomerBase = livePayingCount + totalChurned + totalOffboarding
   const retentionRate =
     totalCustomerBase > 0
-      ? Math.round((totalPayingCustomers / totalCustomerBase) * 100)
+      ? Math.round((livePayingCount / totalCustomerBase) * 100)
       : 100
 
   /* ── 5. Churn timing ── */
@@ -635,13 +635,27 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   /* ── 14. KPI sparklines (6 monthly data points) ── */
   // Estimate historical paying counts by reversing churn/new from churnTrend
   const payingSpark: number[] = []
-  let payingEst = totalPayingCustomers
+  let payingEst = livePayingCount
   for (let i = 5; i >= 0; i--) {
     payingSpark.unshift(Math.max(0, payingEst))
     if (i > 0) {
       payingEst = payingEst + (churnTrend[i]?.churned ?? 0) - (churnTrend[i]?.newCustomers ?? 0)
     }
   }
+
+  // For historical months, use the back-calculated estimate instead of live count
+  const isHistorical = currentMK !== monthKey(now)
+  const totalPayingCustomers = isHistorical
+    ? (payingSpark[5] ?? livePayingCount)
+    : livePayingCount
+
+  // Recalculate retention rate for historical months
+  const finalRetentionRate = isHistorical
+    ? (() => {
+        const base = totalPayingCustomers + totalChurned + totalOffboarding
+        return base > 0 ? Math.round((totalPayingCustomers / base) * 100) : 100
+      })()
+    : retentionRate
 
   const meetingsSpark: number[] = []
   const completedSpark: number[] = []
@@ -657,7 +671,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     noShowSpark.push(mb.noShow)
     churnedSpark.push(churnTrend[5 - i]?.churned ?? 0)
     // Retention % estimate for sparkline
-    const estPay = payingSpark[5 - i] ?? totalPayingCustomers
+    const estPay = payingSpark[5 - i] ?? livePayingCount
     const totalBase = estPay + (churnTrend.slice(0, 5 - i + 1).reduce((a, t) => a + t.churned, 0))
     retentionSpark.push(totalBase > 0 ? Math.round((estPay / totalBase) * 100) : 100)
   }
@@ -675,7 +689,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   const prevMK = monthKey(new Date(focusDate.getFullYear(), focusDate.getMonth() - 1, 1))
   const prevMeetingBucket = meetingsByMonthMap.get(prevMK) ?? { total: 0, completed: 0, noShow: 0 }
   const previousPeriod = {
-    totalPayingCustomers: payingSpark[4] ?? totalPayingCustomers,
+    totalPayingCustomers: payingSpark[4] ?? livePayingCount,
     retentionRate: retentionSpark[4] ?? retentionRate,
     churned: churnTrend[4]?.churned ?? 0,
     meetingsMonth: prevMeetingBucket.total,
@@ -809,7 +823,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     totalPayingCustomers,
     totalChurned,
     totalOffboarding,
-    retentionRate,
+    retentionRate: finalRetentionRate,
     churnedThisMonth,
     churnedLast3Months,
     cancellationReasons,
