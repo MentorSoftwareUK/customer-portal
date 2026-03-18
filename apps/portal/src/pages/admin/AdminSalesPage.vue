@@ -272,7 +272,7 @@ onMounted(() => {
           </div>
 
           <!-- Two KPI boxes -->
-          <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <!-- Converted -->
             <div class="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.05] px-5 py-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-emerald-400/80">Converted to paid</div>
@@ -281,9 +281,16 @@ onMounted(() => {
                 <span class="text-sm text-white/40">companies</span>
               </div>
               <div class="mt-1 text-sm text-emerald-400/70">{{ formatCurrency(sales.freeCustomers.convertedRevenue ?? 0) }} total revenue</div>
-              <div v-if="(sales.freeCustomers.convertedThisMonth ?? 0) > 0" class="mt-2 text-xs text-white/40">
-                +{{ sales.freeCustomers.convertedThisMonth }} this month · {{ formatCurrency(sales.freeCustomers.convertedRevenueThisMonth ?? 0) }}
+            </div>
+
+            <!-- Converted this month -->
+            <div class="rounded-lg border border-sky-500/20 bg-sky-500/[0.05] px-5 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wider text-sky-400/80">Converted this month</div>
+              <div class="mt-2 flex items-baseline gap-3">
+                <span class="text-3xl font-bold tabular-nums text-sky-400">{{ sales.freeCustomers.convertedThisMonth ?? 0 }}</span>
+                <span class="text-sm text-white/40">companies</span>
               </div>
+              <div class="mt-1 text-sm text-sky-400/70">{{ formatCurrency(sales.freeCustomers.convertedRevenueThisMonth ?? 0) }} revenue</div>
             </div>
 
             <!-- Still free -->
