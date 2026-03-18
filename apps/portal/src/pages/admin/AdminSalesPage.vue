@@ -83,7 +83,7 @@ const salesKpiCards = computed(() => {
         value: Math.abs(s.winRate - (p?.winRate ?? 0)),
         dir: s.winRate > (p?.winRate ?? 0) ? 'up' as const : s.winRate < (p?.winRate ?? 0) ? 'down' as const : 'flat' as const,
       },
-      suffix: 'pp',
+      suffix: '%',
       spark: s.trend.map((t) => t.winRate),
       color: '#fbbf24',
     },
@@ -125,7 +125,7 @@ const salesKpiCards = computed(() => {
             ? 'down' as const
             : 'flat' as const,
       },
-      suffix: 'pp',
+      suffix: '%',
       spark: s.trend.map((t) => 100 - t.winRate),
       color: '#fb7185',
       lowerIsBetter: true,

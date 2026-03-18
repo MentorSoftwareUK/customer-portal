@@ -93,7 +93,7 @@ const marketingCards = computed(() => {
       label: 'MQL \u2192 Demo',
       val: `${Math.round(currConv)}%`,
       delta: { value: Math.abs(Math.round(currConv - prevConv)), dir: currConv > prevConv ? 'up' as const : currConv < prevConv ? 'down' as const : 'flat' as const },
-      suffix: 'pp',
+      suffix: '%',
       spark: f.trend.map(t => t.mqls > 0 ? (t.demos / t.mqls) * 100 : 0),
       color: '#f472b6',
     },
@@ -136,7 +136,7 @@ const salesCards = computed(() => {
       label: 'Win Rate',
       val: `${s.winRate}%`,
       delta: { value: Math.abs(s.winRate - (p?.winRate ?? 0)), dir: s.winRate > (p?.winRate ?? 0) ? 'up' as const : s.winRate < (p?.winRate ?? 0) ? 'down' as const : 'flat' as const },
-      suffix: 'pp',
+      suffix: '%',
       spark: s.trend.map(t => t.winRate),
       color: '#fbbf24',
     },
@@ -181,7 +181,7 @@ const successCards = computed(() => {
       delta: prev
         ? { value: Math.abs(s.retentionRate - prev.retentionRate), dir: s.retentionRate > prev.retentionRate ? 'up' as const : s.retentionRate < prev.retentionRate ? 'down' as const : 'flat' as const }
         : { value: 0, dir: 'flat' as const },
-      suffix: 'pp',
+      suffix: '%',
       spark: spark?.retention ?? [],
       color: '#818cf8',
       valClass: s.retentionRate >= 90 ? 'text-emerald-400' : s.retentionRate >= 75 ? 'text-amber-400' : 'text-rose-400',
