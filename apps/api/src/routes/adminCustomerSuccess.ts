@@ -633,9 +633,38 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   }
 
   /* ── 14. KPI sparklines (6 monthly data points) ── */
-  // Estimate historical paying counts by reversing churn/new from churnTrend
+  const isHistorical = currentMK !== monthKey(now)
+
+  // For historical months, walk backwards from today's live count through each
+  // intervening month's churn/new to estimate the count at end of selected month
+  let payingAtFocus = livePayingCount
+  if (isHistorical) {
+    // Build per-month churn/new from (selectedMonth+1) through today's month
+    const startM = new Date(focusDate.getFullYear(), focusDate.getMonth() + 1, 1)
+    const endM = now
+    const d = new Date(endM.getFullYear(), endM.getMonth(), 1)
+    while (d > startM) {
+      const mk = monthKey(d)
+      const churnCount = churned.filter((c) => {
+        const dl = c.properties.date_left
+        return dl ? monthKey(new Date(dl)) === mk : false
+      }).length
+      const newCustCount = paying.filter((c) => {
+        const cs = c.properties.installdate ?? c.properties.contract_start_date
+        return cs ? monthKey(new Date(cs)) === mk : false
+      }).length
+      // Reverse: to go back one month, undo its effect
+      payingAtFocus = payingAtFocus + churnCount - newCustCount
+      d.setMonth(d.getMonth() - 1)
+    }
+    // Also undo the selected month itself if focus < current month
+    const focusMk = monthKey(startM) // month after focus
+    // We've already walked down to startM, no need to undo focusDate's own month
+  }
+
+  // Estimate sparkline by reversing churn/new within the 6-month window
   const payingSpark: number[] = []
-  let payingEst = livePayingCount
+  let payingEst = payingAtFocus
   for (let i = 5; i >= 0; i--) {
     payingSpark.unshift(Math.max(0, payingEst))
     if (i > 0) {
@@ -643,11 +672,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     }
   }
 
-  // For historical months, use the back-calculated estimate instead of live count
-  const isHistorical = currentMK !== monthKey(now)
-  const totalPayingCustomers = isHistorical
-    ? (payingSpark[5] ?? livePayingCount)
-    : livePayingCount
+  const totalPayingCustomers = payingAtFocus
 
   // Recalculate retention rate for historical months
   const finalRetentionRate = isHistorical
