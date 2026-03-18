@@ -93,14 +93,15 @@ const salesKpiCards = computed(() => {
       delta: {
         value: Math.abs(s.avgCloseTimeDays - (p?.avgCloseTimeDays ?? 0)),
         dir: s.avgCloseTimeDays > (p?.avgCloseTimeDays ?? 0)
-          ? 'down' as const
+          ? 'up' as const
           : s.avgCloseTimeDays < (p?.avgCloseTimeDays ?? 0)
-            ? 'up' as const
+            ? 'down' as const
             : 'flat' as const,
       },
       suffix: 'd',
       spark: s.trend.map((t) => t.avgCloseTimeDays),
       color: '#f472b6',
+      lowerIsBetter: true,
     },
     {
       label: 'Open Pipeline',
@@ -117,15 +118,16 @@ const salesKpiCards = computed(() => {
       val: `${s.loseRate}%`,
       delta: {
         value: Math.abs(s.loseRate - (p ? (100 - p.winRate) : 0)),
-        dir: s.loseRate < (p ? (100 - p.winRate) : 0)
+        dir: s.loseRate > (p ? (100 - p.winRate) : 0)
           ? 'up' as const
-          : s.loseRate > (p ? (100 - p.winRate) : 0)
+          : s.loseRate < (p ? (100 - p.winRate) : 0)
             ? 'down' as const
             : 'flat' as const,
       },
       suffix: 'pp',
       spark: s.trend.map((t) => 100 - t.winRate),
       color: '#fb7185',
+      lowerIsBetter: true,
     },
   ]
 })
@@ -232,7 +234,7 @@ onMounted(() => {
               <span
                 v-if="card.delta.dir !== 'flat'"
                 class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-bold"
-                :class="card.delta.dir === 'up' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'"
+                :class="(card.lowerIsBetter ? card.delta.dir === 'down' : card.delta.dir === 'up') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'"
               >
                 <svg v-if="card.delta.dir === 'up'" class="h-2.5 w-2.5" fill="none" viewBox="0 0 10 10"><path d="M5 2v6M2.5 4.5 5 2l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <svg v-else class="h-2.5 w-2.5" fill="none" viewBox="0 0 10 10"><path d="M5 8V2M2.5 5.5 5 8l2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
