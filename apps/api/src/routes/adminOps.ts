@@ -64,6 +64,9 @@ export type OpsDto = {
     dealsMissingCloseDate: number
     contactsMissingEmail: number
   }
+
+  /* Scope warnings — engagement types that failed due to missing HubSpot scopes */
+  scopeWarnings: string[]
 }
 
 /* ------------------------------------------------------------------ */
@@ -192,8 +195,23 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
 
   const owners = await getOwners()
 
+  /* Helper: search with graceful 403 handling */
+  async function safeSearch(
+    objectType: string,
+    body: Record<string, unknown>,
+    properties: string[],
+  ): Promise<Array<Record<string, string>>> {
+    try {
+      return await searchObjects(objectType, body, properties)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('403') || msg.includes('MISSING_SCOPES')) return []
+      throw err
+    }
+  }
+
   /* ── Tasks: open + overdue ── */
-  const openTasksRaw = await searchObjects(
+  const openTasksRaw = await safeSearch(
     'tasks',
     {
       filterGroups: [
@@ -214,7 +232,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
   }).length
 
   /* ── Tasks: completed in focus month ── */
-  const completedFocusRaw = await searchObjects(
+  const completedFocusRaw = await safeSearch(
     'tasks',
     {
       filterGroups: [
@@ -246,7 +264,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       : 0
 
   /* ── Tasks: completed in prev month ── */
-  const completedPrevRaw = await searchObjects(
+  const completedPrevRaw = await safeSearch(
     'tasks',
     {
       filterGroups: [
@@ -277,22 +295,37 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       : 0
 
   /* ── Engagement counts (calls, emails, notes) ── */
+  /* Track engagement types that fail due to missing HubSpot scopes */
+  const scopeWarnings: string[] = []
+  const unavailableTypes = new Set<string>()
+
   async function countEngagements(
     objectType: string,
     startIso: string,
     endIso: string,
     properties: string[],
-  ) {
-    return searchObjects(objectType, {
-      filterGroups: [
-        {
-          filters: [
-            { propertyName: 'hs_timestamp', operator: 'GTE', value: startIso },
-            { propertyName: 'hs_timestamp', operator: 'LT', value: endIso },
-          ],
-        },
-      ],
-    }, properties)
+  ): Promise<Array<Record<string, string>>> {
+    if (unavailableTypes.has(objectType)) return []
+    try {
+      return await searchObjects(objectType, {
+        filterGroups: [
+          {
+            filters: [
+              { propertyName: 'hs_timestamp', operator: 'GTE', value: startIso },
+              { propertyName: 'hs_timestamp', operator: 'LT', value: endIso },
+            ],
+          },
+        ],
+      }, properties)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('403') || msg.includes('MISSING_SCOPES')) {
+        unavailableTypes.add(objectType)
+        scopeWarnings.push(`${objectType}: missing HubSpot scope`)
+        return []
+      }
+      throw err
+    }
   }
 
   const engProps = ['hs_timestamp', 'hubspot_owner_id', 'hs_call_title', 'hs_email_subject', 'hs_note_body']
@@ -328,7 +361,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     } else {
       // Fetch each engagement type for this sparkline month
       const [tc, cc, ec, nc] = await Promise.all([
-        searchObjects('tasks', {
+        safeSearch('tasks', {
           filterGroups: [{
             filters: [
               { propertyName: 'hs_task_status', operator: 'EQ', value: 'COMPLETED' },
@@ -422,17 +455,17 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
 
   /* ── Data quality checks ── */
   const [compNoOwner, compNoIndustry, dealNoAmt, dealNoClose, contactNoEmail] = await Promise.all([
-    searchObjects('companies', {
+    safeSearch('companies', {
       filterGroups: [{
         filters: [{ propertyName: 'hubspot_owner_id', operator: 'NOT_HAS_PROPERTY' }],
       }],
     }, ['name']).then((r) => r.length),
-    searchObjects('companies', {
+    safeSearch('companies', {
       filterGroups: [{
         filters: [{ propertyName: 'industry', operator: 'NOT_HAS_PROPERTY' }],
       }],
     }, ['name']).then((r) => r.length),
-    searchObjects('deals', {
+    safeSearch('deals', {
       filterGroups: [{
         filters: [
           { propertyName: 'amount', operator: 'NOT_HAS_PROPERTY' },
@@ -440,7 +473,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
         ],
       }],
     }, ['dealname']).then((r) => r.length),
-    searchObjects('deals', {
+    safeSearch('deals', {
       filterGroups: [{
         filters: [
           { propertyName: 'closedate', operator: 'NOT_HAS_PROPERTY' },
@@ -448,7 +481,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
         ],
       }],
     }, ['dealname']).then((r) => r.length),
-    searchObjects('contacts', {
+    safeSearch('contacts', {
       filterGroups: [{
         filters: [{ propertyName: 'email', operator: 'NOT_HAS_PROPERTY' }],
       }],
@@ -487,6 +520,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       dealsMissingCloseDate: dealNoClose,
       contactsMissingEmail: contactNoEmail,
     },
+    scopeWarnings,
   }
 }
 

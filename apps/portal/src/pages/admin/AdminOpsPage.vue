@@ -187,6 +187,10 @@ onMounted(() => void loadOps())
       </div>
 
       <template v-else-if="ops">
+        <!-- Scope warnings -->
+        <div v-if="ops.scopeWarnings.length > 0" class="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          <span class="font-semibold">Some data unavailable</span> — missing HubSpot scopes: {{ ops.scopeWarnings.join(', ') }}. Those metrics show as 0.
+        </div>
         <!-- ═══ Hero KPI cards ═══ -->
         <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
           <div

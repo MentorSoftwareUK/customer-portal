@@ -787,6 +787,7 @@ export type OpsStats = {
     dealsMissingCloseDate: number
     contactsMissingEmail: number
   }
+  scopeWarnings: string[]
 }
 
 export async function adminGetOps(month?: string, refresh = false) {
