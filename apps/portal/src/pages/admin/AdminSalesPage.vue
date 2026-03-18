@@ -245,34 +245,63 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- ── Free customers ── -->
+        <!-- ── Free → Paid funnel ── -->
         <div v-if="sales.freeCustomers" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free customers</div>
-          <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-5">
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Total free</div>
-              <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.totalFreeDeals }}</div>
-              <div class="mt-1 text-xs text-white/50">Unregistered / pre-reg deals</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free → Paid conversion</div>
+
+          <!-- Funnel: 3 stage cards with arrows -->
+          <div class="mt-3 grid grid-cols-1 gap-0 lg:grid-cols-[1fr_auto_1fr_auto_1fr]  items-stretch">
+            <!-- Stage 1: The pool -->
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-5">
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free companies</div>
+              <div class="mt-2 flex items-baseline gap-3">
+                <span class="text-3xl font-bold tabular-nums text-white">{{ sales.freeCustomers.totalFreeDeals }}</span>
+                <span class="text-sm text-white/40">total</span>
+              </div>
+              <div class="mt-2 flex items-center gap-2 text-xs text-white/50">
+                <span class="inline-block h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
+                {{ sales.freeCustomers.freeDealsThisMonth }} new this month
+              </div>
             </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">New free this month</div>
-              <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.freeDealsThisMonth }}</div>
-              <div class="mt-1 text-xs text-white/50">Won this month at £0</div>
+
+            <!-- Arrow -->
+            <div class="hidden lg:flex items-center px-2 text-white/20">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
             </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Converted</div>
-              <div class="mt-2 text-2xl font-bold tabular-nums text-emerald-400">{{ sales.freeCustomers.convertedThisMonth }}</div>
-              <div class="mt-1 text-xs text-white/50">Free → paid this month</div>
+
+            <!-- Stage 2: Awaiting conversion -->
+            <div class="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-5">
+              <div class="text-xs font-semibold uppercase tracking-wider text-amber-400/80">Awaiting conversion</div>
+              <div class="mt-2 flex items-baseline gap-3">
+                <span class="text-3xl font-bold tabular-nums text-amber-400">{{ sales.freeCustomers.notConvertedCount ?? 0 }}</span>
+                <span class="text-sm text-white/40">companies</span>
+              </div>
+              <div class="mt-2 flex items-center gap-2 text-xs text-white/50">
+                <span class="inline-block h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+                {{ formatCurrency(sales.freeCustomers.notConvertedPipelineValue ?? 0) }} open pipeline
+              </div>
             </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Free→Paid value</div>
-              <div class="mt-2 text-2xl font-bold tabular-nums text-emerald-400">{{ formatCurrency(sales.freeCustomers.convertedRevenue) }}</div>
-              <div class="mt-1 text-xs text-white/50">Revenue from conversions · {{ sales.freeCustomers.conversionRate }}% rate</div>
+
+            <!-- Arrow -->
+            <div class="hidden lg:flex items-center px-2 text-white/20">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
             </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Not yet converted</div>
-              <div class="mt-2 text-2xl font-bold tabular-nums text-white">{{ sales.freeCustomers.notConvertedCount ?? 0 }}</div>
-              <div class="mt-1 text-xs text-white/50">Pipeline value: {{ formatCurrency(sales.freeCustomers.notConvertedPipelineValue ?? 0) }}</div>
+
+            <!-- Stage 3: Converted -->
+            <div class="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-5">
+              <div class="text-xs font-semibold uppercase tracking-wider text-emerald-400/80">Converted this month</div>
+              <div class="mt-2 flex items-baseline gap-3">
+                <span class="text-3xl font-bold tabular-nums text-emerald-400">{{ sales.freeCustomers.convertedThisMonth }}</span>
+                <span class="text-sm text-white/40">companies</span>
+              </div>
+              <div class="mt-2 flex items-center gap-2 text-xs text-white/50">
+                <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                {{ formatCurrency(sales.freeCustomers.convertedRevenue) }} revenue
+              </div>
+              <div class="mt-1 flex items-center gap-2 text-xs text-white/50">
+                <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400/50"></span>
+                {{ sales.freeCustomers.conversionRate }}% conversion rate
+              </div>
             </div>
           </div>
         </div>
