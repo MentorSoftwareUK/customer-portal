@@ -75,9 +75,23 @@ export type OpsDto = {
 
 const HUBSPOT_BASE = 'https://api.hubapi.com'
 
+/* ── Per-second throttle for HubSpot search endpoint (max ~3 req/s) ── */
+let lastRequestTime = 0
+const MIN_REQUEST_GAP_MS = 350 // ~2.8 req/s — safely under HubSpot's 4/s limit
+
+async function throttle() {
+  const now = Date.now()
+  const elapsed = now - lastRequestTime
+  if (elapsed < MIN_REQUEST_GAP_MS) {
+    await new Promise((r) => setTimeout(r, MIN_REQUEST_GAP_MS - elapsed))
+  }
+  lastRequestTime = Date.now()
+}
+
 async function hsFetch(path: string, init?: RequestInit, _retry = 0): Promise<Response> {
   const token = env.HUBSPOT_PRIVATE_APP_TOKEN
   if (!token) throw new Error('Missing HUBSPOT_PRIVATE_APP_TOKEN')
+  await throttle()
   const res = await fetch(`${HUBSPOT_BASE}${path}`, {
     ...init,
     headers: {
