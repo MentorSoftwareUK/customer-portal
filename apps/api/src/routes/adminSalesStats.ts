@@ -672,13 +672,15 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     companyDeals.get(cid)!.push(deal)
   }
 
-  // "Free company" = has at least one free won deal
+  // "Free company" = has at least one free won deal on or before the selected month
   const freeCompanyIds = new Set<string>()
   for (const [cid, deals] of companyDeals) {
-    if (deals.some(isFreeWon)) freeCompanyIds.add(cid)
+    if (deals.some((d) => isFreeWon(d) && (monthOfDeal(d) ?? '9999') <= currentMonthKey)) {
+      freeCompanyIds.add(cid)
+    }
   }
 
-  // Converted = free company that ALSO has a paying closedwon deal
+  // Converted = free company that ALSO has a paying closedwon deal on or before selected month
   const convertedIds = new Set<string>()
   let convertedRevenue = 0
   let convertedThisMonthCount = 0
@@ -688,7 +690,8 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     const payingWon = deals.filter(
       (d) => d.properties.dealstage === 'closedwon'
         && d.properties.pipeline === MAIN_PIPELINE_ID
-        && amt(d) > 0,
+        && amt(d) > 0
+        && (monthOfDeal(d) ?? '9999') <= currentMonthKey,
     )
     if (payingWon.length > 0) {
       convertedIds.add(cid)
@@ -729,11 +732,12 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   const companies: Array<{ companyId: string; name: string; status: 'converted' | 'free'; revenue: number; freeDealName: string; convertedDate: string | null }> = []
   for (const cid of freeCompanyIds) {
     const deals = companyDeals.get(cid)!
-    const freeDeal = deals.find(isFreeWon)
+    const freeDeal = deals.find((d) => isFreeWon(d) && (monthOfDeal(d) ?? '9999') <= currentMonthKey)
     const payingWon = deals.filter(
       (d) => d.properties.dealstage === 'closedwon'
         && d.properties.pipeline === MAIN_PIPELINE_ID
-        && amt(d) > 0,
+        && amt(d) > 0
+        && (monthOfDeal(d) ?? '9999') <= currentMonthKey,
     )
     const rev = payingWon.reduce((s, d) => s + amt(d), 0)
     // Earliest paying deal close date = conversion date
