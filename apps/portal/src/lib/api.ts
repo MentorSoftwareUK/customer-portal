@@ -626,6 +626,13 @@ export type SalesStats = {
     convertedRevenueThisMonth: number
     notConverted: number
     conversionRate: number
+    companies?: Array<{
+      companyId: string
+      name: string
+      status: 'converted' | 'free'
+      revenue: number
+      freeDealName: string
+    }>
   }
 }
 

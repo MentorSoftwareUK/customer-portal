@@ -296,6 +296,39 @@ onMounted(() => {
               <div class="mt-1 text-sm text-amber-400/70">Awaiting conversion</div>
             </div>
           </div>
+
+          <!-- Company detail table -->
+          <div v-if="sales.freeCustomers.companies?.length" class="mt-5 overflow-hidden rounded-lg border border-white/[0.06]">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.03] text-xs uppercase tracking-wider text-white/40">
+                  <th class="px-4 py-2.5 font-semibold">Company</th>
+                  <th class="px-4 py-2.5 font-semibold">Free deal</th>
+                  <th class="px-4 py-2.5 font-semibold text-center">Status</th>
+                  <th class="px-4 py-2.5 font-semibold text-right">Paid revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="co in sales.freeCustomers.companies"
+                  :key="co.companyId"
+                  class="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors"
+                >
+                  <td class="px-4 py-2.5 text-white/80">{{ co.name }}</td>
+                  <td class="px-4 py-2.5 text-white/50 text-xs">{{ co.freeDealName }}</td>
+                  <td class="px-4 py-2.5 text-center">
+                    <span
+                      class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
+                      :class="co.status === 'converted'
+                        ? 'bg-emerald-500/10 text-emerald-400'
+                        : 'bg-amber-500/10 text-amber-400'"
+                    >{{ co.status === 'converted' ? 'Converted' : 'Free' }}</span>
+                  </td>
+                  <td class="px-4 py-2.5 text-right tabular-nums" :class="co.revenue > 0 ? 'text-emerald-400/80' : 'text-white/30'">{{ co.revenue > 0 ? formatCurrency(co.revenue) : '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- ── Agent breakdown ── -->

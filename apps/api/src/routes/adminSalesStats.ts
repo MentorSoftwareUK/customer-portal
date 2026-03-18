@@ -72,6 +72,13 @@ export type SalesStatsDto = {
     convertedRevenueThisMonth: number
     notConverted: number
     conversionRate: number
+    companies: Array<{
+      companyId: string
+      name: string
+      status: 'converted' | 'free'
+      revenue: number
+      freeDealName: string
+    }>
   }
 
   /* Trend — last 6 months, oldest → newest */
@@ -643,6 +650,49 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     ? Math.round((convertedIds.size / freeCompanyIds.size) * 100)
     : 0
 
+  // Batch-fetch company names
+  const companyIdArr = [...freeCompanyIds]
+  const companyNames = new Map<string, string>()
+  for (let i = 0; i < companyIdArr.length; i += 100) {
+    const batch = companyIdArr.slice(i, i + 100)
+    const res = await hsFetch('/crm/v3/objects/companies/batch/read', {
+      method: 'POST',
+      body: JSON.stringify({
+        inputs: batch.map((id) => ({ id })),
+        properties: ['name'],
+      }),
+    })
+    const json = (await res.json()) as { results: Array<{ id: string; properties: Record<string, string | null> }> }
+    for (const c of json.results) {
+      companyNames.set(c.id, c.properties.name ?? `Company ${c.id}`)
+    }
+  }
+
+  // Build detail list sorted: converted first (by revenue desc), then free (alpha)
+  const companies: Array<{ companyId: string; name: string; status: 'converted' | 'free'; revenue: number; freeDealName: string }> = []
+  for (const cid of freeCompanyIds) {
+    const deals = companyDeals.get(cid)!
+    const freeDeal = deals.find(isFreeWon)
+    const payingWon = deals.filter(
+      (d) => d.properties.dealstage === 'closedwon'
+        && d.properties.pipeline === MAIN_PIPELINE_ID
+        && amt(d) > 0,
+    )
+    const rev = payingWon.reduce((s, d) => s + amt(d), 0)
+    companies.push({
+      companyId: cid,
+      name: companyNames.get(cid) ?? `Company ${cid}`,
+      status: convertedIds.has(cid) ? 'converted' : 'free',
+      revenue: Math.round(rev * 100) / 100,
+      freeDealName: freeDeal?.properties.dealname ?? '',
+    })
+  }
+  companies.sort((a, b) => {
+    if (a.status !== b.status) return a.status === 'converted' ? -1 : 1
+    if (a.status === 'converted') return b.revenue - a.revenue
+    return a.name.localeCompare(b.name)
+  })
+
   const freeCustomers = {
     totalFreeCompanies: freeCompanyIds.size,
     converted: convertedIds.size,
@@ -651,6 +701,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     convertedRevenueThisMonth: Math.round(convertedRevenueThisMonth * 100) / 100,
     notConverted: notConvertedCount,
     conversionRate,
+    companies,
   }
 
   return {
@@ -730,7 +781,7 @@ export const adminSalesStatsRoutes: FastifyPluginAsync = async (app) => {
       }
       // MongoDB cache fallback
       const cached = await getCachedStats(cacheKey)
-      if (cached && cached.data.freeCustomers?.converted !== undefined && !('convertedAllTime' in (cached.data.freeCustomers ?? {}))) {
+      if (cached && Array.isArray(cached.data.freeCustomers?.companies)) {
         memCacheMap.set(cacheKey, { data: cached.data, ts: cached.updatedAt.getTime() })
         return reply.send({
           stats: cached.data,
