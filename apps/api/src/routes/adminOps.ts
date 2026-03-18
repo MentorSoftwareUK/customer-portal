@@ -441,7 +441,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     joe: 'Support',
     rupert: 'Support',
     liam: 'Marketing',
-    josh: 'Sales',
+    josh: 'Support',
     jonathan: 'Sales',
     dean: 'Support',
   }
