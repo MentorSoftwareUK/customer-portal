@@ -119,6 +119,7 @@ async function hsFetch(path: string, init?: RequestInit) {
 /* ------------------------------------------------------------------ */
 
 const MAIN_PIPELINE_ID = 'default'
+const PREREG_PIPELINE_ID = '2933345490'
 
 /* ── Key sales agent IDs ── */
 const OWNER_MAP: Record<string, string> = {
@@ -257,7 +258,6 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     'hubspot_owner_id',
     'hs_v2_date_entered_closedwon',
     'hs_v2_date_entered_closedlost',
-    'registration_status',
   ]
 
   /* ── Query 1: All closed deals in last 6 months ── */
@@ -312,9 +312,40 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     DEAL_PROPERTIES,
   )
 
+  /* ── Query 3: Pre-registered pipeline deals (for free customer stats) ── */
+  const preRegClosedDeals = await searchDeals(
+    [
+      {
+        filters: [
+          { propertyName: 'pipeline', operator: 'EQ', value: PREREG_PIPELINE_ID },
+          { propertyName: 'dealstage', operator: 'EQ', value: '4014021838' }, // Closed Won
+        ],
+      },
+      {
+        filters: [
+          { propertyName: 'pipeline', operator: 'EQ', value: PREREG_PIPELINE_ID },
+          { propertyName: 'dealstage', operator: 'EQ', value: '4014021839' }, // Closed Lost
+        ],
+      },
+    ],
+    DEAL_PROPERTIES,
+  )
+  const preRegOpenDeals = await searchDeals(
+    [
+      {
+        filters: [
+          { propertyName: 'pipeline', operator: 'EQ', value: PREREG_PIPELINE_ID },
+          { propertyName: 'hs_is_closed', operator: 'EQ', value: 'false' },
+        ],
+      },
+    ],
+    DEAL_PROPERTIES,
+  )
+
   /* ── Helpers ── */
   const amt = (d: HsDeal) => parseFloat(d.properties.amount ?? '0') || 0
-  const isWon = (d: HsDeal) => d.properties.dealstage === 'closedwon'
+  const isWon = (d: HsDeal) =>
+    d.properties.dealstage === 'closedwon' || d.properties.dealstage === '4014021838'
   /** Actual date the deal entered closed-won / closed-lost stage (not the
    *  HubSpot "Close Date" field which is often the contract end date). */
   const actualCloseDate = (d: HsDeal): Date | null => {
@@ -540,29 +571,44 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
   /* ── Free customer stats (company-level) ── */
   const allWonDeals = closedDeals.filter(isWon)
-  const isFree = (d: HsDeal) => d.properties.registration_status === 'Pre-registered (Free)'
-  const allFreeWon = allWonDeals.filter(isFree)
-  const freeWonThisMonth = allFreeWon.filter((d) => monthOfDeal(d) === currentMonthKey)
+  const preRegWon = preRegClosedDeals.filter((d) => d.properties.dealstage === '4014021838')
+  // Free deal = in pre-reg pipeline OR closedwon at £0 in default pipeline
+  const isFree = (d: HsDeal) =>
+    d.properties.pipeline === PREREG_PIPELINE_ID || (isWon(d) && amt(d) === 0)
+  const allFreeWon = [...allWonDeals.filter((d) => amt(d) === 0), ...preRegWon]
+  // Deduplicate by deal id
+  const freeWonIds = new Set<string>()
+  const allFreeWonDeduped = allFreeWon.filter((d) => {
+    if (freeWonIds.has(d.id)) return false
+    freeWonIds.add(d.id)
+    return true
+  })
+  const freeWonThisMonth = allFreeWonDeduped.filter((d) => monthOfDeal(d) === currentMonthKey)
 
   // Fetch deal→company associations so we can track free→paid per company
-  const allDealIds = [...closedDeals, ...openDeals].map((d) => d.id)
-  const dealToCompany = allDealIds.length > 0
-    ? await batchDealCompanyMap(allDealIds)
+  const allDealsForFree = [...closedDeals, ...openDeals, ...preRegClosedDeals, ...preRegOpenDeals]
+  const allDealIds = allDealsForFree.map((d) => d.id)
+  const uniqueDealIds = [...new Set(allDealIds)]
+  const dealToCompany = uniqueDealIds.length > 0
+    ? await batchDealCompanyMap(uniqueDealIds)
     : new Map<string, string>()
 
   // Group all deals by company
   const companyDeals = new Map<string, HsDeal[]>()
-  for (const deal of [...closedDeals, ...openDeals]) {
+  const seenDealIds = new Set<string>()
+  for (const deal of allDealsForFree) {
+    if (seenDealIds.has(deal.id)) continue
+    seenDealIds.add(deal.id)
     const cid = dealToCompany.get(deal.id)
     if (!cid) continue
     if (!companyDeals.has(cid)) companyDeals.set(cid, [])
     companyDeals.get(cid)!.push(deal)
   }
 
-  // "Free company" = has at least one closed-won deal with registration_status = 'Pre-registered (Free)'
+  // "Free company" = has at least one free deal (pre-reg pipeline or closedwon £0)
   const freeCompanyIds = new Set<string>()
   for (const [cid, deals] of companyDeals) {
-    if (deals.some((d) => isWon(d) && isFree(d))) freeCompanyIds.add(cid)
+    if (deals.some((d) => isFree(d))) freeCompanyIds.add(cid)
   }
 
   // Converted = free company with a non-free paying deal won this month
@@ -588,15 +634,16 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     const hasPayingWon = deals.some((d) => isWon(d) && !isFree(d) && amt(d) > 0)
     if (!hasPayingWon) {
       notConvertedCount++
-      // Sum their open deal values
+      // Sum their open deal values (check both pipeline stage conventions)
       const opens = deals.filter(
-        (d) => d.properties.dealstage !== 'closedwon' && d.properties.dealstage !== 'closedlost',
+        (d) => d.properties.dealstage !== 'closedwon' && d.properties.dealstage !== 'closedlost'
+          && d.properties.dealstage !== '4014021838' && d.properties.dealstage !== '4014021839',
       )
       notConvertedPipelineValue += opens.reduce((s, d) => s + amt(d), 0)
     }
   }
 
-  const totalFreeAllTime = allFreeWon.length
+  const totalFreeAllTime = allFreeWonDeduped.length
   const freeConversionRate =
     freeCompanyIds.size > 0
       ? Math.round((convertedCompanyIds.size / freeCompanyIds.size) * 100)
