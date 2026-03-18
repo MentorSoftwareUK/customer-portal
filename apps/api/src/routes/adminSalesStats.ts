@@ -60,7 +60,7 @@ export type SalesStatsDto = {
     openValue: number
   }>
 
-  /* MRR trend (last 6 months) */
+  /* MRR trend (last 12 months, cumulative active customer MRR) */
   mrrTrend: Array<{ month: string; mrr: number }>
 
   /* Free customer conversion stats (all-time, company-level) */
@@ -424,16 +424,20 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
         )
       : 0
 
-  /* ── MRR: sum of hs_mrr for all open deals + current-month won deals ── */
-  const mrr =
-    openDeals.reduce(
-      (s, d) => s + (parseFloat(d.properties.hs_mrr ?? '0') || 0),
-      0,
-    ) +
-    wonThisMonth.reduce(
-      (s, d) => s + (parseFloat(d.properties.hs_mrr ?? '0') || 0),
-      0,
-    )
+  /* ── MRR: sum of hs_mrr for all customers active in the current month ── */
+  let mrr = 0
+  for (const d of allTimeWonDeals) {
+    const dealMrr = parseFloat(d.properties.hs_mrr ?? '0') || 0
+    if (dealMrr === 0) continue
+    const startRaw = d.properties.hs_v2_date_entered_closedwon
+    if (!startRaw) continue
+    const startMk = monthKey(new Date(startRaw))
+    const endRaw = d.properties.closedate
+    const endMk = endRaw ? monthKey(new Date(endRaw)) : '2099-01'
+    if (currentMonthKey >= startMk && currentMonthKey <= endMk) {
+      mrr += dealMrr
+    }
+  }
 
   /* ── Open pipeline ── */
   const openPipelineValue = openDeals.reduce((s, d) => s + amt(d), 0)
@@ -508,18 +512,39 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     .map(([ownerId, a]) => ({ ...a, ownerId }))
     .sort((a, b) => b.revenue - a.revenue)
 
-  /* ── MRR trend (sum of hs_mrr from won deals each month) ── */
+  /* ── MRR trend (cumulative: all active customers contributing hs_mrr each month) ── */
+  // A deal contributes hs_mrr in every month from start (hs_v2_date_entered_closedwon)
+  // to end (closedate = contract end), capped at current month
   const mrrTrendMap = new Map<string, number>()
-  for (let i = 5; i >= 0; i--) {
+  const trendMonths = 12
+  for (let i = trendMonths - 1; i >= 0; i--) {
     const d = new Date(focusDate.getFullYear(), focusDate.getMonth() - i, 1)
     mrrTrendMap.set(monthKey(d), 0)
   }
-  for (const d of closedDeals) {
-    if (!isWon(d)) continue
-    const mk = monthOfDeal(d)
-    if (!mk || !mrrTrendMap.has(mk)) continue
-    mrrTrendMap.set(mk, mrrTrendMap.get(mk)! + (parseFloat(d.properties.hs_mrr ?? '0') || 0))
+  const mrrMonthKeys = [...mrrTrendMap.keys()]
+  const mrrFirstMonth = mrrMonthKeys[0]!
+  const mrrLastMonth = mrrMonthKeys[mrrMonthKeys.length - 1]!
+
+  for (const d of allTimeWonDeals) {
+    const dealMrr = parseFloat(d.properties.hs_mrr ?? '0') || 0
+    if (dealMrr === 0) continue
+    const startRaw = d.properties.hs_v2_date_entered_closedwon
+    if (!startRaw) continue
+    const startDate = new Date(startRaw)
+    const startMk = monthKey(startDate)
+    // End = closedate (contract end) or far future if missing
+    const endRaw = d.properties.closedate
+    const endDate = endRaw ? new Date(endRaw) : new Date(2099, 0, 1)
+    const endMk = monthKey(endDate)
+
+    // Only iterate over the months we care about
+    for (const mk of mrrMonthKeys) {
+      if (mk >= startMk && mk <= endMk) {
+        mrrTrendMap.set(mk, mrrTrendMap.get(mk)! + dealMrr)
+      }
+    }
   }
+
   const mrrTrend = [...mrrTrendMap.entries()].map(([month, mrr]) => ({
     month,
     mrr: Math.round(mrr * 100) / 100,

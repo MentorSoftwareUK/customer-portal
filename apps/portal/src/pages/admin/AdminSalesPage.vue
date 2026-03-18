@@ -139,10 +139,14 @@ const maxPipelineStageCount = computed(() => {
 })
 
 const mrrLinePoints = computed(() =>
-  (sales.value?.mrrTrend ?? []).map((m) => ({
-    label: m.month,
-    value: m.mrr,
-  })),
+  (sales.value?.mrrTrend ?? []).map((m) => {
+    const [y, mo] = m.month.split('-')
+    const d = new Date(+y!, +mo! - 1, 1)
+    return {
+      label: d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
+      value: m.mrr,
+    }
+  }),
 )
 
 /* ── Agent colours ── */
@@ -416,7 +420,10 @@ onMounted(() => {
 
         <!-- ── MRR trend ── -->
         <div v-if="mrrLinePoints.length > 1" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Monthly recurring revenue trend</div>
+          <div class="flex items-baseline gap-3">
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Monthly recurring revenue</div>
+            <span v-if="sales.mrr" class="text-sm font-bold tabular-nums text-emerald-400">{{ formatCurrency(sales.mrr) }}<span class="text-xs font-normal text-white/40"> /mo</span></span>
+          </div>
           <div class="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
             <LineChart :points="mrrLinePoints" color="#34d399" :height="200" :format-value="formatCurrency" />
           </div>
