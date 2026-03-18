@@ -92,10 +92,10 @@ const salesKpiCards = computed(() => {
       val: `${s.avgCloseTimeDays}d`,
       delta: {
         value: Math.abs(s.avgCloseTimeDays - (p?.avgCloseTimeDays ?? 0)),
-        dir: s.avgCloseTimeDays < (p?.avgCloseTimeDays ?? 0)
-          ? 'up' as const
-          : s.avgCloseTimeDays > (p?.avgCloseTimeDays ?? 0)
-            ? 'down' as const
+        dir: s.avgCloseTimeDays > (p?.avgCloseTimeDays ?? 0)
+          ? 'down' as const
+          : s.avgCloseTimeDays < (p?.avgCloseTimeDays ?? 0)
+            ? 'up' as const
             : 'flat' as const,
       },
       suffix: 'd',
