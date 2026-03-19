@@ -92,7 +92,7 @@ export type SalesStatsDto = {
   forecast: {
     /** Sum of open deal values × stage win probability */
     weightedPipelineValue: number
-    /** Average monthly revenue over last 3 months with data */
+    /** Average monthly revenue from pipeline conversion (weighted pipeline ÷ avg close time) */
     projectedMonthlyRevenue: number
     /** projectedMonthlyRevenue × 3 */
     projectedQuarterlyRevenue: number
@@ -865,50 +865,22 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
   const weightedPipelineValue = forecastByStage.reduce((s, st) => s + st.weightedValue, 0)
 
-  // Trend-adjusted projection using linear slope (last 6 months with data)
+  // Projected revenue: weighted pipeline ÷ avg months to close = expected monthly conversion
   const recentTrend = trend.filter((t) => t.dealsWon > 0).slice(-6)
-  let projectedMonthlyRevenue = 0
-  let avgMonthlyDealsWon = 0
-  let revenueSlope = 0
-  let dealsSlope = 0
+  const avgMonthlyDealsWon = recentTrend.length > 0
+    ? Math.round(recentTrend.reduce((s, t) => s + t.dealsWon, 0) / recentTrend.length * 10) / 10
+    : 0
+  const avgCloseMonths = Math.max(avgCloseTimeDays / 30, 0.5) // floor at 0.5 months
+  const projectedMonthlyRevenue = Math.round(weightedPipelineValue / avgCloseMonths)
+  const projectedQuarterlyRevenue = projectedMonthlyRevenue * 3
 
-  if (recentTrend.length >= 2) {
-    const n = recentTrend.length
-    const xMean = (n - 1) / 2
-    const revMean = recentTrend.reduce((s, t) => s + t.revenue, 0) / n
-    const dealsMean = recentTrend.reduce((s, t) => s + t.dealsWon, 0) / n
-    let numRev = 0; let numDeals = 0; let den = 0
-    recentTrend.forEach((t, i) => {
-      const dx = i - xMean
-      numRev += dx * (t.revenue - revMean)
-      numDeals += dx * (t.dealsWon - dealsMean)
-      den += dx * dx
-    })
-    revenueSlope = den > 0 ? numRev / den : 0
-    dealsSlope = den > 0 ? numDeals / den : 0
-    const lastRev = recentTrend[n - 1]!.revenue
-    projectedMonthlyRevenue = Math.max(0, Math.round(lastRev + revenueSlope))
-    avgMonthlyDealsWon = Math.round(dealsMean * 10) / 10
-  } else if (recentTrend.length === 1) {
-    projectedMonthlyRevenue = Math.round(recentTrend[0]!.revenue)
-    avgMonthlyDealsWon = recentTrend[0]!.dealsWon
-  }
-
-  const baseRevForProjection = recentTrend.length >= 2 ? recentTrend[recentTrend.length - 1]!.revenue : projectedMonthlyRevenue
-  const baseDealsForProjection = avgMonthlyDealsWon
-
-  // Quarterly = sum of 3 slope-adjusted months
-  const projectedQuarterlyRevenue = [1, 2, 3].reduce(
-    (sum, i) => sum + Math.max(0, Math.round(baseRevForProjection + revenueSlope * i)), 0,
-  )
-
-  // Project next 3 months (slope-adjusted)
+  // Project next 3 months
   const monthlyProjection: Array<{ month: string; projectedRevenue: number; projectedDeals: number }> = []
   for (let i = 1; i <= 3; i++) {
     const d = new Date(focusDate.getFullYear(), focusDate.getMonth() + i, 1)
     monthlyProjection.push({
       month: monthKey(d),
-      projectedRevenue: Math.max(0, Math.round(baseRevForProjection + revenueSlope * i)),
+      projectedRevenue: projectedMonthlyRevenue,
       projectedDeals: Math.round(avgMonthlyDealsWon),
     })
   }
