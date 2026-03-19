@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify'
 import { requireAdmin } from '../auth/requireAdmin'
 import { env } from '../env'
+import { getDb } from '../db'
 
 /* ================================================================== */
 /*  Types                                                             */
@@ -1430,11 +1431,37 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
 }
 
 /* ================================================================== */
-/*  Cache                                                             */
+/*  MongoDB + in-memory cache                                        */
 /* ================================================================== */
 
-const CACHE_TTL_MS = 10 * 60 * 1000
+const OPS_CACHE_COLLECTION = 'ops_stats_cache'
+const CACHE_TTL_MS = 10 * 60 * 1000 // 10 minutes
 const memCacheMap = new Map<string, { data: OpsDto; ts: number }>()
+
+async function getCachedOps(cacheKey = 'current'): Promise<{
+  data: OpsDto
+  updatedAt: Date
+} | null> {
+  const db = await getDb()
+  if (!db) return null
+  return db
+    .collection<{ _id: string; data: OpsDto; updatedAt: Date }>(
+      OPS_CACHE_COLLECTION,
+    )
+    .findOne({ _id: cacheKey as any })
+}
+
+async function setCachedOps(data: OpsDto, cacheKey = 'current'): Promise<void> {
+  const db = await getDb()
+  if (!db) return
+  await db
+    .collection(OPS_CACHE_COLLECTION)
+    .updateOne(
+      { _id: cacheKey as any },
+      { $set: { _id: cacheKey as any, data, updatedAt: new Date() } },
+      { upsert: true },
+    )
+}
 
 /* ================================================================== */
 /*  Route                                                             */
@@ -1450,6 +1477,7 @@ export const adminOpsRoutes: FastifyPluginAsync = async (app) => {
     const cacheKey = month ?? 'current'
 
     if (!refresh) {
+      // 1. In-memory cache (fastest)
       const mem = memCacheMap.get(cacheKey)
       if (mem && Date.now() - mem.ts < CACHE_TTL_MS) {
         return reply.send({
@@ -1458,10 +1486,22 @@ export const adminOpsRoutes: FastifyPluginAsync = async (app) => {
           cachedAt: new Date(mem.ts).toISOString(),
         })
       }
+
+      // 2. MongoDB cache (survives cold starts)
+      const mongo = await getCachedOps(cacheKey)
+      if (mongo && Date.now() - mongo.updatedAt.getTime() < CACHE_TTL_MS) {
+        memCacheMap.set(cacheKey, { data: mongo.data, ts: mongo.updatedAt.getTime() })
+        return reply.send({
+          stats: mongo.data,
+          cached: true,
+          cachedAt: mongo.updatedAt.toISOString(),
+        })
+      }
     }
 
     const stats = await buildOpsStats(month)
     memCacheMap.set(cacheKey, { data: stats, ts: Date.now() })
+    setCachedOps(stats, cacheKey).catch(() => {}) // fire-and-forget
     return reply.send({
       stats,
       cached: false,
