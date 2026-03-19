@@ -181,24 +181,24 @@ onMounted(() => void loadOps())
                 <!-- Name + headcount -->
                 <div class="min-w-[120px]">
                   <div class="flex items-baseline gap-2">
-                    <span class="text-sm font-semibold text-white/90">{{ dept.department }}</span>
-                    <span class="text-xs text-white/40">{{ dept.headcount }} {{ dept.headcount === 1 ? 'person' : 'people' }}</span>
+                    <span class="text-sm font-semibold text-white">{{ dept.department }}</span>
+                    <span class="text-xs text-white/50">{{ dept.headcount }} {{ dept.headcount === 1 ? 'person' : 'people' }}</span>
                   </div>
                 </div>
                 <!-- Stats -->
-                <div class="flex items-center gap-4 text-xs tabular-nums flex-1">
-                  <div><span class="text-white/30">Open </span><span class="font-bold text-white/80">{{ dept.openTasks }}</span></div>
+                <div class="flex items-center gap-4 text-sm tabular-nums flex-1">
+                  <div><span class="text-white/50">Open </span><span class="font-bold text-white">{{ dept.openTasks }}</span></div>
                   <div>
-                    <span class="text-white/30">Overdue </span>
-                    <span class="font-bold" :class="dept.overdueRate > 20 ? 'text-rose-400' : dept.overdueRate >= 10 ? 'text-amber-400' : 'text-white/80'">
+                    <span class="text-white/50">Overdue </span>
+                    <span class="font-bold" :class="dept.overdueRate > 20 ? 'text-rose-400' : dept.overdueRate >= 10 ? 'text-amber-400' : 'text-white'">
                       {{ dept.overdueTasks }}
                     </span>
-                    <span class="text-white/30 ml-0.5">({{ dept.overdueRate }}%)</span>
+                    <span class="text-white/50 ml-0.5">({{ dept.overdueRate }}%)</span>
                   </div>
-                  <div><span class="text-white/30">Meetings </span><span class="font-bold text-teal-400/80">{{ dept.meetings }}</span></div>
-                  <div v-if="dept.department === 'Sales'"><span class="text-white/30">Demos </span><span class="font-bold text-cyan-400/80">{{ dept.demos }}</span></div>
-                  <div><span class="text-white/30">Activity </span><span class="font-bold text-white/80">{{ dept.activityThisMonth }}</span></div>
-                  <div v-if="dept.lastActivityDate" class="text-white/30">
+                  <div><span class="text-white/50">Meetings </span><span class="font-bold text-teal-400">{{ dept.meetings }}</span></div>
+                  <div v-if="dept.department === 'Sales'"><span class="text-white/50">Demos </span><span class="font-bold text-cyan-400">{{ dept.demos }}</span></div>
+                  <div><span class="text-white/50">Activity </span><span class="font-bold text-white">{{ dept.activityThisMonth }}</span></div>
+                  <div v-if="dept.lastActivityDate" class="text-white/50">
                     Last: {{ relativeDate(dept.lastActivityDate) }}
                   </div>
                 </div>
@@ -213,7 +213,7 @@ onMounted(() => void loadOps())
 
               <!-- Expanded members -->
               <div v-if="expandedDepts.has(dept.department)" class="border-t border-white/[0.04] bg-white/[0.01]">
-                <div class="grid gap-1 px-4 py-1.5 text-[10px] uppercase tracking-wider text-white/30 border-b border-white/[0.04]"
+                <div class="grid gap-1 px-4 py-1.5 text-xs uppercase tracking-wider text-white/50 border-b border-white/[0.04]"
                   :class="dept.department === 'Sales' ? 'grid-cols-[1fr_repeat(7,_60px)_100px]' : 'grid-cols-[1fr_repeat(6,_60px)_100px]'"
                 >
                   <span>Name</span><span class="text-center">Open</span><span class="text-center">Overdue</span>
@@ -225,18 +225,18 @@ onMounted(() => void loadOps())
                 <div
                   v-for="member in dept.members"
                   :key="member.ownerId"
-                  class="grid gap-1 items-center px-4 py-2 text-xs border-b border-white/[0.03] last:border-0"
+                  class="grid gap-1 items-center px-4 py-2 text-sm border-b border-white/[0.03] last:border-0"
                   :class="dept.department === 'Sales' ? 'grid-cols-[1fr_repeat(7,_60px)_100px]' : 'grid-cols-[1fr_repeat(6,_60px)_100px]'"
                 >
-                  <span class="text-white/60">{{ member.name }}</span>
-                  <span class="text-center tabular-nums text-white/60">{{ member.openTasks }}</span>
-                  <span class="text-center tabular-nums" :class="member.overdueTasks > 0 ? 'text-rose-400 font-bold' : 'text-white/40'">{{ member.overdueTasks }}</span>
-                  <span class="text-center tabular-nums text-indigo-400/80">{{ member.calls }}</span>
-                  <span class="text-center tabular-nums text-sky-400/80">{{ member.emails }}</span>
-                  <span class="text-center tabular-nums text-purple-400/80">{{ member.notes }}</span>
-                  <span class="text-center tabular-nums text-teal-400/80">{{ member.meetings }}</span>
-                  <span v-if="dept.department === 'Sales'" class="text-center tabular-nums text-cyan-400/80">{{ member.demos }}</span>
-                  <span class="text-right text-white/30 text-[11px]">{{ member.lastActivity ? relativeDate(member.lastActivity) : '—' }}</span>
+                  <span class="text-white/80">{{ member.name }}</span>
+                  <span class="text-center tabular-nums text-white/80">{{ member.openTasks }}</span>
+                  <span class="text-center tabular-nums" :class="member.overdueTasks > 0 ? 'text-rose-400 font-bold' : 'text-white/50'">{{ member.overdueTasks }}</span>
+                  <span class="text-center tabular-nums text-indigo-400">{{ member.calls }}</span>
+                  <span class="text-center tabular-nums text-sky-400">{{ member.emails }}</span>
+                  <span class="text-center tabular-nums text-purple-400">{{ member.notes }}</span>
+                  <span class="text-center tabular-nums text-teal-400">{{ member.meetings }}</span>
+                  <span v-if="dept.department === 'Sales'" class="text-center tabular-nums text-cyan-400">{{ member.demos }}</span>
+                  <span class="text-right text-white/50 text-xs">{{ member.lastActivity ? relativeDate(member.lastActivity) : '—' }}</span>
                 </div>
               </div>
             </div>
