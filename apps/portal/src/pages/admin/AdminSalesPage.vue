@@ -167,7 +167,8 @@ function toggleLayer(key: LayerKey) {
 
 const mrrForecastPoints = computed(() => {
   const chart = sales.value?.forecast?.mrrForecastChart ?? []
-  const lastActualMrr = chart.filter((m) => m.type === 'actual').at(-1)?.mrr ?? 0
+  const actuals = chart.filter((m) => m.type === 'actual')
+  const lastActualMrr = actuals.length > 0 ? actuals[actuals.length - 1]!.mrr : 0
   return chart.map((m) => {
     const [y, mo] = m.month.split('-')
     const d = new Date(+y!, +mo! - 1, 1)
