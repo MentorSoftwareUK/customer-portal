@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify'
 import { requireAdmin } from '../auth/requireAdmin'
+import { getDb } from '../db'
 import { env } from '../env'
 import {
   hubspotSearchLiveCustomerCompanyIds,
@@ -14,9 +15,32 @@ export type AdminDashboardStatsDto = {
   totalSupportedAccommodation: number
 }
 
-// Cache (HubSpot calls are expensive)
-let statsCache: { ts: number; data: AdminDashboardStatsDto } | null = null
+// Two-tier cache: in-memory + MongoDB
+const CACHE_COLLECTION = 'dashboard_stats_cache'
 const CACHE_TTL_MS = 15 * 60_000 // 15 minutes
+let statsCache: { ts: number; data: AdminDashboardStatsDto } | null = null
+
+async function getCachedStats(): Promise<{ data: AdminDashboardStatsDto; updatedAt: Date } | null> {
+  try {
+    const db = getDb()
+    const row = await db.collection(CACHE_COLLECTION).findOne({ _id: 'current' as any })
+    if (!row) return null
+    const age = Date.now() - new Date(row.updatedAt).getTime()
+    if (age > CACHE_TTL_MS) return null
+    return { data: row.data as AdminDashboardStatsDto, updatedAt: new Date(row.updatedAt) }
+  } catch { return null }
+}
+
+async function setCachedStats(data: AdminDashboardStatsDto): Promise<void> {
+  try {
+    const db = getDb()
+    await db.collection(CACHE_COLLECTION).updateOne(
+      { _id: 'current' as any },
+      { $set: { data, updatedAt: new Date() } },
+      { upsert: true },
+    )
+  } catch (e) { console.warn('[dashboard-stats] MongoDB cache write failed:', e) }
+}
 
 function rateLimitPause(ms = 350): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -33,9 +57,15 @@ export const adminDashboardStatsRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(503).send({ error: 'hubspot_not_configured' })
     }
 
-    // Return cached result if fresh
+    // In-memory cache first
     if (statsCache && Date.now() - statsCache.ts < CACHE_TTL_MS) {
-      return { stats: statsCache.data }
+      return { stats: statsCache.data, cached: true }
+    }
+    // MongoDB cache fallback (survives cold starts)
+    const mongoCached = await getCachedStats()
+    if (mongoCached) {
+      statsCache = { ts: mongoCached.updatedAt.getTime(), data: mongoCached.data }
+      return { stats: mongoCached.data, cached: true }
     }
 
     const liveProp = env.HUBSPOT_LIVE_CUSTOMER_PROPERTY
@@ -128,6 +158,7 @@ export const adminDashboardStatsRoutes: FastifyPluginAsync = async (app) => {
       }
 
       statsCache = { ts: Date.now(), data: stats }
+      setCachedStats(stats).catch(() => {})
       return { stats }
     } catch (e: any) {
       console.error('[admin-dashboard-stats] Failed to fetch dashboard stats:', e)
