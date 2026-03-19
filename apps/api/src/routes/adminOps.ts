@@ -274,9 +274,10 @@ const DEPT_MAP: Record<string, string> = {
   rupert: 'Support',
   liam: 'Marketing',
   jonathan: 'Sales',
+  debbie: 'Finance',
 }
 
-const ACTIVE_DEPTS = ['Sales', 'Success', 'Support', 'Training', 'Retention']
+const ACTIVE_DEPTS = ['Sales', 'Success', 'Support', 'Training', 'Retention', 'Finance']
 
 function getDept(fullName: string): string {
   const first = fullName.split(' ')[0]?.toLowerCase() ?? ''
@@ -937,7 +938,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     deptGrouped.set(m.department, arr)
   }
 
-  const DEPT_ORDER = ['Sales', 'Success', 'Training', 'Retention', 'Support']
+  const DEPT_ORDER = ['Sales', 'Success', 'Training', 'Retention', 'Support', 'Finance']
   const departments: OpsDto['departments'] = DEPT_ORDER.filter((d) =>
     deptGrouped.has(d),
   ).map((dept) => {
