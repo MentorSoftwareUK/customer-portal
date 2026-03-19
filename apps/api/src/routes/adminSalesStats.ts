@@ -87,6 +87,33 @@ export type SalesStatsDto = {
 
   /* Previous month for delta badges */
   previous: SalesMonthSummary | null
+
+  /* Sales forecast */
+  forecast: {
+    /** Sum of open deal values × stage win probability */
+    weightedPipelineValue: number
+    /** Average monthly revenue over last 3 months with data */
+    projectedMonthlyRevenue: number
+    /** projectedMonthlyRevenue × 3 */
+    projectedQuarterlyRevenue: number
+    /** Average deals won per month (last 6 months) */
+    avgMonthlyDealsWon: number
+    /** Breakdown by stage with win probability applied */
+    pipelineByStage: Array<{
+      stageId: string
+      label: string
+      count: number
+      value: number
+      probability: number
+      weightedValue: number
+    }>
+    /** Next 3 months projected revenue & deals */
+    monthlyProjection: Array<{
+      month: string
+      projectedRevenue: number
+      projectedDeals: number
+    }>
+  }
 }
 
 export type SalesMonthSummary = {
@@ -781,6 +808,63 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     companies,
   }
 
+  /* ── Forecast ── */
+
+  // Stage-based win probabilities (empirical)
+  const STAGE_PROBABILITY: Record<string, number> = {
+    appointmentscheduled: 0.10,
+    presentationscheduled: 0.15,
+    qualifiedtobuy: 0.30,
+    '4751274190': 0.50,
+    '4751274191': 0.70,
+    decisionmakerboughtin: 0.60,
+    contractsent: 0.85,
+  }
+
+  const forecastByStage = [...stageBuckets.entries()].map(([stageId, b]) => {
+    const prob = STAGE_PROBABILITY[stageId] ?? 0
+    return {
+      stageId,
+      label: STAGE_MAP[stageId]?.label ?? stageId,
+      count: b.count,
+      value: Math.round(b.value * 100) / 100,
+      probability: prob,
+      weightedValue: Math.round(b.value * prob * 100) / 100,
+    }
+  }).sort((a, b) => (STAGE_MAP[a.stageId]?.order ?? 99) - (STAGE_MAP[b.stageId]?.order ?? 99))
+
+  const weightedPipelineValue = forecastByStage.reduce((s, st) => s + st.weightedValue, 0)
+
+  // Last 3 months with data for projected revenue
+  const recentTrend = trend.filter((t) => t.dealsWon > 0).slice(-3)
+  const projectedMonthlyRevenue = recentTrend.length > 0
+    ? Math.round(recentTrend.reduce((s, t) => s + t.revenue, 0) / recentTrend.length)
+    : 0
+  const projectedQuarterlyRevenue = projectedMonthlyRevenue * 3
+  const avgMonthlyDealsWon = recentTrend.length > 0
+    ? Math.round(recentTrend.reduce((s, t) => s + t.dealsWon, 0) / recentTrend.length * 10) / 10
+    : 0
+
+  // Project next 3 months
+  const monthlyProjection: Array<{ month: string; projectedRevenue: number; projectedDeals: number }> = []
+  for (let i = 1; i <= 3; i++) {
+    const d = new Date(focusDate.getFullYear(), focusDate.getMonth() + i, 1)
+    monthlyProjection.push({
+      month: monthKey(d),
+      projectedRevenue: projectedMonthlyRevenue,
+      projectedDeals: Math.round(avgMonthlyDealsWon),
+    })
+  }
+
+  const forecast = {
+    weightedPipelineValue: Math.round(weightedPipelineValue * 100) / 100,
+    projectedMonthlyRevenue,
+    projectedQuarterlyRevenue,
+    avgMonthlyDealsWon,
+    pipelineByStage: forecastByStage,
+    monthlyProjection,
+  }
+
   return {
     dealsWonToday,
     dealsWonThisWeek,
@@ -800,6 +884,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     freeCustomers,
     trend,
     previous,
+    forecast,
   }
 }
 

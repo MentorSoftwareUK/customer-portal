@@ -635,6 +635,25 @@ export type SalesStats = {
       convertedDate: string | null
     }>
   }
+  forecast?: {
+    weightedPipelineValue: number
+    projectedMonthlyRevenue: number
+    projectedQuarterlyRevenue: number
+    avgMonthlyDealsWon: number
+    pipelineByStage: Array<{
+      stageId: string
+      label: string
+      count: number
+      value: number
+      probability: number
+      weightedValue: number
+    }>
+    monthlyProjection: Array<{
+      month: string
+      projectedRevenue: number
+      projectedDeals: number
+    }>
+  }
 }
 
 export async function adminGetSalesStats(month?: string, refresh = false) {
