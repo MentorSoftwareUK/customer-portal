@@ -659,7 +659,9 @@ export type SalesStats = {
       month: string
       mrr: number
       type: 'actual' | 'forecast'
+      layers?: { newDeals: number; conversions: number; churn: number }
     }>
+    expectedMonthlyChurnMrr: number
     preRegForecast: {
       unconvertedCount: number
       conversionRate: number

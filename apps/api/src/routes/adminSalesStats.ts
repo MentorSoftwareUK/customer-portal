@@ -122,7 +122,10 @@ export type SalesStatsDto = {
       month: string
       mrr: number
       type: 'actual' | 'forecast'
+      layers?: { newDeals: number; conversions: number; churn: number }
     }>
+    /** Expected monthly churn MRR based on historical churn rate */
+    expectedMonthlyChurnMrr: number
     /** Pre-reg / free customer conversion forecast */
     preRegForecast: {
       /** Companies still on free */
@@ -858,24 +861,52 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
   const weightedPipelineValue = forecastByStage.reduce((s, st) => s + st.weightedValue, 0)
 
-  // Last 3 months with data for projected revenue
-  const recentTrend = trend.filter((t) => t.dealsWon > 0).slice(-3)
-  const projectedMonthlyRevenue = recentTrend.length > 0
-    ? Math.round(recentTrend.reduce((s, t) => s + t.revenue, 0) / recentTrend.length)
-    : 0
-  const projectedQuarterlyRevenue = projectedMonthlyRevenue * 3
-  const avgMonthlyDealsWon = recentTrend.length > 0
-    ? Math.round(recentTrend.reduce((s, t) => s + t.dealsWon, 0) / recentTrend.length * 10) / 10
-    : 0
+  // Trend-adjusted projection using linear slope (last 6 months with data)
+  const recentTrend = trend.filter((t) => t.dealsWon > 0).slice(-6)
+  let projectedMonthlyRevenue = 0
+  let avgMonthlyDealsWon = 0
+  let revenueSlope = 0
+  let dealsSlope = 0
 
-  // Project next 3 months
+  if (recentTrend.length >= 2) {
+    const n = recentTrend.length
+    const xMean = (n - 1) / 2
+    const revMean = recentTrend.reduce((s, t) => s + t.revenue, 0) / n
+    const dealsMean = recentTrend.reduce((s, t) => s + t.dealsWon, 0) / n
+    let numRev = 0; let numDeals = 0; let den = 0
+    recentTrend.forEach((t, i) => {
+      const dx = i - xMean
+      numRev += dx * (t.revenue - revMean)
+      numDeals += dx * (t.dealsWon - dealsMean)
+      den += dx * dx
+    })
+    revenueSlope = den > 0 ? numRev / den : 0
+    dealsSlope = den > 0 ? numDeals / den : 0
+    const lastRev = recentTrend[n - 1]!.revenue
+    const lastDeals = recentTrend[n - 1]!.dealsWon
+    projectedMonthlyRevenue = Math.max(0, Math.round(lastRev + revenueSlope))
+    avgMonthlyDealsWon = Math.max(0, Math.round((lastDeals + dealsSlope) * 10) / 10)
+  } else if (recentTrend.length === 1) {
+    projectedMonthlyRevenue = Math.round(recentTrend[0]!.revenue)
+    avgMonthlyDealsWon = recentTrend[0]!.dealsWon
+  }
+
+  const baseRevForProjection = recentTrend.length >= 2 ? recentTrend[recentTrend.length - 1]!.revenue : projectedMonthlyRevenue
+  const baseDealsForProjection = recentTrend.length >= 2 ? recentTrend[recentTrend.length - 1]!.dealsWon : avgMonthlyDealsWon
+
+  // Quarterly = sum of 3 slope-adjusted months
+  const projectedQuarterlyRevenue = [1, 2, 3].reduce(
+    (sum, i) => sum + Math.max(0, Math.round(baseRevForProjection + revenueSlope * i)), 0,
+  )
+
+  // Project next 3 months (slope-adjusted)
   const monthlyProjection: Array<{ month: string; projectedRevenue: number; projectedDeals: number }> = []
   for (let i = 1; i <= 3; i++) {
     const d = new Date(focusDate.getFullYear(), focusDate.getMonth() + i, 1)
     monthlyProjection.push({
       month: monthKey(d),
-      projectedRevenue: projectedMonthlyRevenue,
-      projectedDeals: Math.round(avgMonthlyDealsWon),
+      projectedRevenue: Math.max(0, Math.round(baseRevForProjection + revenueSlope * i)),
+      projectedDeals: Math.max(0, Math.round(baseDealsForProjection + dealsSlope * i)),
     })
   }
 
@@ -907,18 +938,33 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   // Spread expected conversions evenly over 3 months
   const monthlyConversionMrr = Math.round(((expectedConversions / 3) * avgMrrPerConversion) * 100) / 100
 
-  // MRR projection: avg MRR per recently won deal × avg deals/month + free→paid conversion MRR
+  // Churn deduction: estimate monthly MRR loss from historical churn
+  const churnCutoff = new Date(focusDate.getFullYear(), focusDate.getMonth() - 6, 1)
+  const churnedCompanies = await searchCompanies(
+    [{ filters: [{ propertyName: 'salesstatus', operator: 'EQ', value: 'Past Customer' }] }],
+    ['name', 'date_left'],
+  )
+  const recentlyChurned = churnedCompanies.filter((c) => {
+    const dl = c.properties.date_left
+    return dl && new Date(dl) >= churnCutoff
+  })
+  const avgMrrPerCustomer = liveCompanies.length > 0 ? mrr / liveCompanies.length : 0
+  const avgMonthlyChurnCount = recentlyChurned.length / 6
+  const expectedMonthlyChurnMrr = Math.round(avgMonthlyChurnCount * avgMrrPerCustomer * 100) / 100
+
+  // MRR projection: new deal MRR + free→paid MRR − churn MRR
   const recentWonDeals = closedDeals.filter(
     (d) => isWon(d) && recentTrend.some((t) => t.month === monthOfDeal(d)),
   )
   const avgMrrPerDeal = recentWonDeals.length > 0
     ? recentWonDeals.reduce((s, d) => s + (parseFloat(d.properties.hs_mrr ?? '0') || 0), 0) / recentWonDeals.length
     : 0
-  const projectedMonthlyMrr = Math.round((avgMrrPerDeal * avgMonthlyDealsWon + monthlyConversionMrr) * 100) / 100
+  const newDealMrrPerMonth = Math.round(avgMrrPerDeal * avgMonthlyDealsWon * 100) / 100
+  const projectedMonthlyMrr = Math.round((newDealMrrPerMonth + monthlyConversionMrr - expectedMonthlyChurnMrr) * 100) / 100
   const projectedQuarterlyMrr = Math.round((mrr + projectedMonthlyMrr * 3) * 100) / 100
 
-  // MRR forecast chart: last 3 actual months + 3 projected months (includes free→paid MRR)
-  const mrrForecastChart: Array<{ month: string; mrr: number; type: 'actual' | 'forecast' }> = []
+  // MRR forecast chart: last 3 actual months + 3 projected months (with decomposed layers)
+  const mrrForecastChart: SalesStatsDto['forecast']['mrrForecastChart'] = []
   const last3Actual = mrrTrend.slice(-3)
   for (const m of last3Actual) {
     mrrForecastChart.push({ month: m.month, mrr: m.mrr, type: 'actual' })
@@ -930,6 +976,11 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
       month: monthKey(d),
       mrr: Math.round((lastActualMrr + projectedMonthlyMrr * i) * 100) / 100,
       type: 'forecast',
+      layers: {
+        newDeals: Math.round(newDealMrrPerMonth * i * 100) / 100,
+        conversions: Math.round(monthlyConversionMrr * i * 100) / 100,
+        churn: Math.round(-expectedMonthlyChurnMrr * i * 100) / 100,
+      },
     })
   }
 
@@ -943,6 +994,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     projectedMonthlyMrr,
     projectedQuarterlyMrr,
     mrrForecastChart,
+    expectedMonthlyChurnMrr,
     preRegForecast: {
       unconvertedCount,
       conversionRate: preRegConversionRate,

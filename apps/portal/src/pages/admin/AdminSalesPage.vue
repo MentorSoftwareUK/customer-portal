@@ -151,17 +151,45 @@ const filteredAgents = computed(() =>
   (sales.value?.agentBreakdown ?? []).filter((a) => SHOW_AGENTS.has(a.name)),
 )
 
-/* ── MRR forecast chart ── */
-const mrrForecastPoints = computed(() =>
-  (sales.value?.forecast?.mrrForecastChart ?? []).map((m) => {
+/* ── MRR forecast chart with toggleable layers ── */
+type LayerKey = 'newDeals' | 'conversions' | 'churn'
+const LAYER_CONFIG: Array<{ key: LayerKey; label: string; color: string }> = [
+  { key: 'newDeals', label: 'New Deals', color: '#818cf8' },
+  { key: 'conversions', label: 'Free → Paid', color: '#34d399' },
+  { key: 'churn', label: 'Churn', color: '#fb7185' },
+]
+const activeLayers = ref<Set<LayerKey>>(new Set(['newDeals', 'conversions', 'churn']))
+function toggleLayer(key: LayerKey) {
+  const s = new Set(activeLayers.value)
+  if (s.has(key)) s.delete(key); else s.add(key)
+  activeLayers.value = s
+}
+
+const mrrForecastPoints = computed(() => {
+  const chart = sales.value?.forecast?.mrrForecastChart ?? []
+  const lastActualMrr = chart.filter((m) => m.type === 'actual').at(-1)?.mrr ?? 0
+  return chart.map((m) => {
     const [y, mo] = m.month.split('-')
     const d = new Date(+y!, +mo! - 1, 1)
+    let mrr = m.mrr
+    if (m.type === 'forecast' && m.layers) {
+      // Start from actual baseline and add only active layers
+      mrr = lastActualMrr
+      const monthsOut = chart.filter((c) => c.type === 'forecast').indexOf(m) + 1
+      if (monthsOut > 0) {
+        for (const layer of LAYER_CONFIG) {
+          if (activeLayers.value.has(layer.key)) {
+            mrr += m.layers[layer.key]
+          }
+        }
+      }
+    }
     return {
       label: d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
-      value: m.mrr,
+      value: mrr,
     }
-  }),
-)
+  })
+})
 
 const mrrForecastDashedAfter = computed(() => {
   const chart = sales.value?.forecast?.mrrForecastChart ?? []
@@ -508,15 +536,35 @@ onMounted(() => {
 
           <!-- MRR forecast chart -->
           <div v-if="mrrForecastPoints.length > 1" class="mt-5">
-            <div class="flex items-baseline gap-3">
+            <div class="flex items-center gap-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-white/40">MRR outlook</div>
               <div class="flex items-center gap-3 text-xs text-white/30">
                 <span class="inline-flex items-center gap-1"><span class="inline-block h-0.5 w-4 bg-emerald-400 rounded"></span> Actual</span>
                 <span class="inline-flex items-center gap-1"><span class="inline-block h-0.5 w-4 rounded" style="background: repeating-linear-gradient(90deg, rgb(52,211,153) 0px, rgb(52,211,153) 4px, transparent 4px, transparent 7px)"></span> Forecast</span>
               </div>
             </div>
+            <!-- Layer toggle pills -->
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              <button
+                v-for="layer in LAYER_CONFIG"
+                :key="layer.key"
+                class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-all"
+                :class="activeLayers.has(layer.key)
+                  ? 'bg-white/10 text-white border border-white/20'
+                  : 'bg-white/[0.03] text-white/30 border border-white/[0.06] hover:bg-white/[0.06]'"
+                @click="toggleLayer(layer.key)"
+              >
+                <span class="h-2 w-2 rounded-full" :style="{ backgroundColor: activeLayers.has(layer.key) ? layer.color : 'rgba(255,255,255,0.15)' }"></span>
+                {{ layer.label }}
+              </button>
+            </div>
             <div class="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
               <LineChart :points="mrrForecastPoints" color="#34d399" :height="180" :format-value="formatCurrency" :dashed-after="mrrForecastDashedAfter" />
+            </div>
+            <!-- Churn callout -->
+            <div v-if="sales.forecast.expectedMonthlyChurnMrr > 0" class="mt-2 flex items-center gap-2 text-xs text-white/40">
+              <span class="h-1.5 w-1.5 rounded-full bg-rose-400"></span>
+              Est. {{ formatCurrency(sales.forecast.expectedMonthlyChurnMrr) }}/mo churn deducted from forecast
             </div>
           </div>
 
