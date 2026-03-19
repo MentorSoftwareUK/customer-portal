@@ -6,27 +6,9 @@ import LineChart from '../../components/LineChart.vue'
 import DashboardSubNav from '../../components/DashboardSubNav.vue'
 import { adminGetCustomerSuccess, type CustomerSuccess } from '../../lib/api'
 import { pctDelta } from '../../lib/dashboard-helpers'
+import { useDashboardMonth } from '../../lib/useDashboardMonth'
 
-/* ------------------------------------------------------------------ */
-/*  Month picker                                                       */
-/* ------------------------------------------------------------------ */
-const now = new Date()
-const selectedMonth = ref((() => {
-  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-})())
-
-const monthOptions = computed(() => {
-  const opts: { value: string; label: string }[] = []
-  for (let i = 0; i < 12; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    opts.push({
-      value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
-      label: d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
-    })
-  }
-  return opts
-})
+const { selectedMonth, monthOptions } = useDashboardMonth()
 
 /* ------------------------------------------------------------------ */
 /*  State                                                              */

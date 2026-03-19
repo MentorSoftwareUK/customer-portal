@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import SparkLine from '../../components/SparkLine.vue'
 import DonutChart from '../../components/DonutChart.vue'
 import LineChart from '../../components/LineChart.vue'
 import DashboardSubNav from '../../components/DashboardSubNav.vue'
 import { adminGetSalesFunnel, type SalesFunnel } from '../../lib/api'
 import { pctDelta } from '../../lib/dashboard-helpers'
+import { useDashboardMonth } from '../../lib/useDashboardMonth'
 
 /* ------------------------------------------------------------------ */
 /*  State                                                              */
@@ -15,19 +16,7 @@ const funnelError = ref<string | null>(null)
 const funnel = ref<SalesFunnel | null>(null)
 const cachedAt = ref<string | null>(null)
 
-const monthOptions = computed(() => {
-  const opts: { value: string; label: string }[] = []
-  const now = new Date()
-  for (let i = 0; i < 12; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-    const label = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
-    opts.push({ value: val, label })
-  }
-  return opts
-})
-
-const selectedMonth = ref(monthOptions.value[0]?.value ?? '')
+const { selectedMonth, monthOptions } = useDashboardMonth()
 
 async function loadFunnel(refresh = false) {
   funnelLoading.value = true
@@ -180,6 +169,8 @@ const trafficSourceMax = computed(() =>
   Math.max(...(funnel.value?.trafficSources ?? []).map((t) => t.count), 1),
 )
 
+watch(selectedMonth, () => void loadFunnel())
+
 onMounted(() => {
   void loadFunnel()
 })
@@ -204,7 +195,6 @@ onMounted(() => {
           <select
             v-model="selectedMonth"
             class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/80 outline-none hover:bg-white/10"
-            @change="loadFunnel(false)"
           >
             <option v-for="o in monthOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
           </select>

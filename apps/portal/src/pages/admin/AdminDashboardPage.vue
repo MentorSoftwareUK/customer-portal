@@ -13,34 +13,9 @@ import {
   type CustomerSuccess,
 } from '../../lib/api'
 import { pctDelta, formatCurrency } from '../../lib/dashboard-helpers'
+import { useDashboardMonth } from '../../lib/useDashboardMonth'
 
-/* ------------------------------------------------------------------ */
-/*  Unified month picker                                               */
-/* ------------------------------------------------------------------ */
-const now = new Date()
-const defaultMonth = (() => {
-  const d = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-})()
-
-const selectedMonth = ref(defaultMonth)
-
-// Build month options (last 12 months)
-const monthOptions = computed(() => {
-  const opts: { value: string; label: string }[] = []
-  for (let i = 0; i < 12; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-    const label = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
-    opts.push({ value: val, label })
-  }
-  return opts
-})
-
-const selectedMonthLabel = computed(() => {
-  const opt = monthOptions.value.find(o => o.value === selectedMonth.value)
-  return opt?.label ?? selectedMonth.value
-})
+const { selectedMonth, monthOptions, selectedMonthLabel } = useDashboardMonth()
 
 /* ------------------------------------------------------------------ */
 /*  Customer overview (not month-dependent)                            */
