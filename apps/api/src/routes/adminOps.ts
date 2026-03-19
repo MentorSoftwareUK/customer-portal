@@ -888,16 +888,18 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
   tallyEng(emailsFocus, 'emails')
   tallyEng(notesFocus, 'notes')
 
-  /* Tally meetings per owner */
+  /* Tally meetings per owner (meetings excludes demos) */
   const ownerMeetings = new Map<string, { total: number; demos: number }>()
   for (const m of meetingsFocus) {
     const oid = m.properties.hubspot_owner_id ?? 'unknown'
     const row = ownerMeetings.get(oid) ?? { total: 0, demos: 0 }
-    row.total++
+    const title = (m.properties.hs_meeting_title ?? '').toLowerCase()
+    const isDemo = title.includes('demo') || title.includes('demonstration')
     const outcome = (m.properties.hs_meeting_outcome ?? '').toUpperCase()
-    if (outcome === 'COMPLETED') {
-      const title = (m.properties.hs_meeting_title ?? '').toLowerCase()
-      if (title.includes('demo') || title.includes('demonstration')) row.demos++
+    if (isDemo && outcome === 'COMPLETED') {
+      row.demos++
+    } else {
+      row.total++
     }
     ownerMeetings.set(oid, row)
   }
