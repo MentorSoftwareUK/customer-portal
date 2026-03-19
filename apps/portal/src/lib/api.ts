@@ -757,6 +757,8 @@ export type OpsStats = {
     overdueTasks: number
     overdueRate: number
     activityThisMonth: number
+    meetings: number
+    demos: number
     lastActivityDate: string | null
     health: 'green' | 'amber' | 'red'
     members: Array<{
@@ -767,6 +769,8 @@ export type OpsStats = {
       calls: number
       emails: number
       notes: number
+      meetings: number
+      demos: number
       lastActivity: string | null
     }>
   }>
