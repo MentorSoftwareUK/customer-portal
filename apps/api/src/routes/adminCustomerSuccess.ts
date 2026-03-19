@@ -495,6 +495,57 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     .sort((a, b) => b.total - a.total)
 
   /* ── 10. Churn trend (last 6 months) ── */
+
+  // Fetch closedwon deals (amount > 0) from the last 7 months to capture
+  // free-to-paid conversions that may not have an updated installdate.
+  const trendStartDate = new Date(focusDate.getFullYear(), focusDate.getMonth() - 6, 1)
+  const wonDeals: Array<{ id: string; closedMonth: string }> = []
+  try {
+    let wdAfter: string | undefined
+    for (let page = 0; page < 10; page++) {
+      const body: any = {
+        filterGroups: [{
+          filters: [
+            { propertyName: 'dealstage', operator: 'EQ', value: 'closedwon' },
+            { propertyName: 'pipeline', operator: 'EQ', value: 'default' },
+            { propertyName: 'amount', operator: 'GT', value: '0' },
+            { propertyName: 'hs_v2_date_entered_closedwon', operator: 'GTE', value: trendStartDate.toISOString().split('T')[0] },
+          ],
+        }],
+        properties: ['hs_v2_date_entered_closedwon', 'amount'],
+        limit: 100,
+      }
+      if (wdAfter) body.after = wdAfter
+      const res = await hsFetch('/crm/v3/objects/deals/search', { method: 'POST', body: JSON.stringify(body) })
+      const data = (await res.json()) as { results: Array<{ id: string; properties: Record<string, string | null> }>; paging?: { next?: { after: string } } }
+      for (const d of data.results) {
+        const dt = d.properties.hs_v2_date_entered_closedwon
+        if (dt) wonDeals.push({ id: d.id, closedMonth: monthKey(new Date(dt)) })
+      }
+      if (!data.paging?.next?.after) break
+      wdAfter = data.paging.next.after
+    }
+  } catch { /* deal search failed – fall back to install dates only */ }
+
+  // Resolve deal → company associations and build month → Set<companyId>
+  const wonCompanyByMonth = new Map<string, Set<string>>()
+  for (let b = 0; b < wonDeals.length; b += 20) {
+    const batch = wonDeals.slice(b, b + 20)
+    await Promise.all(
+      batch.map(async (deal) => {
+        try {
+          const aRes = await hsFetch(`/crm/v4/objects/deals/${deal.id}/associations/companies?limit=10`)
+          const aData = (await aRes.json()) as { results?: Array<{ toObjectId: string }> }
+          for (const a of aData.results ?? []) {
+            let s = wonCompanyByMonth.get(deal.closedMonth)
+            if (!s) { s = new Set(); wonCompanyByMonth.set(deal.closedMonth, s) }
+            s.add(a.toObjectId)
+          }
+        } catch { /* skip */ }
+      }),
+    )
+  }
+
   const churnTrend: Array<{
     month: string
     churned: number
@@ -508,12 +559,20 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
       if (!dl) return false
       return monthKey(new Date(dl)) === mk
     }).length
-    const newCustCount = paying.filter((c) => {
+
+    // Combine: companies with install/contract date in this month + companies
+    // whose deal closed-won in this month (de-duplicated by company ID)
+    const newCompanyIds = new Set<string>()
+    for (const c of paying) {
       const cs = c.properties.installdate ?? c.properties.contract_start_date
-      if (!cs) return false
-      return monthKey(new Date(cs)) === mk
-    }).length
-    churnTrend.push({ month: mk, churned: churnCount, newCustomers: newCustCount })
+      if (cs && monthKey(new Date(cs)) === mk) newCompanyIds.add(c.id)
+    }
+    const wonSet = wonCompanyByMonth.get(mk)
+    if (wonSet) {
+      for (const cid of wonSet) newCompanyIds.add(cid)
+    }
+
+    churnTrend.push({ month: mk, churned: churnCount, newCustomers: newCompanyIds.size })
   }
 
   /* ── 11. Customer tenure ── */
