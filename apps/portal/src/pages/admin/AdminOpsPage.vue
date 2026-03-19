@@ -63,18 +63,6 @@ const HEALTH_STYLES: Record<string, { bg: string; text: string; label: string }>
   red: { bg: 'bg-rose-500/10', text: 'text-rose-400', label: 'Critical' },
 }
 
-/* ── Data quality helpers ── */
-function dqColor(count: number): string {
-  if (count === 0) return 'text-emerald-400'
-  if (count < 10) return 'text-amber-400'
-  return 'text-rose-400'
-}
-function dqBg(count: number): string {
-  if (count === 0) return 'bg-emerald-500/10'
-  if (count < 10) return 'bg-amber-500/10'
-  return 'bg-rose-500/10'
-}
-
 
 
 watch(selectedMonth, () => void loadOps())
@@ -281,28 +269,7 @@ onMounted(() => void loadOps())
             </div>
           </div>
 
-          <!-- Unassigned won deals table -->
-          <div v-if="ops.handoff.unassignedWon.length > 0" class="mt-4">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-400/80 mb-2">Deals not assigned to Success/Training</div>
-            <div class="rounded-lg border border-white/[0.06] overflow-hidden">
-              <table class="w-full text-xs">
-                <thead><tr class="border-b border-white/[0.06] text-white/40">
-                  <th class="px-3 py-2 text-left font-medium">Company</th>
-                  <th class="px-3 py-2 text-left font-medium">Deal</th>
-                  <th class="px-3 py-2 text-left font-medium">Owner</th>
-                  <th class="px-3 py-2 text-right font-medium">Days since won</th>
-                </tr></thead>
-                <tbody>
-                  <tr v-for="(d, i) in ops.handoff.unassignedWon" :key="i" class="border-b border-white/[0.03] last:border-0">
-                    <td class="px-3 py-2 text-white/80">{{ d.company }}</td>
-                    <td class="px-3 py-2 text-white/60">{{ d.dealName }}</td>
-                    <td class="px-3 py-2 text-white/60">{{ d.owner }}</td>
-                    <td class="px-3 py-2 text-right tabular-nums" :class="d.daysSinceWon > 7 ? 'text-rose-400 font-bold' : 'text-amber-400'">{{ d.daysSinceWon }}d</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <!-- Unassigned won deals table — removed -->
 
           <!-- No contact new customers table -->
           <div v-if="ops.handoff.noContactNewCustomers.length > 0" class="mt-4">
@@ -325,137 +292,6 @@ onMounted(() => void loadOps())
             </div>
           </div>
 
-          <!-- Overdue onboarding tasks -->
-          <div v-if="ops.handoff.overdueOnboarding.length > 0" class="mt-4">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-400/80 mb-2">Overdue onboarding tasks</div>
-            <div class="rounded-lg border border-white/[0.06] overflow-hidden">
-              <table class="w-full text-xs">
-                <thead><tr class="border-b border-white/[0.06] text-white/40">
-                  <th class="px-3 py-2 text-left font-medium">Task</th>
-                  <th class="px-3 py-2 text-left font-medium">Owner</th>
-                  <th class="px-3 py-2 text-right font-medium">Days overdue</th>
-                </tr></thead>
-                <tbody>
-                  <tr v-for="(t, i) in ops.handoff.overdueOnboarding" :key="i" class="border-b border-white/[0.03] last:border-0">
-                    <td class="px-3 py-2 text-white/80">{{ t.task }}</td>
-                    <td class="px-3 py-2 text-white/60">{{ t.owner }}</td>
-                    <td class="px-3 py-2 text-right tabular-nums text-rose-400 font-bold">{{ t.daysOverdue }}d</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════
-             4. DATA QUALITY & HYGIENE
-        ═══════════════════════════════════════════════ -->
-        <div id="data-quality" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Data Quality & Hygiene</div>
-          <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            <div v-for="item in [
-              { label: 'Contacts missing email', val: ops.dataQuality.contactsMissingEmail },
-              { label: 'Contacts missing owner', val: ops.dataQuality.contactsMissingOwner },
-              { label: 'Companies missing lifecycle', val: ops.dataQuality.companiesMissingLifecycle },
-              { label: 'Companies missing owner', val: ops.dataQuality.companiesMissingOwner },
-              { label: 'Deals — no activity 14d', val: ops.dataQuality.dealsNoActivity14d },
-              { label: 'Deals stuck 21+ days', val: ops.dataQuality.dealsStuck21d },
-              { label: 'Open deals — no close date', val: ops.dataQuality.openDealsNoCloseDate },
-            ]" :key="item.label"
-              class="rounded-lg border border-white/[0.06] px-4 py-3"
-              :class="dqBg(item.val)"
-            >
-              <div class="text-[11px] text-white/50">{{ item.label }}</div>
-              <div class="mt-1 text-xl font-bold tabular-nums" :class="dqColor(item.val)">{{ item.val }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════
-             5. MARKETING SIGNALS
-        ═══════════════════════════════════════════════ -->
-        <div id="marketing" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Marketing Signals</div>
-
-          <template v-if="ops.marketing.available">
-            <!-- KPI row -->
-            <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-                <div class="text-xs text-white/50">Active campaigns</div>
-                <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.marketing.activeCampaigns }}</div>
-              </div>
-              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-                <div class="text-xs text-white/50">Emails sent</div>
-                <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.marketing.emailsSent.toLocaleString() }}</div>
-              </div>
-              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-                <div class="text-xs text-white/50">Avg open rate</div>
-                <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.marketing.avgOpenRate }}%</div>
-                <div v-if="ops.marketing.avgOpenRatePrev" class="mt-0.5 text-[10px] text-white/30">
-                  Prev: {{ ops.marketing.avgOpenRatePrev }}%
-                </div>
-              </div>
-              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-                <div class="text-xs text-white/50">Avg click rate</div>
-                <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.marketing.avgClickRate }}%</div>
-                <div v-if="ops.marketing.avgClickRatePrev" class="mt-0.5 text-[10px] text-white/30">
-                  Prev: {{ ops.marketing.avgClickRatePrev }}%
-                </div>
-              </div>
-            </div>
-
-            <!-- Rate flags -->
-            <div class="mt-3 flex flex-wrap gap-3">
-              <div class="flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border"
-                :class="ops.marketing.unsubscribeRate >= 1 ? 'border-rose-500/30 bg-rose-500/10 text-rose-300' : ops.marketing.unsubscribeRate >= 0.5 ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'"
-              >
-                Unsub rate: {{ ops.marketing.unsubscribeRate }}%
-              </div>
-              <div class="flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border"
-                :class="ops.marketing.hardBounceRate >= 2 ? 'border-rose-500/30 bg-rose-500/10 text-rose-300' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'"
-              >
-                Hard bounce: {{ ops.marketing.hardBounceRate }}%
-              </div>
-            </div>
-
-            <!-- Campaign table -->
-            <div v-if="ops.marketing.campaigns.length > 0" class="mt-4 rounded-lg border border-white/[0.06] overflow-hidden">
-              <table class="w-full text-xs">
-                <thead><tr class="border-b border-white/[0.06] text-white/40">
-                  <th class="px-3 py-2 text-left font-medium">Campaign</th>
-                  <th class="px-3 py-2 text-right font-medium">Sent</th>
-                  <th class="px-3 py-2 text-right font-medium">Open %</th>
-                  <th class="px-3 py-2 text-right font-medium">Click %</th>
-                  <th class="px-3 py-2 text-right font-medium">Bounces</th>
-                  <th class="px-3 py-2 text-left font-medium">Status</th>
-                </tr></thead>
-                <tbody>
-                  <tr v-for="c in ops.marketing.campaigns" :key="c.name" class="border-b border-white/[0.03] last:border-0">
-                    <td class="px-3 py-2 text-white/80 max-w-[200px] truncate">{{ c.name }}</td>
-                    <td class="px-3 py-2 text-right tabular-nums text-white/60">{{ c.sent.toLocaleString() }}</td>
-                    <td class="px-3 py-2 text-right tabular-nums text-white/60">{{ c.openRate }}%</td>
-                    <td class="px-3 py-2 text-right tabular-nums text-white/60">{{ c.clickRate }}%</td>
-                    <td class="px-3 py-2 text-right tabular-nums text-white/60">{{ c.bounces }}</td>
-                    <td class="px-3 py-2">
-                      <span class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
-                        :class="c.status === 'PUBLISHED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/5 text-white/40'"
-                      >{{ c.status }}</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </template>
-
-          <div v-else class="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 flex items-start gap-3">
-            <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
-              <svg class="h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-            </div>
-            <div>
-              <div class="text-sm font-medium text-white/80">Marketing data not available</div>
-              <div class="mt-1 text-xs text-white/50">{{ ops.marketing.note }}</div>
-            </div>
-          </div>
         </div>
 
         <!-- ═══════════════════════════════════════════════
