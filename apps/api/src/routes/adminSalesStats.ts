@@ -943,17 +943,22 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
   // Churn deduction: estimate monthly MRR loss from historical churn
   const churnCutoff = new Date(focusDate.getFullYear(), focusDate.getMonth() - 6, 1)
-  const churnedCompanies = await searchCompanies(
-    [{ filters: [{ propertyName: 'salesstatus', operator: 'EQ', value: 'Past Customer' }] }],
-    ['name', 'date_left'],
-  )
-  const recentlyChurned = churnedCompanies.filter((c) => {
-    const dl = c.properties.date_left
-    return dl && new Date(dl) >= churnCutoff
-  })
-  const avgMrrPerCustomer = liveCompanies.length > 0 ? mrr / liveCompanies.length : 0
-  const avgMonthlyChurnCount = recentlyChurned.length / 6
-  const expectedMonthlyChurnMrr = Math.round(avgMonthlyChurnCount * avgMrrPerCustomer * 100) / 100
+  let expectedMonthlyChurnMrr = 0
+  try {
+    const churnedCompanies = await searchCompanies(
+      [{ filters: [{ propertyName: 'salesstatus', operator: 'EQ', value: 'Past Customer' }] }],
+      ['name', 'date_left'],
+    )
+    const recentlyChurned = churnedCompanies.filter((c) => {
+      const dl = c.properties.date_left
+      return dl && new Date(dl) >= churnCutoff
+    })
+    const avgMrrPerCustomer = liveCompanies.length > 0 ? mrr / liveCompanies.length : 0
+    const avgMonthlyChurnCount = recentlyChurned.length / 6
+    expectedMonthlyChurnMrr = Math.round(avgMonthlyChurnCount * avgMrrPerCustomer * 100) / 100
+  } catch {
+    // If churn query fails, proceed without churn deduction
+  }
 
   // MRR projection: new deal MRR + free→paid MRR − churn MRR
   const recentWonDeals = closedDeals.filter(

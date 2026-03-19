@@ -517,9 +517,9 @@ onMounted(() => {
               <div class="mt-2 text-3xl font-bold tabular-nums text-indigo-400">{{ formatCurrency(sales.forecast.projectedMonthlyRevenue) }}</div>
               <div class="mt-1 text-xs text-indigo-400/60">Trend-adjusted (6-month slope)</div>
               <div v-if="sales.forecast.newDealMrrPerMonth || sales.forecast.monthlyConversionMrr || sales.forecast.expectedMonthlyChurnMrr" class="mt-2 border-t border-indigo-500/10 pt-2 space-y-0.5 text-xs text-white/40">
-                <div><span class="text-emerald-400/70">+{{ formatCurrency(sales.forecast.newDealMrrPerMonth) }}</span> new deal MRR</div>
-                <div v-if="sales.forecast.monthlyConversionMrr"><span class="text-emerald-400/70">+{{ formatCurrency(sales.forecast.monthlyConversionMrr) }}</span> free→paid MRR</div>
-                <div v-if="sales.forecast.expectedMonthlyChurnMrr"><span class="text-rose-400/70">−{{ formatCurrency(sales.forecast.expectedMonthlyChurnMrr) }}</span> est. churn</div>
+                <div><span class="text-emerald-400/70">+{{ formatCurrency(sales.forecast.newDealMrrPerMonth ?? 0) }}</span> new deal MRR</div>
+                <div v-if="sales.forecast.monthlyConversionMrr"><span class="text-emerald-400/70">+{{ formatCurrency(sales.forecast.monthlyConversionMrr ?? 0) }}</span> free→paid MRR</div>
+                <div v-if="sales.forecast.expectedMonthlyChurnMrr"><span class="text-rose-400/70">−{{ formatCurrency(sales.forecast.expectedMonthlyChurnMrr ?? 0) }}</span> est. churn</div>
                 <div class="border-t border-white/[0.06] pt-1 font-semibold"><span class="text-indigo-400/60">={{ formatCurrency(sales.forecast.projectedMonthlyMrr) }}</span> net MRR / month</div>
               </div>
             </div>
@@ -566,9 +566,9 @@ onMounted(() => {
               <LineChart :points="mrrForecastPoints" color="#34d399" :height="180" :format-value="formatCurrency" :dashed-after="mrrForecastDashedAfter" />
             </div>
             <!-- Churn callout -->
-            <div v-if="sales.forecast.expectedMonthlyChurnMrr > 0" class="mt-2 flex items-center gap-2 text-xs text-white/40">
+            <div v-if="(sales.forecast.expectedMonthlyChurnMrr ?? 0) > 0" class="mt-2 flex items-center gap-2 text-xs text-white/40">
               <span class="h-1.5 w-1.5 rounded-full bg-rose-400"></span>
-              Est. {{ formatCurrency(sales.forecast.expectedMonthlyChurnMrr) }}/mo churn deducted from forecast
+              Est. {{ formatCurrency(sales.forecast.expectedMonthlyChurnMrr ?? 0) }}/mo churn deducted from forecast
             </div>
           </div>
 
