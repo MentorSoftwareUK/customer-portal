@@ -234,91 +234,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- ── Sales Forecast ── -->
-        <div v-if="sales.forecast" class="mt-8 rounded-xl border border-white/[0.06] bg-white/[0.03] p-6">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Sales Forecast</div>
-
-          <!-- Hero: Weighted pipeline -->
-          <div class="mt-4 flex items-end gap-6">
-            <span class="text-5xl font-bold tabular-nums text-white">{{ formatCurrency(sales.forecast.weightedPipelineValue) }}</span>
-            <span class="mb-1 text-sm text-white/50">weighted pipeline value</span>
-          </div>
-
-          <!-- KPI boxes -->
-          <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div class="rounded-lg border border-indigo-500/20 bg-indigo-500/[0.05] px-5 py-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-indigo-400/80">Projected monthly revenue</div>
-              <div class="mt-2 text-3xl font-bold tabular-nums text-indigo-400">{{ formatCurrency(sales.forecast.projectedMonthlyRevenue) }}</div>
-              <div class="mt-1 text-xs text-indigo-400/60">Based on last 3 months avg</div>
-            </div>
-            <div class="rounded-lg border border-violet-500/20 bg-violet-500/[0.05] px-5 py-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-violet-400/80">Projected quarterly revenue</div>
-              <div class="mt-2 text-3xl font-bold tabular-nums text-violet-400">{{ formatCurrency(sales.forecast.projectedQuarterlyRevenue) }}</div>
-              <div class="mt-1 text-xs text-violet-400/60">Next 3 months</div>
-            </div>
-            <div class="rounded-lg border border-sky-500/20 bg-sky-500/[0.05] px-5 py-4">
-              <div class="text-xs font-semibold uppercase tracking-wider text-sky-400/80">Avg deals won / month</div>
-              <div class="mt-2 text-3xl font-bold tabular-nums text-sky-400">{{ sales.forecast.avgMonthlyDealsWon }}</div>
-              <div class="mt-1 text-xs text-sky-400/60">Based on last 3 months avg</div>
-            </div>
-          </div>
-
-          <!-- Pipeline probability table -->
-          <div v-if="sales.forecast.pipelineByStage.length > 0" class="mt-5 overflow-hidden rounded-lg border border-white/[0.06]">
-            <table class="w-full text-left text-sm">
-              <thead>
-                <tr class="border-b border-white/[0.06] bg-white/[0.03] text-xs uppercase tracking-wider text-white/40">
-                  <th class="px-4 py-2.5 font-semibold">Stage</th>
-                  <th class="px-4 py-2.5 font-semibold text-center">Deals</th>
-                  <th class="px-4 py-2.5 font-semibold text-right">Value</th>
-                  <th class="px-4 py-2.5 font-semibold text-center">Win prob</th>
-                  <th class="px-4 py-2.5 font-semibold text-right">Weighted</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="st in sales.forecast.pipelineByStage"
-                  :key="st.stageId"
-                  class="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors"
-                >
-                  <td class="px-4 py-2.5 text-white/80">{{ st.label }}</td>
-                  <td class="px-4 py-2.5 text-center tabular-nums text-white/60">{{ st.count }}</td>
-                  <td class="px-4 py-2.5 text-right tabular-nums text-white/60">{{ formatCurrency(st.value) }}</td>
-                  <td class="px-4 py-2.5 text-center">
-                    <span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-bold bg-white/[0.06] text-white/60">{{ Math.round(st.probability * 100) }}%</span>
-                  </td>
-                  <td class="px-4 py-2.5 text-right tabular-nums font-semibold text-emerald-400/80">{{ formatCurrency(st.weightedValue) }}</td>
-                </tr>
-              </tbody>
-              <tfoot>
-                <tr class="border-t border-white/[0.08] bg-white/[0.02]">
-                  <td class="px-4 py-2.5 text-xs font-semibold uppercase text-white/50">Total</td>
-                  <td class="px-4 py-2.5 text-center tabular-nums font-bold text-white/70">{{ sales.forecast.pipelineByStage.reduce((s, st) => s + st.count, 0) }}</td>
-                  <td class="px-4 py-2.5 text-right tabular-nums font-bold text-white/70">{{ formatCurrency(sales.forecast.pipelineByStage.reduce((s, st) => s + st.value, 0)) }}</td>
-                  <td></td>
-                  <td class="px-4 py-2.5 text-right tabular-nums font-bold text-emerald-400">{{ formatCurrency(sales.forecast.weightedPipelineValue) }}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          <!-- Monthly projection -->
-          <div v-if="sales.forecast.monthlyProjection.length > 0" class="mt-5">
-            <div class="text-xs font-semibold uppercase tracking-wider text-white/40 mb-3">3-Month projection</div>
-            <div class="grid grid-cols-3 gap-3">
-              <div
-                v-for="proj in sales.forecast.monthlyProjection"
-                :key="proj.month"
-                class="rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-center"
-              >
-                <div class="text-xs text-white/40">{{ new Date(proj.month + '-01').toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) }}</div>
-                <div class="mt-1 text-lg font-bold tabular-nums text-white">{{ formatCurrency(proj.projectedRevenue) }}</div>
-                <div class="text-xs text-white/40">~{{ proj.projectedDeals }} deals</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- ── Free → Paid Conversion ── -->
         <div v-if="sales.freeCustomers" class="mt-8 rounded-xl border border-white/[0.06] bg-white/[0.03] p-6">
           <div class="flex items-center justify-between">
@@ -535,6 +450,91 @@ onMounted(() => {
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- ── Sales Forecast ── -->
+        <div v-if="sales.forecast" class="mt-8 rounded-xl border border-white/[0.06] bg-white/[0.03] p-6">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Sales Forecast</div>
+
+          <!-- Hero: Weighted pipeline -->
+          <div class="mt-4 flex items-end gap-6">
+            <span class="text-5xl font-bold tabular-nums text-white">{{ formatCurrency(sales.forecast.weightedPipelineValue) }}</span>
+            <span class="mb-1 text-sm text-white/50">weighted pipeline value</span>
+          </div>
+
+          <!-- KPI boxes -->
+          <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="rounded-lg border border-indigo-500/20 bg-indigo-500/[0.05] px-5 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wider text-indigo-400/80">Projected monthly revenue</div>
+              <div class="mt-2 text-3xl font-bold tabular-nums text-indigo-400">{{ formatCurrency(sales.forecast.projectedMonthlyRevenue) }}</div>
+              <div class="mt-1 text-xs text-indigo-400/60">Based on last 3 months avg</div>
+            </div>
+            <div class="rounded-lg border border-violet-500/20 bg-violet-500/[0.05] px-5 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wider text-violet-400/80">Projected quarterly revenue</div>
+              <div class="mt-2 text-3xl font-bold tabular-nums text-violet-400">{{ formatCurrency(sales.forecast.projectedQuarterlyRevenue) }}</div>
+              <div class="mt-1 text-xs text-violet-400/60">Next 3 months</div>
+            </div>
+            <div class="rounded-lg border border-sky-500/20 bg-sky-500/[0.05] px-5 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wider text-sky-400/80">Avg deals won / month</div>
+              <div class="mt-2 text-3xl font-bold tabular-nums text-sky-400">{{ sales.forecast.avgMonthlyDealsWon }}</div>
+              <div class="mt-1 text-xs text-sky-400/60">Based on last 3 months avg</div>
+            </div>
+          </div>
+
+          <!-- Pipeline probability table -->
+          <div v-if="sales.forecast.pipelineByStage.length > 0" class="mt-5 overflow-hidden rounded-lg border border-white/[0.06]">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-white/[0.06] bg-white/[0.03] text-xs uppercase tracking-wider text-white/40">
+                  <th class="px-4 py-2.5 font-semibold">Stage</th>
+                  <th class="px-4 py-2.5 font-semibold text-center">Deals</th>
+                  <th class="px-4 py-2.5 font-semibold text-right">Value</th>
+                  <th class="px-4 py-2.5 font-semibold text-center">Win prob</th>
+                  <th class="px-4 py-2.5 font-semibold text-right">Weighted</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="st in sales.forecast.pipelineByStage"
+                  :key="st.stageId"
+                  class="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors"
+                >
+                  <td class="px-4 py-2.5 text-white/80">{{ st.label }}</td>
+                  <td class="px-4 py-2.5 text-center tabular-nums text-white/60">{{ st.count }}</td>
+                  <td class="px-4 py-2.5 text-right tabular-nums text-white/60">{{ formatCurrency(st.value) }}</td>
+                  <td class="px-4 py-2.5 text-center">
+                    <span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-bold bg-white/[0.06] text-white/60">{{ Math.round(st.probability * 100) }}%</span>
+                  </td>
+                  <td class="px-4 py-2.5 text-right tabular-nums font-semibold text-emerald-400/80">{{ formatCurrency(st.weightedValue) }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="border-t border-white/[0.08] bg-white/[0.02]">
+                  <td class="px-4 py-2.5 text-xs font-semibold uppercase text-white/50">Total</td>
+                  <td class="px-4 py-2.5 text-center tabular-nums font-bold text-white/70">{{ sales.forecast.pipelineByStage.reduce((s, st) => s + st.count, 0) }}</td>
+                  <td class="px-4 py-2.5 text-right tabular-nums font-bold text-white/70">{{ formatCurrency(sales.forecast.pipelineByStage.reduce((s, st) => s + st.value, 0)) }}</td>
+                  <td></td>
+                  <td class="px-4 py-2.5 text-right tabular-nums font-bold text-emerald-400">{{ formatCurrency(sales.forecast.weightedPipelineValue) }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Monthly projection -->
+          <div v-if="sales.forecast.monthlyProjection.length > 0" class="mt-5">
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/40 mb-3">3-Month projection</div>
+            <div class="grid grid-cols-3 gap-3">
+              <div
+                v-for="proj in sales.forecast.monthlyProjection"
+                :key="proj.month"
+                class="rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-center"
+              >
+                <div class="text-xs text-white/40">{{ new Date(proj.month + '-01').toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) }}</div>
+                <div class="mt-1 text-lg font-bold tabular-nums text-white">{{ formatCurrency(proj.projectedRevenue) }}</div>
+                <div class="text-xs text-white/40">~{{ proj.projectedDeals }} deals</div>
+              </div>
+            </div>
           </div>
         </div>
       </template>
