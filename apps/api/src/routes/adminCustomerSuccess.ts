@@ -242,9 +242,8 @@ const COMPANY_PROPERTIES = [
   'hs_latest_meeting_activity',
   'num_notes',
   'num_contacted_notes',
+  'registration_status',
 ]
-
-const PREREG_PIPELINE_ID = '2933345490'
 
 const MEETING_PROPERTIES = [
   'hs_meeting_title',
@@ -774,46 +773,6 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     return true
   })
 
-  // Build a set of company IDs that came through the pre-reg pipeline.
-  // Search deals in the pre-reg pipeline, then resolve their company associations.
-  const preRegCompanyIds = new Set<string>()
-  try {
-    // Fetch all deals in pre-reg pipeline (paginated)
-    const preRegDeals: Array<{ id: string }> = []
-    let prAfter: string | undefined
-    for (let p = 0; p < 5; p++) {
-      const prBody: any = {
-        filterGroups: [{ filters: [{ propertyName: 'pipeline', operator: 'EQ', value: PREREG_PIPELINE_ID }] }],
-        properties: ['pipeline'],
-        limit: 100,
-      }
-      if (prAfter) prBody.after = prAfter
-      const prRes = await hsFetch('/crm/v3/objects/deals/search', {
-        method: 'POST',
-        body: JSON.stringify(prBody),
-      })
-      const prData = (await prRes.json()) as { results: Array<{ id: string }>; paging?: { next?: { after: string } } }
-      preRegDeals.push(...prData.results)
-      if (!prData.paging?.next?.after) break
-      prAfter = prData.paging.next.after
-    }
-    // For each pre-reg deal, get associated company IDs
-    for (let b = 0; b < preRegDeals.length; b += 20) {
-      const dealBatch = preRegDeals.slice(b, b + 20)
-      await Promise.all(
-        dealBatch.map(async (deal) => {
-          try {
-            const aRes = await hsFetch(`/crm/v4/objects/deals/${deal.id}/associations/companies?limit=100`)
-            const aData = (await aRes.json()) as { results?: Array<{ toObjectId: string }> }
-            for (const a of aData.results ?? []) preRegCompanyIds.add(a.toObjectId)
-          } catch { /* skip */ }
-        }),
-      )
-    }
-  } catch {
-    /* pre-reg lookup failed – no badges, but don't break the page */
-  }
-
   // Fetch associated meetings for each new customer
   type MeetingClassification = 'training' | 'success' | 'other'
   function classifyMeeting(m: HsMeeting): MeetingClassification {
@@ -855,7 +814,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     const results = await Promise.all(
       batch.map(async (c) => {
         let companyMeetings: HsMeeting[] = []
-        const isPreReg = preRegCompanyIds.has(c.id)
+        const isPreReg = c.properties.registration_status === 'Registered'
         try {
           // Fetch meeting associations for this company
           const assocRes = await hsFetch(
