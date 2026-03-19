@@ -27,6 +27,8 @@ export type OpsDto = {
     activityThisMonth: number
     lastActivityDate: string | null
     health: 'green' | 'amber' | 'red'
+    meetings: number
+    demos: number
     members: Array<{
       name: string
       ownerId: string
@@ -35,6 +37,8 @@ export type OpsDto = {
       calls: number
       emails: number
       notes: number
+      meetings: number
+      demos: number
       lastActivity: string | null
     }>
   }>
@@ -884,6 +888,17 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
   tallyEng(emailsFocus, 'emails')
   tallyEng(notesFocus, 'notes')
 
+  /* Tally meetings per owner */
+  const ownerMeetings = new Map<string, { total: number; demos: number }>()
+  for (const m of meetingsFocus) {
+    const oid = m.properties.hubspot_owner_id ?? 'unknown'
+    const row = ownerMeetings.get(oid) ?? { total: 0, demos: 0 }
+    row.total++
+    const title = (m.properties.hs_meeting_title ?? '').toLowerCase()
+    if (title.includes('demo') || title.includes('demonstration')) row.demos++
+    ownerMeetings.set(oid, row)
+  }
+
   /* ──────────────────────────────────
      SECTION 2: DEPARTMENT HEALTH
   ────────────────────────────────── */
@@ -903,6 +918,8 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     calls: number
     emails: number
     notes: number
+    meetings: number
+    demos: number
     lastActivity: string | null
     completedFocus: number
     completedPrev: number
@@ -916,6 +933,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     if (!ACTIVE_DEPTS.includes(dept)) continue
     const tk = ownerTasks.get(oid) ?? { open: 0, overdue: 0, completedFocus: 0, completedPrev: 0 }
     const eg = ownerEng.get(oid) ?? { calls: 0, emails: 0, notes: 0, lastTs: 0 }
+    const mt = ownerMeetings.get(oid) ?? { total: 0, demos: 0 }
     memberRows.push({
       name,
       ownerId: oid,
@@ -925,6 +943,8 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       calls: eg.calls,
       emails: eg.emails,
       notes: eg.notes,
+      meetings: mt.total,
+      demos: mt.demos,
       lastActivity: eg.lastTs > 0 ? new Date(eg.lastTs).toISOString() : null,
       completedFocus: tk.completedFocus,
       completedPrev: tk.completedPrev,
@@ -945,7 +965,9 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     const members = deptGrouped.get(dept)!
     const openTasks = members.reduce((s, m) => s + m.openTasks, 0)
     const overdueTasks = members.reduce((s, m) => s + m.overdueTasks, 0)
-    const activity = members.reduce((s, m) => s + m.calls + m.emails + m.notes, 0)
+    const activity = members.reduce((s, m) => s + m.calls + m.emails + m.notes + m.meetings, 0)
+    const meetings = members.reduce((s, m) => s + m.meetings, 0)
+    const demos = members.reduce((s, m) => s + m.demos, 0)
     const latestTs = Math.max(
       ...members.map((m) => (m.lastActivity ? new Date(m.lastActivity).getTime() : 0)),
     )
@@ -964,6 +986,8 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       overdueTasks,
       overdueRate,
       activityThisMonth: activity,
+      meetings,
+      demos,
       lastActivityDate,
       health,
       members: members
@@ -975,9 +999,11 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
           calls: m.calls,
           emails: m.emails,
           notes: m.notes,
+          meetings: m.meetings,
+          demos: m.demos,
           lastActivity: m.lastActivity,
         }))
-        .sort((a, b) => b.calls + b.emails + b.notes - (a.calls + a.emails + a.notes)),
+        .sort((a, b) => b.calls + b.emails + b.notes + b.meetings - (a.calls + a.emails + a.notes + a.meetings)),
     }
   })
 
