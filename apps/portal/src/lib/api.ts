@@ -743,58 +743,127 @@ export async function adminGetCustomerSuccess(month?: string, refresh = false) {
 /* ── Ops ── */
 
 export type OpsStats = {
-  openTasks: number
-  overdueTasks: number
-  tasksCompletedThisMonth: number
-  tasksCompletedPrev: number
-  avgTaskCompletionDays: number
-  avgTaskCompletionDaysPrev: number
-  callsThisMonth: number
-  callsPrev: number
-  emailsThisMonth: number
-  emailsPrev: number
-  notesThisMonth: number
-  notesPrev: number
-  kpiSpark: {
-    tasksCompleted: number[]
-    calls: number[]
-    emails: number[]
-    notes: number[]
-  }
-  teamActivity: Array<{
-    ownerId: string
-    name: string
+  alerts: Array<{
+    id: string
+    severity: 'red' | 'amber'
+    label: string
+    count: number
+    detail?: string
+  }>
+  departments: Array<{
     department: string
-    tasks: number
-    calls: number
-    emails: number
-    notes: number
+    headcount: number
+    openTasks: number
+    overdueTasks: number
+    overdueRate: number
+    activityThisMonth: number
+    lastActivityDate: string | null
+    health: 'green' | 'amber' | 'red'
+    members: Array<{
+      name: string
+      ownerId: string
+      openTasks: number
+      overdueTasks: number
+      calls: number
+      emails: number
+      notes: number
+      lastActivity: string | null
+    }>
   }>
-  departmentActivity: Array<{
-    department: string
-    members: string[]
-    tasks: number
-    calls: number
-    emails: number
-    notes: number
-  }>
-  recentActivity: Array<{
-    type: 'task' | 'call' | 'email' | 'note'
-    subject: string
-    owner: string
-    timestamp: string
-    associatedCompany: string | null
-  }>
-  sequences: {
-    available: false
-    note: string
+  handoff: {
+    unassignedWon: Array<{
+      company: string
+      dealName: string
+      owner: string
+      daysSinceWon: number
+    }>
+    noContactNewCustomers: Array<{
+      company: string
+      owner: string
+      daysSinceWon: number
+      lastActivity: string | null
+    }>
+    noNotesNewCustomers: Array<{
+      company: string
+      owner: string
+      daysSinceWon: number
+    }>
+    avgDaysToFirstContact: number | null
+    overdueOnboarding: Array<{
+      task: string
+      owner: string
+      company: string
+      daysOverdue: number
+    }>
   }
   dataQuality: {
-    companiesMissingOwner: number
-    companiesMissingIndustry: number
-    dealsMissingAmount: number
-    dealsMissingCloseDate: number
     contactsMissingEmail: number
+    contactsMissingOwner: number
+    companiesMissingLifecycle: number
+    companiesMissingOwner: number
+    dealsNoActivity14d: number
+    dealsStuck21d: number
+    openDealsNoCloseDate: number
+  }
+  marketing: {
+    available: boolean
+    note?: string
+    activeCampaigns: number
+    emailsSent: number
+    avgOpenRate: number
+    avgOpenRatePrev: number
+    avgClickRate: number
+    avgClickRatePrev: number
+    unsubscribeRate: number
+    hardBounceRate: number
+    campaigns: Array<{
+      name: string
+      sent: number
+      openRate: number
+      clickRate: number
+      bounces: number
+      status: string
+    }>
+  }
+  taskWorkload: {
+    totalOpen: number
+    totalOverdue: number
+    overdueRate: number
+    completedThisMonth: number
+    completedPrev: number
+    avgCompletionDays: number
+    avgCompletionDaysPrev: number
+    overdueByOwner: Array<{ name: string; count: number }>
+    volumeByDept: Array<{
+      department: string
+      thisMonth: number
+      prevMonth: number
+    }>
+  }
+  inactiveCompanies: {
+    count14to30: number
+    count30plus: number
+    companies: Array<{
+      name: string
+      companyId: string
+      owner: string
+      lifecycleStage: string
+      lastActivityDate: string | null
+      daysInactive: number
+    }>
+  }
+  processEfficiency: {
+    avgMqlToDemo: number | null
+    avgDemoToClose: number | null
+    avgWonToFirstContact: number | null
+    meetingNoShowRate: number | null
+    meetingNoShowRatePrev: number | null
+    taskCompletionRateByDept: Array<{ department: string; rate: number }>
+    sparklines: {
+      mqlToDemo: number[]
+      demoToClose: number[]
+      noShowRate: number[]
+    }
   }
   scopeWarnings: string[]
 }

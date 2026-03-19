@@ -44,89 +44,26 @@ async function loadOps(refresh = false) {
   }
 }
 
-/* ── KPI cards ── */
-const kpiCards = computed(() => {
-  if (!ops.value) return []
-  const o = ops.value
-  return [
-    {
-      label: 'Tasks Completed',
-      val: o.tasksCompletedThisMonth.toString(),
-      delta: pctDelta(o.tasksCompletedThisMonth, o.tasksCompletedPrev),
-      suffix: '%',
-      spark: o.kpiSpark.tasksCompleted,
-      color: '#34d399',
-      sub: `${o.openTasks} open · ${o.overdueTasks} overdue`,
-    },
-    {
-      label: 'Open Tasks',
-      val: o.openTasks.toString(),
-      delta: { value: o.overdueTasks, dir: o.overdueTasks > 0 ? 'up' as const : 'flat' as const },
-      suffix: ' overdue',
-      spark: [],
-      color: '#fbbf24',
-      sub: o.overdueTasks > 0 ? `${o.overdueTasks} past due date` : 'All on track',
-      lowerIsBetter: true,
-    },
-    {
-      label: 'Avg Task Time',
-      val: `${o.avgTaskCompletionDays}d`,
-      delta: {
-        value: Math.abs(Math.round((o.avgTaskCompletionDays - o.avgTaskCompletionDaysPrev) * 10) / 10),
-        dir: o.avgTaskCompletionDays > o.avgTaskCompletionDaysPrev
-          ? 'up' as const
-          : o.avgTaskCompletionDays < o.avgTaskCompletionDaysPrev
-            ? 'down' as const
-            : 'flat' as const,
-      },
-      suffix: 'd',
-      spark: [],
-      color: '#f472b6',
-      sub: 'Days to complete',
-      lowerIsBetter: true,
-    },
-    {
-      label: 'Calls Logged',
-      val: o.callsThisMonth.toString(),
-      delta: pctDelta(o.callsThisMonth, o.callsPrev),
-      suffix: '%',
-      spark: o.kpiSpark.calls,
-      color: '#818cf8',
-      sub: 'This month',
-    },
-    {
-      label: 'Emails Logged',
-      val: o.emailsThisMonth.toString(),
-      delta: pctDelta(o.emailsThisMonth, o.emailsPrev),
-      suffix: '%',
-      spark: o.kpiSpark.emails,
-      color: '#38bdf8',
-      sub: 'This month',
-    },
-    {
-      label: 'Notes Created',
-      val: o.notesThisMonth.toString(),
-      delta: pctDelta(o.notesThisMonth, o.notesPrev),
-      suffix: '%',
-      spark: o.kpiSpark.notes,
-      color: '#a855f7',
-      sub: 'This month',
-    },
-  ]
-})
-
-/* ── Department activity max for bar widths ── */
-const maxDeptTotal = computed(() => {
-  if (!ops.value) return 1
-  return Math.max(...ops.value.departmentActivity.map((d) => d.tasks + d.calls + d.emails + d.notes), 1)
-})
-
+/* ── UI state ── */
 const expandedDepts = ref<Set<string>>(new Set())
 function toggleDept(dept: string) {
   if (expandedDepts.value.has(dept)) expandedDepts.value.delete(dept)
   else expandedDepts.value.add(dept)
 }
 
+const dismissedAlerts = ref<Set<string>>(new Set())
+
+/* ── Inactive companies filter ── */
+const inactiveFilter = ref<'all' | '14to30' | '30plus'>('all')
+const filteredInactive = computed(() => {
+  if (!ops.value) return []
+  const list = ops.value.inactiveCompanies.companies
+  if (inactiveFilter.value === '14to30') return list.filter(c => c.daysInactive >= 14 && c.daysInactive < 30)
+  if (inactiveFilter.value === '30plus') return list.filter(c => c.daysInactive >= 30)
+  return list
+})
+
+/* ── Colors ── */
 const DEPT_COLORS: Record<string, string> = {
   Sales: '#34d399',
   Success: '#fbbf24',
@@ -134,23 +71,27 @@ const DEPT_COLORS: Record<string, string> = {
   Retention: '#f472b6',
   Support: '#38bdf8',
   Marketing: '#a855f7',
-  Other: '#94a3b8',
 }
 
-/* ── Activity-type icon/color mapping ── */
-const activityMeta: Record<string, { icon: string; color: string; bg: string }> = {
-  task: { icon: '✓', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  call: { icon: '📞', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-  email: { icon: '✉', color: 'text-sky-400', bg: 'bg-sky-500/10' },
-  note: { icon: '📝', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+const HEALTH_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  green: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', label: 'Healthy' },
+  amber: { bg: 'bg-amber-500/10', text: 'text-amber-400', label: 'At Risk' },
+  red: { bg: 'bg-rose-500/10', text: 'text-rose-400', label: 'Critical' },
 }
 
-/* ── Data quality severity ── */
-function dqSeverity(count: number): string {
+/* ── Data quality helpers ── */
+function dqColor(count: number): string {
   if (count === 0) return 'text-emerald-400'
   if (count < 10) return 'text-amber-400'
   return 'text-rose-400'
 }
+function dqBg(count: number): string {
+  if (count === 0) return 'bg-emerald-500/10'
+  if (count < 10) return 'bg-amber-500/10'
+  return 'bg-rose-500/10'
+}
+
+
 
 watch(selectedMonth, () => void loadOps())
 onMounted(() => void loadOps())
@@ -161,7 +102,7 @@ onMounted(() => void loadOps())
     <div class="flex flex-col gap-2">
       <p class="text-xs uppercase tracking-[0.08em] text-gray-600">Analytics</p>
       <h2 class="text-2xl font-semibold text-gray-900">Ops</h2>
-      <p class="text-sm text-gray-700">Team activity, task management, and data quality.</p>
+      <p class="text-sm text-gray-700">Operations overview — department health, handoffs, data hygiene, and efficiency.</p>
     </div>
 
     <div class="rounded-2xl border border-white/10 bg-[#0f1428] p-6 text-white shadow-[0_18px_40px_rgba(15,20,40,0.35)]">
@@ -207,154 +148,523 @@ onMounted(() => void loadOps())
         <div v-if="ops.scopeWarnings.length > 0" class="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
           <span class="font-semibold">Some data unavailable</span> — missing HubSpot scopes: {{ ops.scopeWarnings.join(', ') }}. Those metrics show as 0.
         </div>
-        <!-- ═══ Hero KPI cards ═══ -->
-        <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
+
+        <!-- ═══════════════════════════════════════════════
+             1. ALERTS BANNER
+        ═══════════════════════════════════════════════ -->
+        <div v-if="ops.alerts.filter(a => !dismissedAlerts.has(a.id)).length > 0" class="mt-5 flex flex-wrap gap-2">
           <div
-            v-for="card in kpiCards"
-            :key="card.label"
-            class="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.05]"
+            v-for="alert in ops.alerts.filter(a => !dismissedAlerts.has(a.id))"
+            :key="alert.id"
+            class="group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
+            :class="alert.severity === 'red' ? 'bg-rose-500/15 text-rose-300 border border-rose-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'"
           >
-            <div class="flex items-start justify-between">
-              <div class="text-xs font-semibold uppercase tracking-wider text-white/60">{{ card.label }}</div>
-              <SparkLine v-if="card.spark.length > 0" :data="card.spark" :color="card.color" :width="64" :height="24" />
-            </div>
-            <div class="mt-3 text-2xl font-bold tabular-nums text-white sm:text-3xl">{{ card.val }}</div>
-            <div class="mt-1.5 flex items-center gap-1.5">
-              <span
-                v-if="card.delta.dir !== 'flat'"
-                class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-bold"
-                :class="(card.lowerIsBetter ? card.delta.dir === 'down' : card.delta.dir === 'up') ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'"
-              >
-                <svg v-if="card.delta.dir === 'up'" class="h-2.5 w-2.5" fill="none" viewBox="0 0 10 10"><path d="M5 2v6M2.5 4.5 5 2l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <svg v-else class="h-2.5 w-2.5" fill="none" viewBox="0 0 10 10"><path d="M5 8V2M2.5 5.5 5 8l2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                {{ card.delta.value }}{{ card.suffix }}
-              </span>
-              <span v-else class="text-xs text-white/50">—</span>
-              <span v-if="card.delta.dir !== 'flat' && card.suffix === '%'" class="text-xs text-white/50">vs prev</span>
-            </div>
-            <div class="mt-1 text-xs text-white/50">{{ card.sub }}</div>
+            <span class="inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold"
+              :class="alert.severity === 'red' ? 'bg-rose-500/20' : 'bg-amber-500/20'">
+              {{ alert.count }}
+            </span>
+            <span>{{ alert.label }}</span>
+            <button
+              class="ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-white/40 hover:text-white/80"
+              @click="dismissedAlerts.add(alert.id)"
+              title="Dismiss"
+            >×</button>
           </div>
         </div>
 
-        <!-- ═══ Team Activity by Department ═══ -->
-        <div v-if="ops.departmentActivity.length > 0" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Activity by department</div>
+        <!-- ═══════════════════════════════════════════════
+             2. DEPARTMENT HEALTH (Hero)
+        ═══════════════════════════════════════════════ -->
+        <div id="dept-health" class="mt-6">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Department Health</div>
           <div class="mt-3 space-y-2">
             <div
-              v-for="dept in ops.departmentActivity"
+              v-for="dept in ops.departments"
               :key="dept.department"
               class="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden"
             >
-              <!-- Department row -->
               <button
                 class="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.03]"
                 @click="toggleDept(dept.department)"
               >
+                <!-- Dept color dot -->
                 <div class="h-3 w-3 rounded-full shrink-0" :style="{ backgroundColor: DEPT_COLORS[dept.department] ?? '#94a3b8' }" />
-                <div class="flex-1">
+                <!-- Name + headcount -->
+                <div class="min-w-[120px]">
                   <div class="flex items-baseline gap-2">
                     <span class="text-sm font-semibold text-white/90">{{ dept.department }}</span>
-                    <span class="text-xs text-white/40">{{ dept.members.length }} {{ dept.members.length === 1 ? 'person' : 'people' }}</span>
+                    <span class="text-xs text-white/40">{{ dept.headcount }} {{ dept.headcount === 1 ? 'person' : 'people' }}</span>
                   </div>
                 </div>
-                <div class="flex items-center gap-4 text-xs tabular-nums">
-                  <div class="text-center"><span class="text-emerald-400 font-bold">{{ dept.tasks }}</span><span class="text-white/30 ml-1">tasks</span></div>
-                  <div class="text-center"><span class="text-indigo-400 font-bold">{{ dept.calls }}</span><span class="text-white/30 ml-1">calls</span></div>
-                  <div class="text-center"><span class="text-sky-400 font-bold">{{ dept.emails }}</span><span class="text-white/30 ml-1">emails</span></div>
-                  <div class="text-center"><span class="text-purple-400 font-bold">{{ dept.notes }}</span><span class="text-white/30 ml-1">notes</span></div>
-                </div>
-                <div class="ml-2 flex-1 max-w-[200px]">
-                  <div class="flex h-3 overflow-hidden rounded-full bg-white/[0.04]">
-                    <div class="h-full bg-emerald-500/50" :style="{ width: (dept.tasks / maxDeptTotal * 100) + '%' }" />
-                    <div class="h-full bg-indigo-500/50" :style="{ width: (dept.calls / maxDeptTotal * 100) + '%' }" />
-                    <div class="h-full bg-sky-500/50" :style="{ width: (dept.emails / maxDeptTotal * 100) + '%' }" />
-                    <div class="h-full bg-purple-500/50" :style="{ width: (dept.notes / maxDeptTotal * 100) + '%' }" />
+                <!-- Stats -->
+                <div class="flex items-center gap-4 text-xs tabular-nums flex-1">
+                  <div><span class="text-white/30">Open </span><span class="font-bold text-white/80">{{ dept.openTasks }}</span></div>
+                  <div>
+                    <span class="text-white/30">Overdue </span>
+                    <span class="font-bold" :class="dept.overdueRate > 20 ? 'text-rose-400' : dept.overdueRate >= 10 ? 'text-amber-400' : 'text-white/80'">
+                      {{ dept.overdueTasks }}
+                    </span>
+                    <span class="text-white/30 ml-0.5">({{ dept.overdueRate }}%)</span>
+                  </div>
+                  <div><span class="text-white/30">Activity </span><span class="font-bold text-white/80">{{ dept.activityThisMonth }}</span></div>
+                  <div v-if="dept.lastActivityDate" class="text-white/30">
+                    Last: {{ relativeDate(dept.lastActivityDate) }}
                   </div>
                 </div>
-                <svg class="h-4 w-4 text-white/30 transition-transform" :class="{ 'rotate-180': expandedDepts.has(dept.department) }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                <!-- Health badge -->
+                <span
+                  class="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                  :class="[HEALTH_STYLES[dept.health]?.bg, HEALTH_STYLES[dept.health]?.text]"
+                >{{ HEALTH_STYLES[dept.health]?.label }}</span>
+                <!-- Chevron -->
+                <svg class="h-4 w-4 text-white/30 transition-transform shrink-0" :class="{ 'rotate-180': expandedDepts.has(dept.department) }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
               </button>
 
-              <!-- Individual members (expanded) -->
+              <!-- Expanded members -->
               <div v-if="expandedDepts.has(dept.department)" class="border-t border-white/[0.04] bg-white/[0.01]">
+                <div class="grid grid-cols-[1fr_repeat(5,_60px)_100px] gap-1 px-4 py-1.5 text-[10px] uppercase tracking-wider text-white/30 border-b border-white/[0.04]">
+                  <span>Name</span><span class="text-center">Open</span><span class="text-center">Overdue</span>
+                  <span class="text-center">Calls</span><span class="text-center">Emails</span><span class="text-center">Notes</span>
+                  <span class="text-right">Last activity</span>
+                </div>
                 <div
-                  v-for="member in ops.teamActivity.filter((m) => m.department === dept.department)"
+                  v-for="member in dept.members"
                   :key="member.ownerId"
-                  class="flex items-center gap-3 px-4 py-2 pl-10 text-xs border-b border-white/[0.03] last:border-0"
+                  class="grid grid-cols-[1fr_repeat(5,_60px)_100px] gap-1 items-center px-4 py-2 text-xs border-b border-white/[0.03] last:border-0"
                 >
-                  <span class="w-32 shrink-0 text-white/60">{{ member.name }}</span>
-                  <span class="w-12 text-center tabular-nums text-emerald-400/80">{{ member.tasks }}</span>
-                  <span class="w-12 text-center tabular-nums text-indigo-400/80">{{ member.calls }}</span>
-                  <span class="w-12 text-center tabular-nums text-sky-400/80">{{ member.emails }}</span>
-                  <span class="w-12 text-center tabular-nums text-purple-400/80">{{ member.notes }}</span>
+                  <span class="text-white/60">{{ member.name }}</span>
+                  <span class="text-center tabular-nums text-white/60">{{ member.openTasks }}</span>
+                  <span class="text-center tabular-nums" :class="member.overdueTasks > 0 ? 'text-rose-400 font-bold' : 'text-white/40'">{{ member.overdueTasks }}</span>
+                  <span class="text-center tabular-nums text-indigo-400/80">{{ member.calls }}</span>
+                  <span class="text-center tabular-nums text-sky-400/80">{{ member.emails }}</span>
+                  <span class="text-center tabular-nums text-purple-400/80">{{ member.notes }}</span>
+                  <span class="text-right text-white/30 text-[11px]">{{ member.lastActivity ? relativeDate(member.lastActivity) : '—' }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ═══ Data Quality ═══ -->
-        <div class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Data quality</div>
-          <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div class="rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-              <div class="text-xs text-white/50">Companies missing owner</div>
-              <div class="mt-1 text-xl font-bold tabular-nums" :class="dqSeverity(ops.dataQuality.companiesMissingOwner)">{{ ops.dataQuality.companiesMissingOwner }}</div>
+        <!-- ═══════════════════════════════════════════════
+             3. HANDOFF & ONBOARDING PIPELINE
+        ═══════════════════════════════════════════════ -->
+        <div id="handoff" class="mt-8">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Handoff & Onboarding</div>
+
+          <!-- Summary cards -->
+          <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-xs text-white/50">Not assigned to CS/Training</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums" :class="ops.handoff.unassignedWon.length > 0 ? 'text-rose-400' : 'text-emerald-400'">
+                {{ ops.handoff.unassignedWon.length }}
+              </div>
+              <div class="mt-0.5 text-[10px] text-white/30">Won deals, 3+ days</div>
             </div>
-            <div class="rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-              <div class="text-xs text-white/50">Companies missing industry</div>
-              <div class="mt-1 text-xl font-bold tabular-nums" :class="dqSeverity(ops.dataQuality.companiesMissingIndustry)">{{ ops.dataQuality.companiesMissingIndustry }}</div>
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-xs text-white/50">No contact (5+ days)</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums" :class="ops.handoff.noContactNewCustomers.length > 0 ? 'text-rose-400' : 'text-emerald-400'">
+                {{ ops.handoff.noContactNewCustomers.length }}
+              </div>
+              <div class="mt-0.5 text-[10px] text-white/30">New customers &lt; 30d</div>
             </div>
-            <div class="rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-              <div class="text-xs text-white/50">Deals missing amount</div>
-              <div class="mt-1 text-xl font-bold tabular-nums" :class="dqSeverity(ops.dataQuality.dealsMissingAmount)">{{ ops.dataQuality.dealsMissingAmount }}</div>
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-xs text-white/50">No notes logged</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums" :class="ops.handoff.noNotesNewCustomers.length > 0 ? 'text-amber-400' : 'text-emerald-400'">
+                {{ ops.handoff.noNotesNewCustomers.length }}
+              </div>
+              <div class="mt-0.5 text-[10px] text-white/30">New customers &lt; 30d</div>
             </div>
-            <div class="rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-              <div class="text-xs text-white/50">Deals missing close date</div>
-              <div class="mt-1 text-xl font-bold tabular-nums" :class="dqSeverity(ops.dataQuality.dealsMissingCloseDate)">{{ ops.dataQuality.dealsMissingCloseDate }}</div>
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-xs text-white/50">Avg days to first contact</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums text-white">
+                {{ ops.handoff.avgDaysToFirstContact != null ? ops.handoff.avgDaysToFirstContact + 'd' : '—' }}
+              </div>
+              <div class="mt-0.5 text-[10px] text-white/30">Deal won → first touch</div>
             </div>
-            <div class="rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-              <div class="text-xs text-white/50">Contacts missing email</div>
-              <div class="mt-1 text-xl font-bold tabular-nums" :class="dqSeverity(ops.dataQuality.contactsMissingEmail)">{{ ops.dataQuality.contactsMissingEmail }}</div>
+          </div>
+
+          <!-- Unassigned won deals table -->
+          <div v-if="ops.handoff.unassignedWon.length > 0" class="mt-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-400/80 mb-2">Deals not assigned to Success/Training</div>
+            <div class="rounded-lg border border-white/[0.06] overflow-hidden">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/[0.06] text-white/40">
+                  <th class="px-3 py-2 text-left font-medium">Company</th>
+                  <th class="px-3 py-2 text-left font-medium">Deal</th>
+                  <th class="px-3 py-2 text-left font-medium">Owner</th>
+                  <th class="px-3 py-2 text-right font-medium">Days since won</th>
+                </tr></thead>
+                <tbody>
+                  <tr v-for="(d, i) in ops.handoff.unassignedWon" :key="i" class="border-b border-white/[0.03] last:border-0">
+                    <td class="px-3 py-2 text-white/80">{{ d.company }}</td>
+                    <td class="px-3 py-2 text-white/60">{{ d.dealName }}</td>
+                    <td class="px-3 py-2 text-white/60">{{ d.owner }}</td>
+                    <td class="px-3 py-2 text-right tabular-nums" :class="d.daysSinceWon > 7 ? 'text-rose-400 font-bold' : 'text-amber-400'">{{ d.daysSinceWon }}d</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- No contact new customers table -->
+          <div v-if="ops.handoff.noContactNewCustomers.length > 0" class="mt-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-400/80 mb-2">New customers — no contact logged</div>
+            <div class="rounded-lg border border-white/[0.06] overflow-hidden">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/[0.06] text-white/40">
+                  <th class="px-3 py-2 text-left font-medium">Company</th>
+                  <th class="px-3 py-2 text-left font-medium">Owner</th>
+                  <th class="px-3 py-2 text-right font-medium">Days since won</th>
+                </tr></thead>
+                <tbody>
+                  <tr v-for="(c, i) in ops.handoff.noContactNewCustomers" :key="i" class="border-b border-white/[0.03] last:border-0">
+                    <td class="px-3 py-2 text-white/80">{{ c.company }}</td>
+                    <td class="px-3 py-2 text-white/60">{{ c.owner }}</td>
+                    <td class="px-3 py-2 text-right tabular-nums text-rose-400">{{ c.daysSinceWon }}d</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Overdue onboarding tasks -->
+          <div v-if="ops.handoff.overdueOnboarding.length > 0" class="mt-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-400/80 mb-2">Overdue onboarding tasks</div>
+            <div class="rounded-lg border border-white/[0.06] overflow-hidden">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/[0.06] text-white/40">
+                  <th class="px-3 py-2 text-left font-medium">Task</th>
+                  <th class="px-3 py-2 text-left font-medium">Owner</th>
+                  <th class="px-3 py-2 text-right font-medium">Days overdue</th>
+                </tr></thead>
+                <tbody>
+                  <tr v-for="(t, i) in ops.handoff.overdueOnboarding" :key="i" class="border-b border-white/[0.03] last:border-0">
+                    <td class="px-3 py-2 text-white/80">{{ t.task }}</td>
+                    <td class="px-3 py-2 text-white/60">{{ t.owner }}</td>
+                    <td class="px-3 py-2 text-right tabular-nums text-rose-400 font-bold">{{ t.daysOverdue }}d</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
 
-        <!-- ═══ Sequences (placeholder) ═══ -->
-        <div v-if="ops.sequences && !ops.sequences.available" class="mt-8 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Sequences & Automation</div>
-          <div class="mt-3 flex items-start gap-3">
+        <!-- ═══════════════════════════════════════════════
+             4. DATA QUALITY & HYGIENE
+        ═══════════════════════════════════════════════ -->
+        <div id="data-quality" class="mt-8">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Data Quality & Hygiene</div>
+          <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div v-for="item in [
+              { label: 'Contacts missing email', val: ops.dataQuality.contactsMissingEmail },
+              { label: 'Contacts missing owner', val: ops.dataQuality.contactsMissingOwner },
+              { label: 'Companies missing lifecycle', val: ops.dataQuality.companiesMissingLifecycle },
+              { label: 'Companies missing owner', val: ops.dataQuality.companiesMissingOwner },
+              { label: 'Deals — no activity 14d', val: ops.dataQuality.dealsNoActivity14d },
+              { label: 'Deals stuck 21+ days', val: ops.dataQuality.dealsStuck21d },
+              { label: 'Open deals — no close date', val: ops.dataQuality.openDealsNoCloseDate },
+            ]" :key="item.label"
+              class="rounded-lg border border-white/[0.06] px-4 py-3"
+              :class="dqBg(item.val)"
+            >
+              <div class="text-[11px] text-white/50">{{ item.label }}</div>
+              <div class="mt-1 text-xl font-bold tabular-nums" :class="dqColor(item.val)">{{ item.val }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             5. MARKETING SIGNALS
+        ═══════════════════════════════════════════════ -->
+        <div id="marketing" class="mt-8">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Marketing Signals</div>
+
+          <template v-if="ops.marketing.available">
+            <!-- KPI row -->
+            <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <div class="text-xs text-white/50">Active campaigns</div>
+                <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.marketing.activeCampaigns }}</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <div class="text-xs text-white/50">Emails sent</div>
+                <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.marketing.emailsSent.toLocaleString() }}</div>
+              </div>
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <div class="text-xs text-white/50">Avg open rate</div>
+                <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.marketing.avgOpenRate }}%</div>
+                <div v-if="ops.marketing.avgOpenRatePrev" class="mt-0.5 text-[10px] text-white/30">
+                  Prev: {{ ops.marketing.avgOpenRatePrev }}%
+                </div>
+              </div>
+              <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <div class="text-xs text-white/50">Avg click rate</div>
+                <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.marketing.avgClickRate }}%</div>
+                <div v-if="ops.marketing.avgClickRatePrev" class="mt-0.5 text-[10px] text-white/30">
+                  Prev: {{ ops.marketing.avgClickRatePrev }}%
+                </div>
+              </div>
+            </div>
+
+            <!-- Rate flags -->
+            <div class="mt-3 flex flex-wrap gap-3">
+              <div class="flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border"
+                :class="ops.marketing.unsubscribeRate >= 1 ? 'border-rose-500/30 bg-rose-500/10 text-rose-300' : ops.marketing.unsubscribeRate >= 0.5 ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'"
+              >
+                Unsub rate: {{ ops.marketing.unsubscribeRate }}%
+              </div>
+              <div class="flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border"
+                :class="ops.marketing.hardBounceRate >= 2 ? 'border-rose-500/30 bg-rose-500/10 text-rose-300' : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'"
+              >
+                Hard bounce: {{ ops.marketing.hardBounceRate }}%
+              </div>
+            </div>
+
+            <!-- Campaign table -->
+            <div v-if="ops.marketing.campaigns.length > 0" class="mt-4 rounded-lg border border-white/[0.06] overflow-hidden">
+              <table class="w-full text-xs">
+                <thead><tr class="border-b border-white/[0.06] text-white/40">
+                  <th class="px-3 py-2 text-left font-medium">Campaign</th>
+                  <th class="px-3 py-2 text-right font-medium">Sent</th>
+                  <th class="px-3 py-2 text-right font-medium">Open %</th>
+                  <th class="px-3 py-2 text-right font-medium">Click %</th>
+                  <th class="px-3 py-2 text-right font-medium">Bounces</th>
+                  <th class="px-3 py-2 text-left font-medium">Status</th>
+                </tr></thead>
+                <tbody>
+                  <tr v-for="c in ops.marketing.campaigns" :key="c.name" class="border-b border-white/[0.03] last:border-0">
+                    <td class="px-3 py-2 text-white/80 max-w-[200px] truncate">{{ c.name }}</td>
+                    <td class="px-3 py-2 text-right tabular-nums text-white/60">{{ c.sent.toLocaleString() }}</td>
+                    <td class="px-3 py-2 text-right tabular-nums text-white/60">{{ c.openRate }}%</td>
+                    <td class="px-3 py-2 text-right tabular-nums text-white/60">{{ c.clickRate }}%</td>
+                    <td class="px-3 py-2 text-right tabular-nums text-white/60">{{ c.bounces }}</td>
+                    <td class="px-3 py-2">
+                      <span class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
+                        :class="c.status === 'PUBLISHED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/5 text-white/40'"
+                      >{{ c.status }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+
+          <div v-else class="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 flex items-start gap-3">
             <div class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
               <svg class="h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             </div>
             <div>
-              <div class="text-sm font-medium text-white/80">Not available with current plan</div>
-              <div class="mt-1 text-xs text-white/50">{{ ops.sequences.note }}</div>
+              <div class="text-sm font-medium text-white/80">Marketing data not available</div>
+              <div class="mt-1 text-xs text-white/50">{{ ops.marketing.note }}</div>
             </div>
           </div>
         </div>
 
-        <!-- ═══ Recent Activity Feed ═══ -->
-        <div v-if="ops.recentActivity.length > 0" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Recent activity</div>
-          <div class="mt-3 space-y-1">
-            <div
-              v-for="(act, i) in ops.recentActivity"
-              :key="i"
-              class="flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-white/[0.02]"
-            >
-              <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs" :class="activityMeta[act.type]?.bg ?? 'bg-white/5'">
-                <span :class="activityMeta[act.type]?.color ?? 'text-white/50'">{{ activityMeta[act.type]?.icon ?? '?' }}</span>
+        <!-- ═══════════════════════════════════════════════
+             6. TASK & WORKLOAD OVERVIEW
+        ═══════════════════════════════════════════════ -->
+        <div id="task-workload" class="mt-8">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Task & Workload</div>
+
+          <!-- KPI cards -->
+          <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-xs text-white/50">Total open</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.taskWorkload.totalOpen }}</div>
+            </div>
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-xs text-white/50">Overdue</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums" :class="ops.taskWorkload.overdueRate > 20 ? 'text-rose-400' : ops.taskWorkload.overdueRate >= 10 ? 'text-amber-400' : 'text-white'">
+                {{ ops.taskWorkload.totalOverdue }}
               </div>
-              <div class="min-w-0 flex-1">
-                <div class="flex items-baseline justify-between gap-2">
-                  <span class="truncate text-sm text-white/80">{{ act.subject }}</span>
-                  <span class="shrink-0 text-xs text-white/40">{{ relativeDate(act.timestamp) }}</span>
+              <div class="mt-0.5 text-[10px] text-white/30">{{ ops.taskWorkload.overdueRate }}% of open</div>
+            </div>
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-xs text-white/50">Completed this month</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums text-emerald-400">{{ ops.taskWorkload.completedThisMonth }}</div>
+              <div class="mt-0.5 flex items-center gap-1">
+                <span v-if="ops.taskWorkload.completedPrev > 0"
+                  class="text-[10px] font-bold rounded-full px-1.5 py-0.5"
+                  :class="ops.taskWorkload.completedThisMonth >= ops.taskWorkload.completedPrev ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'"
+                >
+                  {{ pctDelta(ops.taskWorkload.completedThisMonth, ops.taskWorkload.completedPrev).dir === 'up' ? '+' : '' }}{{ pctDelta(ops.taskWorkload.completedThisMonth, ops.taskWorkload.completedPrev).value }}%
+                </span>
+                <span class="text-[10px] text-white/30">vs prev</span>
+              </div>
+            </div>
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-xs text-white/50">Avg completion time</div>
+              <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.taskWorkload.avgCompletionDays }}d</div>
+              <div class="mt-0.5 text-[10px] text-white/30">Prev: {{ ops.taskWorkload.avgCompletionDaysPrev }}d</div>
+            </div>
+          </div>
+
+          <!-- Overdue by owner (horizontal bar chart) -->
+          <div v-if="ops.taskWorkload.overdueByOwner.length > 0" class="mt-4">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2">Overdue tasks by owner</div>
+            <div class="space-y-1.5">
+              <div v-for="o in ops.taskWorkload.overdueByOwner" :key="o.name" class="flex items-center gap-3">
+                <span class="w-28 shrink-0 text-xs text-white/60 text-right truncate">{{ o.name }}</span>
+                <div class="flex-1 h-5 rounded-full bg-white/[0.04] overflow-hidden">
+                  <div
+                    class="h-full rounded-full bg-rose-500/40 flex items-center justify-end pr-2"
+                    :style="{ width: Math.max((o.count / (ops.taskWorkload.overdueByOwner[0]?.count || 1)) * 100, 8) + '%' }"
+                  >
+                    <span class="text-[10px] font-bold text-rose-300 tabular-nums">{{ o.count }}</span>
+                  </div>
                 </div>
-                <div class="mt-0.5 text-xs text-white/40">{{ act.owner }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Volume by department (this month vs prev) -->
+          <div v-if="ops.taskWorkload.volumeByDept.length > 0" class="mt-5">
+            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2">Tasks completed by department</div>
+            <div class="space-y-2">
+              <div v-for="v in ops.taskWorkload.volumeByDept" :key="v.department" class="flex items-center gap-3">
+                <span class="w-20 shrink-0 text-xs text-white/60 text-right">{{ v.department }}</span>
+                <div class="flex-1 flex gap-1">
+                  <div class="h-5 rounded-l-full bg-cyan-500/40 flex items-center justify-end pr-2"
+                    :style="{ width: Math.max((v.thisMonth / Math.max(...ops.taskWorkload.volumeByDept.map(d => Math.max(d.thisMonth, d.prevMonth)), 1)) * 50, 4) + '%' }">
+                    <span class="text-[10px] font-bold text-cyan-300 tabular-nums">{{ v.thisMonth }}</span>
+                  </div>
+                  <div class="h-5 rounded-r-full bg-white/[0.06] flex items-center justify-end pr-2"
+                    :style="{ width: Math.max((v.prevMonth / Math.max(...ops.taskWorkload.volumeByDept.map(d => Math.max(d.thisMonth, d.prevMonth)), 1)) * 50, 4) + '%' }">
+                    <span class="text-[10px] font-bold text-white/30 tabular-nums">{{ v.prevMonth }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 pl-24 text-[10px] text-white/30">
+                <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-cyan-500/40"></span> This month</span>
+                <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-white/[0.06]"></span> Prev month</span>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- ═══════════════════════════════════════════════
+             7. COMPANIES WITH NO RECENT ACTIVITY
+        ═══════════════════════════════════════════════ -->
+        <div id="inactive" class="mt-8">
+          <div class="flex items-center justify-between">
+            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Inactive Paying Customers</div>
+            <div class="flex gap-1 text-[10px]">
+              <button
+                v-for="opt in [{ key: 'all', label: 'All' }, { key: '14to30', label: '14–30d' }, { key: '30plus', label: '30+d' }] as const"
+                :key="opt.key"
+                class="rounded-full px-2.5 py-1 font-semibold transition-colors"
+                :class="inactiveFilter === opt.key ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60'"
+                @click="inactiveFilter = opt.key"
+              >{{ opt.label }}</button>
+            </div>
+          </div>
+
+          <!-- Summary pills -->
+          <div class="mt-3 flex gap-3">
+            <div class="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-2">
+              <span class="text-[10px] text-amber-300/60 uppercase tracking-wider">14–30 days</span>
+              <div class="text-lg font-bold tabular-nums text-amber-400">{{ ops.inactiveCompanies.count14to30 }}</div>
+            </div>
+            <div class="rounded-lg border border-rose-500/20 bg-rose-500/5 px-4 py-2">
+              <span class="text-[10px] text-rose-300/60 uppercase tracking-wider">30+ days</span>
+              <div class="text-lg font-bold tabular-nums text-rose-400">{{ ops.inactiveCompanies.count30plus }}</div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div v-if="filteredInactive.length > 0" class="mt-3 rounded-lg border border-white/[0.06] overflow-hidden">
+            <table class="w-full text-xs">
+              <thead><tr class="border-b border-white/[0.06] text-white/40">
+                <th class="px-3 py-2 text-left font-medium">Company</th>
+                <th class="px-3 py-2 text-left font-medium">Owner</th>
+                <th class="px-3 py-2 text-left font-medium">Stage</th>
+                <th class="px-3 py-2 text-right font-medium">Last activity</th>
+                <th class="px-3 py-2 text-right font-medium">Days inactive</th>
+              </tr></thead>
+              <tbody>
+                <tr v-for="c in filteredInactive.slice(0, 30)" :key="c.companyId" class="border-b border-white/[0.03] last:border-0">
+                  <td class="px-3 py-2 text-white/80">{{ c.name }}</td>
+                  <td class="px-3 py-2 text-white/60">{{ c.owner }}</td>
+                  <td class="px-3 py-2 text-white/40">{{ c.lifecycleStage }}</td>
+                  <td class="px-3 py-2 text-right text-white/40">{{ c.lastActivityDate ? new Date(c.lastActivityDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'Never' }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums font-bold" :class="c.daysInactive >= 30 ? 'text-rose-400' : 'text-amber-400'">{{ c.daysInactive === 999 ? '∞' : c.daysInactive + 'd' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-if="filteredInactive.length > 30" class="px-3 py-2 text-[10px] text-white/30 border-t border-white/[0.04]">
+              Showing 30 of {{ filteredInactive.length }} — export for full list
+            </div>
+          </div>
+          <div v-else class="mt-3 text-xs text-white/40">No inactive companies in this range.</div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             8. PROCESS EFFICIENCY INDICATORS
+        ═══════════════════════════════════════════════ -->
+        <div id="process" class="mt-8">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Process Efficiency</div>
+
+          <!-- Stat cards 2×3 grid -->
+          <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="flex items-start justify-between">
+                <div class="text-xs text-white/50">MQL → Demo booked</div>
+                <SparkLine v-if="ops.processEfficiency.sparklines.mqlToDemo.length > 1" :data="ops.processEfficiency.sparklines.mqlToDemo" color="#34d399" :width="56" :height="20" />
+              </div>
+              <div class="mt-2 text-2xl font-bold tabular-nums text-white">
+                {{ ops.processEfficiency.avgMqlToDemo != null ? ops.processEfficiency.avgMqlToDemo + 'd' : '—' }}
+              </div>
+              <div class="mt-0.5 text-[10px] text-white/30">Avg days</div>
+            </div>
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="flex items-start justify-between">
+                <div class="text-xs text-white/50">Demo → Deal closed</div>
+                <SparkLine v-if="ops.processEfficiency.sparklines.demoToClose.length > 1" :data="ops.processEfficiency.sparklines.demoToClose" color="#818cf8" :width="56" :height="20" />
+              </div>
+              <div class="mt-2 text-2xl font-bold tabular-nums text-white">
+                {{ ops.processEfficiency.avgDemoToClose != null ? ops.processEfficiency.avgDemoToClose + 'd' : '—' }}
+              </div>
+              <div class="mt-0.5 text-[10px] text-white/30">Avg days</div>
+            </div>
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="text-xs text-white/50">Won → First contact</div>
+              <div class="mt-2 text-2xl font-bold tabular-nums text-white">
+                {{ ops.processEfficiency.avgWonToFirstContact != null ? ops.processEfficiency.avgWonToFirstContact + 'd' : '—' }}
+              </div>
+              <div class="mt-0.5 text-[10px] text-white/30">Avg days</div>
+            </div>
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+              <div class="flex items-start justify-between">
+                <div class="text-xs text-white/50">Meeting no-show rate</div>
+                <SparkLine v-if="ops.processEfficiency.sparklines.noShowRate.length > 1" :data="ops.processEfficiency.sparklines.noShowRate" color="#f472b6" :width="56" :height="20" />
+              </div>
+              <div class="mt-2 text-2xl font-bold tabular-nums" :class="(ops.processEfficiency.meetingNoShowRate ?? 0) > 15 ? 'text-rose-400' : 'text-white'">
+                {{ ops.processEfficiency.meetingNoShowRate != null ? ops.processEfficiency.meetingNoShowRate + '%' : '—' }}
+              </div>
+              <div v-if="ops.processEfficiency.meetingNoShowRatePrev != null" class="mt-0.5 text-[10px] text-white/30">
+                Prev: {{ ops.processEfficiency.meetingNoShowRatePrev }}%
+              </div>
+            </div>
+            <!-- Task completion rate by dept -->
+            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 col-span-2">
+              <div class="text-xs text-white/50 mb-3">Task completion rate by department</div>
+              <div class="space-y-2">
+                <div v-for="d in ops.processEfficiency.taskCompletionRateByDept" :key="d.department" class="flex items-center gap-3">
+                  <span class="w-20 shrink-0 text-xs text-white/60 text-right">{{ d.department }}</span>
+                  <div class="flex-1 h-4 rounded-full bg-white/[0.04] overflow-hidden">
+                    <div
+                      class="h-full rounded-full transition-all"
+                      :class="d.rate >= 70 ? 'bg-emerald-500/50' : d.rate >= 40 ? 'bg-amber-500/40' : 'bg-rose-500/40'"
+                      :style="{ width: Math.max(d.rate, 2) + '%' }"
+                    />
+                  </div>
+                  <span class="w-10 text-right text-xs font-bold tabular-nums" :class="d.rate >= 70 ? 'text-emerald-400' : d.rate >= 40 ? 'text-amber-400' : 'text-rose-400'">{{ d.rate }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </template>
     </div>
   </div>
