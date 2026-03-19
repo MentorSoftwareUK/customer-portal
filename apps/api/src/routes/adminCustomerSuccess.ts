@@ -735,22 +735,48 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     const start = c.properties.installdate ?? c.properties.contract_start_date
     if (!start) return false
     if (new Date(start) < sixtyDaysAgo) return false
-
-    // Exclude renewals: if date_left is set, this company previously churned and came back
-    if (c.properties.date_left) return false
-
-    // Exclude renewals: if the company record was created more than 120 days before the
-    // contract start date, this is likely a returning/renewed customer rather than brand new
-    const created = c.properties.createdate
-    if (created) {
-      const createdDate = new Date(created)
-      const startDate = new Date(start)
-      const daysBetween = Math.floor((startDate.getTime() - createdDate.getTime()) / 86_400_000)
-      if (daysBetween > 120) return false
-    }
-
     return true
   })
+
+  // Build a set of company IDs that came through the pre-reg pipeline.
+  // Search deals in the pre-reg pipeline, then resolve their company associations.
+  const preRegCompanyIds = new Set<string>()
+  try {
+    // Fetch all deals in pre-reg pipeline (paginated)
+    const preRegDeals: Array<{ id: string }> = []
+    let prAfter: string | undefined
+    for (let p = 0; p < 5; p++) {
+      const prBody: any = {
+        filterGroups: [{ filters: [{ propertyName: 'pipeline', operator: 'EQ', value: PREREG_PIPELINE_ID }] }],
+        properties: ['pipeline'],
+        limit: 100,
+      }
+      if (prAfter) prBody.after = prAfter
+      const prRes = await hsFetch('/crm/v3/objects/deals/search', {
+        method: 'POST',
+        body: JSON.stringify(prBody),
+      })
+      const prData = (await prRes.json()) as { results: Array<{ id: string }>; paging?: { next?: { after: string } } }
+      preRegDeals.push(...prData.results)
+      if (!prData.paging?.next?.after) break
+      prAfter = prData.paging.next.after
+    }
+    // For each pre-reg deal, get associated company IDs
+    for (let b = 0; b < preRegDeals.length; b += 20) {
+      const dealBatch = preRegDeals.slice(b, b + 20)
+      await Promise.all(
+        dealBatch.map(async (deal) => {
+          try {
+            const aRes = await hsFetch(`/crm/v4/objects/deals/${deal.id}/associations/companies?limit=100`)
+            const aData = (await aRes.json()) as { results?: Array<{ toObjectId: string }> }
+            for (const a of aData.results ?? []) preRegCompanyIds.add(a.toObjectId)
+          } catch { /* skip */ }
+        }),
+      )
+    }
+  } catch {
+    /* pre-reg lookup failed – no badges, but don't break the page */
+  }
 
   // Fetch associated meetings for each new customer
   type MeetingClassification = 'training' | 'success' | 'other'
@@ -793,7 +819,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     const results = await Promise.all(
       batch.map(async (c) => {
         let companyMeetings: HsMeeting[] = []
-        let isPreReg = false
+        const isPreReg = preRegCompanyIds.has(c.id)
         try {
           // Fetch meeting associations for this company
           const assocRes = await hsFetch(
@@ -817,35 +843,6 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
           }
         } catch {
           /* association fetch failed – treat as no meetings */
-        }
-
-        // Check if the company came through the pre-reg pipeline
-        try {
-          const dealAssocRes = await hsFetch(
-            `/crm/v4/objects/companies/${c.id}/associations/deals?limit=100`,
-          )
-          const dealAssocData = (await dealAssocRes.json()) as {
-            results?: Array<{ toObjectId: string }>
-          }
-          const dealIds = (dealAssocData.results ?? []).map((r) => r.toObjectId)
-
-          if (dealIds.length > 0) {
-            const dealReadRes = await hsFetch('/crm/v3/objects/deals/batch/read', {
-              method: 'POST',
-              body: JSON.stringify({
-                inputs: dealIds.map((id) => ({ id })),
-                properties: ['pipeline', 'dealstage'],
-              }),
-            })
-            const dealReadData = (await dealReadRes.json()) as {
-              results?: Array<{ properties: Record<string, string | null> }>
-            }
-            isPreReg = (dealReadData.results ?? []).some(
-              (d) => d.properties.pipeline === PREREG_PIPELINE_ID,
-            )
-          }
-        } catch {
-          /* deal association fetch failed */
         }
 
         const startDate = (c.properties.installdate ?? c.properties.contract_start_date)!

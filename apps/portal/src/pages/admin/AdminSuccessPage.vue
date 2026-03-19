@@ -213,8 +213,51 @@ onMounted(() => {
       </div>
 
       <!-- Loading / Error -->
-      <div v-if="successLoading" class="mt-8 flex items-center justify-center py-12">
-        <div class="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-amber-400" />
+      <div v-if="successLoading" class="mt-8 space-y-8">
+        <!-- Skeleton KPI cards -->
+        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div v-for="n in 8" :key="'kpi-sk-' + n" class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+            <div class="h-3 w-20 animate-pulse rounded bg-white/[0.06]" />
+            <div class="mt-3 h-7 w-16 animate-pulse rounded bg-white/[0.08]" />
+            <div class="mt-2 h-2 w-24 animate-pulse rounded bg-white/[0.04]" />
+          </div>
+        </div>
+        <!-- Skeleton new customers section -->
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="h-3 w-28 animate-pulse rounded bg-white/[0.06]" />
+            <div class="h-5 w-32 animate-pulse rounded-full bg-white/[0.04]" />
+          </div>
+          <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div v-for="n in 6" :key="'nc-sk-' + n" class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="h-4 w-36 animate-pulse rounded bg-white/[0.08]" />
+                  <div class="mt-2 h-3 w-20 animate-pulse rounded bg-white/[0.04]" />
+                </div>
+                <div class="h-5 w-12 animate-pulse rounded-full bg-white/[0.06]" />
+              </div>
+              <div class="mt-3 flex items-center gap-3">
+                <div class="h-3 w-20 animate-pulse rounded bg-white/[0.04]" />
+                <div class="h-3 w-20 animate-pulse rounded bg-white/[0.04]" />
+              </div>
+              <div class="mt-3">
+                <div class="h-1.5 animate-pulse rounded-full bg-white/[0.04]" />
+                <div class="mt-1 flex justify-between">
+                  <div class="h-2.5 w-14 animate-pulse rounded bg-white/[0.03]" />
+                  <div class="h-2.5 w-16 animate-pulse rounded bg-white/[0.03]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Skeleton table -->
+        <div>
+          <div class="h-3 w-28 animate-pulse rounded bg-white/[0.06]" />
+          <div class="mt-4 space-y-2">
+            <div v-for="n in 4" :key="'tbl-sk-' + n" class="h-10 animate-pulse rounded-lg bg-white/[0.03]" />
+          </div>
+        </div>
       </div>
 
       <div v-else-if="successError" class="mt-6 rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200">
