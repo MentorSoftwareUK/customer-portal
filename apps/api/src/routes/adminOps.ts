@@ -273,9 +273,7 @@ const DEPT_MAP: Record<string, string> = {
   joe: 'Support',
   rupert: 'Support',
   liam: 'Marketing',
-  josh: 'Support',
   jonathan: 'Sales',
-  dean: 'Support',
 }
 
 const ACTIVE_DEPTS = ['Sales', 'Success', 'Support', 'Training', 'Retention']
