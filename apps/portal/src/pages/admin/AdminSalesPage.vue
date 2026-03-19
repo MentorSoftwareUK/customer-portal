@@ -151,6 +151,24 @@ const filteredAgents = computed(() =>
   (sales.value?.agentBreakdown ?? []).filter((a) => SHOW_AGENTS.has(a.name)),
 )
 
+/* ── MRR forecast chart ── */
+const mrrForecastPoints = computed(() =>
+  (sales.value?.forecast?.mrrForecastChart ?? []).map((m) => {
+    const [y, mo] = m.month.split('-')
+    const d = new Date(+y!, +mo! - 1, 1)
+    return {
+      label: d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
+      value: m.mrr,
+    }
+  }),
+)
+
+const mrrForecastDashedAfter = computed(() => {
+  const chart = sales.value?.forecast?.mrrForecastChart ?? []
+  const lastActual = chart.reduce((idx, m, i) => (m.type === 'actual' ? i : idx), -1)
+  return lastActual
+})
+
 watch(selectedMonth, () => void loadSalesStats())
 
 onMounted(() => {
@@ -469,16 +487,63 @@ onMounted(() => {
               <div class="text-xs font-semibold uppercase tracking-wider text-indigo-400/80">Projected monthly revenue</div>
               <div class="mt-2 text-3xl font-bold tabular-nums text-indigo-400">{{ formatCurrency(sales.forecast.projectedMonthlyRevenue) }}</div>
               <div class="mt-1 text-xs text-indigo-400/60">Based on last 3 months avg</div>
+              <div v-if="sales.forecast.projectedMonthlyMrr" class="mt-2 border-t border-indigo-500/10 pt-2 text-xs text-white/40">
+                <span class="text-indigo-400/60">+{{ formatCurrency(sales.forecast.projectedMonthlyMrr) }}</span> new MRR / month
+              </div>
             </div>
             <div class="rounded-lg border border-violet-500/20 bg-violet-500/[0.05] px-5 py-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-violet-400/80">Projected quarterly revenue</div>
               <div class="mt-2 text-3xl font-bold tabular-nums text-violet-400">{{ formatCurrency(sales.forecast.projectedQuarterlyRevenue) }}</div>
               <div class="mt-1 text-xs text-violet-400/60">Next 3 months</div>
+              <div v-if="sales.forecast.projectedQuarterlyMrr" class="mt-2 border-t border-violet-500/10 pt-2 text-xs text-white/40">
+                MRR in 3 months: <span class="text-violet-400/60">{{ formatCurrency(sales.forecast.projectedQuarterlyMrr) }}</span>
+              </div>
             </div>
             <div class="rounded-lg border border-sky-500/20 bg-sky-500/[0.05] px-5 py-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-sky-400/80">Avg deals won / month</div>
               <div class="mt-2 text-3xl font-bold tabular-nums text-sky-400">{{ sales.forecast.avgMonthlyDealsWon }}</div>
               <div class="mt-1 text-xs text-sky-400/60">Based on last 3 months avg</div>
+            </div>
+          </div>
+
+          <!-- MRR forecast chart -->
+          <div v-if="mrrForecastPoints.length > 1" class="mt-5">
+            <div class="flex items-baseline gap-3">
+              <div class="text-xs font-semibold uppercase tracking-wider text-white/40">MRR outlook</div>
+              <div class="flex items-center gap-3 text-xs text-white/30">
+                <span class="inline-flex items-center gap-1"><span class="inline-block h-0.5 w-4 bg-emerald-400 rounded"></span> Actual</span>
+                <span class="inline-flex items-center gap-1"><span class="inline-block h-0.5 w-4 rounded" style="background: repeating-linear-gradient(90deg, rgb(52,211,153) 0px, rgb(52,211,153) 4px, transparent 4px, transparent 7px)"></span> Forecast</span>
+              </div>
+            </div>
+            <div class="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+              <LineChart :points="mrrForecastPoints" color="#34d399" :height="180" :format-value="formatCurrency" :dashed-after="mrrForecastDashedAfter" />
+            </div>
+          </div>
+
+          <!-- Pre-reg / free conversion forecast -->
+          <div v-if="sales.forecast.preRegForecast && sales.forecast.preRegForecast.unconvertedCount > 0" class="mt-5 rounded-lg border border-amber-500/20 bg-amber-500/[0.04] p-5">
+            <div class="text-xs font-semibold uppercase tracking-wider text-amber-400/80">Free → Paid conversion forecast</div>
+            <div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div>
+                <div class="text-xs text-white/40">Unconverted</div>
+                <div class="mt-1 text-2xl font-bold tabular-nums text-amber-400">{{ sales.forecast.preRegForecast.unconvertedCount }}</div>
+                <div class="text-xs text-white/30">free companies</div>
+              </div>
+              <div>
+                <div class="text-xs text-white/40">Historic rate</div>
+                <div class="mt-1 text-2xl font-bold tabular-nums text-amber-400">{{ sales.forecast.preRegForecast.conversionRate }}%</div>
+                <div class="text-xs text-white/30">conversion</div>
+              </div>
+              <div>
+                <div class="text-xs text-white/40">Expected conversions</div>
+                <div class="mt-1 text-2xl font-bold tabular-nums text-emerald-400">{{ sales.forecast.preRegForecast.expectedConversions }}</div>
+                <div class="text-xs text-white/30">companies</div>
+              </div>
+              <div>
+                <div class="text-xs text-white/40">Expected revenue</div>
+                <div class="mt-1 text-2xl font-bold tabular-nums text-emerald-400">{{ formatCurrency(sales.forecast.preRegForecast.expectedRevenue) }}</div>
+                <div class="text-xs text-white/30">avg {{ formatCurrency(sales.forecast.preRegForecast.avgRevenuePerConversion) }} each</div>
+              </div>
             </div>
           </div>
 

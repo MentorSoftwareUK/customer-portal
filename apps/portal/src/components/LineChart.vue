@@ -9,8 +9,10 @@ const props = withDefaults(
     areaFill?: boolean
     yLabel?: string
     formatValue?: (v: number) => string
+    /** Index after which the line becomes dashed (forecast). -1 = never dashed */
+    dashedAfter?: number
   }>(),
-  { color: '#818cf8', height: 200, areaFill: true, formatValue: (v: number) => String(v) },
+  { color: '#818cf8', height: 200, areaFill: true, formatValue: (v: number) => String(v), dashedAfter: -1 },
 )
 
 const animated = ref(false)
@@ -50,6 +52,21 @@ const coords = computed(() =>
 const linePath = computed(() =>
   coords.value.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' '),
 )
+
+/** Solid portion of the line (up to dashedAfter index, inclusive) */
+const solidPath = computed(() => {
+  if (props.dashedAfter < 0) return linePath.value
+  const solidCoords = coords.value.slice(0, props.dashedAfter + 1)
+  return solidCoords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' ')
+})
+
+/** Dashed portion of the line (from dashedAfter index onward) */
+const dashedPath = computed(() => {
+  if (props.dashedAfter < 0) return ''
+  const dCoords = coords.value.slice(props.dashedAfter)
+  if (dCoords.length < 2) return ''
+  return dCoords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' ')
+})
 
 const areaPath = computed(() => {
   if (!coords.value.length) return ''
@@ -114,10 +131,10 @@ const labelStep = computed(() => Math.max(1, Math.ceil(props.points.length / 8))
         class="transition-opacity duration-700"
       />
 
-      <!-- Line -->
+      <!-- Line (solid) -->
       <path
         v-if="coords.length"
-        :d="linePath"
+        :d="dashedAfter >= 0 ? solidPath : linePath"
         fill="none"
         :stroke="color"
         stroke-width="2.5"
@@ -126,6 +143,21 @@ const labelStep = computed(() => Math.max(1, Math.ceil(props.points.length / 8))
         :stroke-dasharray="animated ? 'none' : '2000'"
         :stroke-dashoffset="animated ? '0' : '2000'"
         class="transition-all duration-1000 ease-out"
+      />
+
+      <!-- Line (dashed forecast portion) -->
+      <path
+        v-if="coords.length && dashedAfter >= 0 && dashedPath"
+        :d="dashedPath"
+        fill="none"
+        :stroke="color"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-dasharray="6 4"
+        stroke-opacity="0.6"
+        :class="animated ? 'opacity-100' : 'opacity-0'"
+        class="transition-opacity duration-1000 ease-out"
       />
 
       <!-- Dots -->

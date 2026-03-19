@@ -113,6 +113,29 @@ export type SalesStatsDto = {
       projectedRevenue: number
       projectedDeals: number
     }>
+    /** Estimated MRR from new deals per month (avg MRR per won deal × avg deals/mo) */
+    projectedMonthlyMrr: number
+    /** Current MRR + 3 months of projected new MRR */
+    projectedQuarterlyMrr: number
+    /** MRR chart: actual (last 3 months) + forecast (next 3 months) */
+    mrrForecastChart: Array<{
+      month: string
+      mrr: number
+      type: 'actual' | 'forecast'
+    }>
+    /** Pre-reg / free customer conversion forecast */
+    preRegForecast: {
+      /** Companies still on free */
+      unconvertedCount: number
+      /** Historical conversion rate (0-100) */
+      conversionRate: number
+      /** Expected conversions (unconverted × rate) */
+      expectedConversions: number
+      /** Avg revenue per converted company */
+      avgRevenuePerConversion: number
+      /** Expected revenue from conversions */
+      expectedRevenue: number
+    }
   }
 }
 
@@ -856,6 +879,41 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     })
   }
 
+  // MRR projection: avg MRR per recently won deal × avg deals/month
+  const recentWonDeals = closedDeals.filter(
+    (d) => isWon(d) && recentTrend.some((t) => t.month === monthOfDeal(d)),
+  )
+  const avgMrrPerDeal = recentWonDeals.length > 0
+    ? recentWonDeals.reduce((s, d) => s + (parseFloat(d.properties.hs_mrr ?? '0') || 0), 0) / recentWonDeals.length
+    : 0
+  const projectedMonthlyMrr = Math.round(avgMrrPerDeal * avgMonthlyDealsWon * 100) / 100
+  const projectedQuarterlyMrr = Math.round((mrr + projectedMonthlyMrr * 3) * 100) / 100
+
+  // MRR forecast chart: last 3 actual months + 3 projected months
+  const mrrForecastChart: Array<{ month: string; mrr: number; type: 'actual' | 'forecast' }> = []
+  const last3Actual = mrrTrend.slice(-3)
+  for (const m of last3Actual) {
+    mrrForecastChart.push({ month: m.month, mrr: m.mrr, type: 'actual' })
+  }
+  const lastActualMrr = last3Actual.length > 0 ? last3Actual[last3Actual.length - 1]!.mrr : mrr
+  for (let i = 1; i <= 3; i++) {
+    const d = new Date(focusDate.getFullYear(), focusDate.getMonth() + i, 1)
+    mrrForecastChart.push({
+      month: monthKey(d),
+      mrr: Math.round((lastActualMrr + projectedMonthlyMrr * i) * 100) / 100,
+      type: 'forecast',
+    })
+  }
+
+  // Pre-reg / free customer conversion forecast
+  const unconvertedCount = notConvertedCount
+  const preRegConversionRate = conversionRate // already 0-100
+  const expectedConversions = Math.round(unconvertedCount * (preRegConversionRate / 100) * 10) / 10
+  const avgRevenuePerConversion = convertedIds.size > 0
+    ? Math.round(convertedRevenue / convertedIds.size)
+    : 0
+  const expectedPreRegRevenue = Math.round(expectedConversions * avgRevenuePerConversion)
+
   const forecast = {
     weightedPipelineValue: Math.round(weightedPipelineValue * 100) / 100,
     projectedMonthlyRevenue,
@@ -863,6 +921,16 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     avgMonthlyDealsWon,
     pipelineByStage: forecastByStage,
     monthlyProjection,
+    projectedMonthlyMrr,
+    projectedQuarterlyMrr,
+    mrrForecastChart,
+    preRegForecast: {
+      unconvertedCount,
+      conversionRate: preRegConversionRate,
+      expectedConversions,
+      avgRevenuePerConversion,
+      expectedRevenue: expectedPreRegRevenue,
+    },
   }
 
   return {

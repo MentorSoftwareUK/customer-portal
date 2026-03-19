@@ -653,6 +653,20 @@ export type SalesStats = {
       projectedRevenue: number
       projectedDeals: number
     }>
+    projectedMonthlyMrr: number
+    projectedQuarterlyMrr: number
+    mrrForecastChart: Array<{
+      month: string
+      mrr: number
+      type: 'actual' | 'forecast'
+    }>
+    preRegForecast: {
+      unconvertedCount: number
+      conversionRate: number
+      expectedConversions: number
+      avgRevenuePerConversion: number
+      expectedRevenue: number
+    }
   }
 }
 
