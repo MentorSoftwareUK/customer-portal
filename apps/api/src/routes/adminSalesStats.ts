@@ -113,8 +113,12 @@ export type SalesStatsDto = {
       projectedRevenue: number
       projectedDeals: number
     }>
-    /** Estimated MRR from new deals per month (avg MRR per won deal × avg deals/mo) */
+    /** Net projected MRR change per month (new deals + conversions − churn) */
     projectedMonthlyMrr: number
+    /** Gross MRR from new deal wins per month */
+    newDealMrrPerMonth: number
+    /** Gross MRR from free→paid conversions per month */
+    monthlyConversionMrr: number
     /** Current MRR + 3 months of projected new MRR */
     projectedQuarterlyMrr: number
     /** MRR chart: actual (last 3 months) + forecast (next 3 months) */
@@ -991,6 +995,8 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     pipelineByStage: forecastByStage,
     monthlyProjection,
     projectedMonthlyMrr,
+    newDealMrrPerMonth,
+    monthlyConversionMrr,
     projectedQuarterlyMrr,
     mrrForecastChart,
     expectedMonthlyChurnMrr,

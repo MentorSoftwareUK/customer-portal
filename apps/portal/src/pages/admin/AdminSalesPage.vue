@@ -507,7 +507,7 @@ onMounted(() => {
           <!-- Hero: Weighted pipeline -->
           <div class="mt-4 flex items-end gap-6">
             <span class="text-5xl font-bold tabular-nums text-white">{{ formatCurrency(sales.forecast.weightedPipelineValue) }}</span>
-            <span class="mb-1 text-sm text-white/50">weighted pipeline value</span>
+            <span class="mb-1 text-sm text-white/50">weighted pipeline value<br><span class="text-white/30">total expected revenue from open deals × win probability</span></span>
           </div>
 
           <!-- KPI boxes -->
@@ -515,15 +515,18 @@ onMounted(() => {
             <div class="rounded-lg border border-indigo-500/20 bg-indigo-500/[0.05] px-5 py-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-indigo-400/80">Projected monthly revenue</div>
               <div class="mt-2 text-3xl font-bold tabular-nums text-indigo-400">{{ formatCurrency(sales.forecast.projectedMonthlyRevenue) }}</div>
-              <div class="mt-1 text-xs text-indigo-400/60">Based on last 3 months avg</div>
-              <div v-if="sales.forecast.projectedMonthlyMrr" class="mt-2 border-t border-indigo-500/10 pt-2 text-xs text-white/40">
-                <span class="text-indigo-400/60">+{{ formatCurrency(sales.forecast.projectedMonthlyMrr) }}</span> new MRR / month
+              <div class="mt-1 text-xs text-indigo-400/60">Trend-adjusted (6-month slope)</div>
+              <div v-if="sales.forecast.newDealMrrPerMonth || sales.forecast.monthlyConversionMrr || sales.forecast.expectedMonthlyChurnMrr" class="mt-2 border-t border-indigo-500/10 pt-2 space-y-0.5 text-xs text-white/40">
+                <div><span class="text-emerald-400/70">+{{ formatCurrency(sales.forecast.newDealMrrPerMonth) }}</span> new deal MRR</div>
+                <div v-if="sales.forecast.monthlyConversionMrr"><span class="text-emerald-400/70">+{{ formatCurrency(sales.forecast.monthlyConversionMrr) }}</span> free→paid MRR</div>
+                <div v-if="sales.forecast.expectedMonthlyChurnMrr"><span class="text-rose-400/70">−{{ formatCurrency(sales.forecast.expectedMonthlyChurnMrr) }}</span> est. churn</div>
+                <div class="border-t border-white/[0.06] pt-1 font-semibold"><span class="text-indigo-400/60">={{ formatCurrency(sales.forecast.projectedMonthlyMrr) }}</span> net MRR / month</div>
               </div>
             </div>
             <div class="rounded-lg border border-violet-500/20 bg-violet-500/[0.05] px-5 py-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-violet-400/80">Projected quarterly revenue</div>
               <div class="mt-2 text-3xl font-bold tabular-nums text-violet-400">{{ formatCurrency(sales.forecast.projectedQuarterlyRevenue) }}</div>
-              <div class="mt-1 text-xs text-violet-400/60">Next 3 months</div>
+              <div class="mt-1 text-xs text-violet-400/60">Next 3 months (slope-adjusted)</div>
               <div v-if="sales.forecast.projectedQuarterlyMrr" class="mt-2 border-t border-violet-500/10 pt-2 text-xs text-white/40">
                 MRR in 3 months: <span class="text-violet-400/60">{{ formatCurrency(sales.forecast.projectedQuarterlyMrr) }}</span>
               </div>
@@ -531,7 +534,7 @@ onMounted(() => {
             <div class="rounded-lg border border-sky-500/20 bg-sky-500/[0.05] px-5 py-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-sky-400/80">Avg deals won / month</div>
               <div class="mt-2 text-3xl font-bold tabular-nums text-sky-400">{{ sales.forecast.avgMonthlyDealsWon }}</div>
-              <div class="mt-1 text-xs text-sky-400/60">Based on last 3 months avg</div>
+              <div class="mt-1 text-xs text-sky-400/60">6-month average</div>
             </div>
           </div>
 

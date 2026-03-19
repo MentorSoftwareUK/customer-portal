@@ -654,6 +654,8 @@ export type SalesStats = {
       projectedDeals: number
     }>
     projectedMonthlyMrr: number
+    newDealMrrPerMonth: number
+    monthlyConversionMrr: number
     projectedQuarterlyMrr: number
     mrrForecastChart: Array<{
       month: string
