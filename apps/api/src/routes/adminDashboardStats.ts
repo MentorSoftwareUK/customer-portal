@@ -22,7 +22,8 @@ let statsCache: { ts: number; data: AdminDashboardStatsDto } | null = null
 
 async function getCachedStats(): Promise<{ data: AdminDashboardStatsDto; updatedAt: Date } | null> {
   try {
-    const db = getDb()
+    const db = await getDb()
+    if (!db) return null
     const row = await db.collection(CACHE_COLLECTION).findOne({ _id: 'current' as any })
     if (!row) return null
     const age = Date.now() - new Date(row.updatedAt).getTime()
@@ -33,7 +34,8 @@ async function getCachedStats(): Promise<{ data: AdminDashboardStatsDto; updated
 
 async function setCachedStats(data: AdminDashboardStatsDto): Promise<void> {
   try {
-    const db = getDb()
+    const db = await getDb()
+    if (!db) return
     await db.collection(CACHE_COLLECTION).updateOne(
       { _id: 'current' as any },
       { $set: { data, updatedAt: new Date() } },

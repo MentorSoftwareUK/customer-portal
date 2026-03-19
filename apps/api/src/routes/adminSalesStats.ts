@@ -761,7 +761,12 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   }
   companies.sort((a, b) => {
     if (a.status !== b.status) return a.status === 'converted' ? -1 : 1
-    if (a.status === 'converted') return b.revenue - a.revenue
+    if (a.status === 'converted') {
+      // Most recently converted first
+      const da = a.convertedDate ? new Date(a.convertedDate).getTime() : 0
+      const db = b.convertedDate ? new Date(b.convertedDate).getTime() : 0
+      return db - da
+    }
     return a.name.localeCompare(b.name)
   })
 
