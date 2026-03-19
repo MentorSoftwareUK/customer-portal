@@ -883,16 +883,15 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     revenueSlope = den > 0 ? numRev / den : 0
     dealsSlope = den > 0 ? numDeals / den : 0
     const lastRev = recentTrend[n - 1]!.revenue
-    const lastDeals = recentTrend[n - 1]!.dealsWon
     projectedMonthlyRevenue = Math.max(0, Math.round(lastRev + revenueSlope))
-    avgMonthlyDealsWon = Math.max(0, Math.round((lastDeals + dealsSlope) * 10) / 10)
+    avgMonthlyDealsWon = Math.round(dealsMean * 10) / 10
   } else if (recentTrend.length === 1) {
     projectedMonthlyRevenue = Math.round(recentTrend[0]!.revenue)
     avgMonthlyDealsWon = recentTrend[0]!.dealsWon
   }
 
   const baseRevForProjection = recentTrend.length >= 2 ? recentTrend[recentTrend.length - 1]!.revenue : projectedMonthlyRevenue
-  const baseDealsForProjection = recentTrend.length >= 2 ? recentTrend[recentTrend.length - 1]!.dealsWon : avgMonthlyDealsWon
+  const baseDealsForProjection = avgMonthlyDealsWon
 
   // Quarterly = sum of 3 slope-adjusted months
   const projectedQuarterlyRevenue = [1, 2, 3].reduce(
@@ -906,7 +905,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     monthlyProjection.push({
       month: monthKey(d),
       projectedRevenue: Math.max(0, Math.round(baseRevForProjection + revenueSlope * i)),
-      projectedDeals: Math.max(0, Math.round(baseDealsForProjection + dealsSlope * i)),
+      projectedDeals: Math.round(avgMonthlyDealsWon),
     })
   }
 
