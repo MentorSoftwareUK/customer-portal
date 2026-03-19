@@ -358,7 +358,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     .sort((a, b) => b.count - a.count)
 
   /* ── 7. Recent churned (last 10) ── */
-  const recentChurned = churned
+  const recentChurnedCompanies = churned
     .filter((c) => c.properties.date_left)
     .sort(
       (a, b) =>
@@ -366,14 +366,50 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
         new Date(a.properties.date_left!).getTime(),
     )
     .slice(0, 10)
-    .map((c) => ({
-      name: c.properties.name ?? 'Unknown',
-      dateLeft: c.properties.date_left ?? '',
-      reason:
-        c.properties.what_prompted_you_to_consider_cancelling_mentor_software ||
-        c.properties.the_main_reason_you_re_leaving__other_ ||
-        '—',
-    }))
+
+  // For each recently churned company, look up the closed-lost reason from its deals
+  const recentChurned = await Promise.all(
+    recentChurnedCompanies.map(async (c) => {
+      let reason = '—'
+      try {
+        const assocRes = await hsFetch(
+          `/crm/v4/objects/companies/${c.id}/associations/deals?limit=100`,
+        )
+        const assocData = (await assocRes.json()) as {
+          results?: Array<{ toObjectId: string }>
+        }
+        const dealIds = (assocData.results ?? []).map((r) => r.toObjectId)
+        if (dealIds.length > 0) {
+          const readRes = await hsFetch('/crm/v3/objects/deals/batch/read', {
+            method: 'POST',
+            body: JSON.stringify({
+              inputs: dealIds.map((id) => ({ id })),
+              properties: ['closed_lost_reason', 'dealstage', 'closedate'],
+            }),
+          })
+          const readData = (await readRes.json()) as {
+            results?: Array<{ properties: Record<string, string | null> }>
+          }
+          // Pick the most recent closed-lost deal that has a reason
+          const withReason = (readData.results ?? [])
+            .filter((d) => d.properties.closed_lost_reason)
+            .sort((a, b) =>
+              (b.properties.closedate ?? '').localeCompare(a.properties.closedate ?? ''),
+            )
+          if (withReason.length > 0) {
+            reason = withReason[0]!.properties.closed_lost_reason!
+          }
+        }
+      } catch {
+        /* deal lookup failed – fall back to dash */
+      }
+      return {
+        name: c.properties.name ?? 'Unknown',
+        dateLeft: c.properties.date_left ?? '',
+        reason,
+      }
+    }),
+  )
 
   /* ── 8. Meetings (last 6 months for sparkline data) ── */
   const sixMonthsAgoDate = new Date(focusDate.getFullYear(), focusDate.getMonth() - 5, 1)
