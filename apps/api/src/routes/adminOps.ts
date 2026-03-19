@@ -703,6 +703,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     )
 
     if (emailsData.results) {
+      console.log(`[ops] Marketing emails API returned ${emailsData.results.length} results`)
       const focusEmails = emailsData.results
       const activeCampaigns = focusEmails.filter(
         (e) => e.isPublished || e.currentState === 'PUBLISHED',
@@ -775,7 +776,8 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
         campaigns: campaignRows.sort((a, b) => b.sent - a.sent),
       }
     }
-  } catch {
+  } catch (e) {
+    console.warn('[ops] Marketing Email API error (likely missing scope):', e instanceof Error ? e.message : e)
     /* Marketing API not available — keep default */
   }
 
@@ -1006,6 +1008,30 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
 
   const payingById = new Map(payingCompanies.map((c) => [c.id, c]))
 
+  /* Resolve company names for deals whose company isn't in payingById */
+  const missingCompanyIds = new Set<string>()
+  for (const deal of recentWonDeals) {
+    const cid = dealCompanyMap.get(deal.id)
+    if (cid && !payingById.has(cid)) missingCompanyIds.add(cid)
+  }
+  const extraCompanyNames = new Map<string, string>()
+  if (missingCompanyIds.size > 0) {
+    const ids = [...missingCompanyIds]
+    for (let i = 0; i < ids.length; i += 100) {
+      try {
+        const batch = ids.slice(i, i + 100)
+        const res = await hsFetch('/crm/v3/objects/companies/batch/read', {
+          method: 'POST',
+          body: JSON.stringify({ inputs: batch.map((id) => ({ id })), properties: ['name'] }),
+        })
+        const json = (await res.json()) as { results: Array<{ id: string; properties: Record<string, string | null> }> }
+        for (const c of json.results) {
+          extraCompanyNames.set(c.id, c.properties.name ?? `Company ${c.id}`)
+        }
+      } catch { /* continue without names */ }
+    }
+  }
+
   /* 3a. Deals won but company NOT yet assigned to Success/Training */
   const unassignedWon: OpsDto['handoff']['unassignedWon'] = []
   for (const deal of recentWonDeals) {
@@ -1017,8 +1043,11 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     const daysSinceWon = daysAgo(new Date(wonDate), now)
     if (daysSinceWon < 3) continue // 3-day grace period
     if (!companyOwner || !SUCCESS_TRAINING_IDS.has(companyOwner)) {
+      const companyName = company?.properties.name
+        ?? (companyId ? extraCompanyNames.get(companyId) : undefined)
+        ?? 'Unknown'
       unassignedWon.push({
-        company: company?.properties.name ?? 'Unknown',
+        company: companyName,
         dealName: deal.properties.dealname ?? 'Untitled',
         owner: ownerName(deal.properties.hubspot_owner_id ?? ''),
         daysSinceWon,
@@ -1079,8 +1108,10 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
   }
 
   /* 3d. Overdue onboarding tasks */
+  const EXCLUDED_ONBOARDING_OWNERS = new Set(['231709811']) // Joe Hardstaff
   const overdueOnboarding: OpsDto['handoff']['overdueOnboarding'] = []
   for (const t of openTasksRaw) {
+    if (EXCLUDED_ONBOARDING_OWNERS.has(t.properties.hubspot_owner_id ?? '')) continue
     const subject = (t.properties.hs_task_subject ?? '').toLowerCase()
     const due = t.properties.hs_timestamp ? new Date(t.properties.hs_timestamp) : null
     if (

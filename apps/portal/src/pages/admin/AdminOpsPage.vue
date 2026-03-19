@@ -136,23 +136,28 @@ onMounted(() => void loadOps())
         <!-- ═══════════════════════════════════════════════
              1. ALERTS BANNER
         ═══════════════════════════════════════════════ -->
-        <div v-if="ops.alerts.filter(a => !dismissedAlerts.has(a.id)).length > 0" class="mt-5 flex flex-wrap gap-2">
-          <div
-            v-for="alert in ops.alerts.filter(a => !dismissedAlerts.has(a.id))"
-            :key="alert.id"
-            class="group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
-            :class="alert.severity === 'red' ? 'bg-rose-500/15 text-rose-300 border border-rose-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'"
-          >
-            <span class="inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold"
-              :class="alert.severity === 'red' ? 'bg-rose-500/20' : 'bg-amber-500/20'">
-              {{ alert.count }}
-            </span>
-            <span>{{ alert.label }}</span>
-            <button
-              class="ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-white/40 hover:text-white/80"
-              @click="dismissedAlerts.add(alert.id)"
-              title="Dismiss"
-            >×</button>
+        <div v-if="ops.alerts.filter(a => !dismissedAlerts.has(a.id)).length > 0" class="mt-5">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Alerts</div>
+          <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div
+              v-for="alert in ops.alerts.filter(a => !dismissedAlerts.has(a.id))"
+              :key="alert.id"
+              class="group relative rounded-xl border p-4 transition-colors"
+              :class="alert.severity === 'red'
+                ? 'border-rose-500/20 bg-rose-500/[0.06]'
+                : 'border-amber-500/20 bg-amber-500/[0.06]'"
+            >
+              <button
+                class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-white/30 hover:text-white/60 text-sm"
+                @click="dismissedAlerts.add(alert.id)"
+                title="Dismiss"
+              >&times;</button>
+              <div class="text-2xl font-bold tabular-nums"
+                :class="alert.severity === 'red' ? 'text-rose-400' : 'text-amber-400'">
+                {{ alert.count }}
+              </div>
+              <div class="mt-1 text-xs text-white/60 leading-snug">{{ alert.label }}</div>
+            </div>
           </div>
         </div>
 
