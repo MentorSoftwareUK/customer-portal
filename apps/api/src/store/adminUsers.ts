@@ -129,6 +129,28 @@ export async function verifyAdminCredentials(params: { email: string; password: 
   return { ...user, lastLoginAt }
 }
 
+export async function getAllAdminLastLogins(): Promise<Map<string, string>> {
+  const result = new Map<string, string>()
+  const db = await getDb()
+
+  if (!db) {
+    for (const [email, record] of adminUsers.entries()) {
+      if (record.lastLoginAt) result.set(email, record.lastLoginAt)
+    }
+    return result
+  }
+
+  const col = db.collection<AdminUserDoc>(COLLECTION)
+  const docs = await col.find(
+    { lastLoginAt: { $exists: true, $ne: null } },
+    { projection: { _id: 1, lastLoginAt: 1 } },
+  ).toArray()
+  for (const doc of docs) {
+    if (doc.lastLoginAt) result.set(doc._id, doc.lastLoginAt)
+  }
+  return result
+}
+
 export async function ensureSeedAdmin(log: { info: Function; warn: Function }) {
   const email = env.ADMIN_SEED_EMAIL?.trim()
   const password = env.ADMIN_SEED_PASSWORD?.trim()

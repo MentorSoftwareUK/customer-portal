@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from 'fastify'
 import { requireAdmin } from '../auth/requireAdmin'
 import { env } from '../env'
 import { getDb } from '../db'
+import { getAllAdminLastLogins } from '../store/adminUsers'
 
 /* ================================================================== */
 /*  Types                                                             */
@@ -232,25 +233,25 @@ async function searchObjects(
 }
 
 /* ── Owners cache ── */
-let ownersCache: Map<string, { firstName: string; lastName: string; full: string }> | null =
+let ownersCache: Map<string, { firstName: string; lastName: string; full: string; email: string }> | null =
   null
 let ownersCacheTs = 0
 const OWNERS_TTL = 30 * 60 * 1000
 
 async function getOwners() {
   if (ownersCache && Date.now() - ownersCacheTs < OWNERS_TTL) return ownersCache
-  const map = new Map<string, { firstName: string; lastName: string; full: string }>()
+  const map = new Map<string, { firstName: string; lastName: string; full: string; email: string }>()
   let after: string | undefined
   for (let page = 0; page < 10; page++) {
     const qs = after ? `?after=${after}&limit=100` : '?limit=100'
     const res = await hsFetch(`/crm/v3/owners${qs}`)
     const json = (await res.json()) as {
-      results: Array<{ id: string; firstName: string; lastName: string }>
+      results: Array<{ id: string; firstName: string; lastName: string; email?: string }>
       paging?: { next?: { after: string } }
     }
     for (const o of json.results) {
       const full = `${o.firstName ?? ''} ${o.lastName ?? ''}`.trim() || `Owner ${o.id}`
-      map.set(o.id, { firstName: o.firstName ?? '', lastName: o.lastName ?? '', full })
+      map.set(o.id, { firstName: o.firstName ?? '', lastName: o.lastName ?? '', full, email: o.email ?? '' })
     }
     after = json.paging?.next?.after
     if (!after) break
@@ -902,6 +903,13 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       row.total++
     }
     ownerMeetings.set(oid, row)
+
+    // Include meeting timestamp in lastActivity so meetings update "last active"
+    const mTs = m.properties.hs_meeting_start_time ? new Date(m.properties.hs_meeting_start_time).getTime() : 0
+    if (mTs > 0) {
+      const eng = ensureOwnerEng(oid)
+      if (mTs > eng.lastTs) eng.lastTs = mTs
+    }
   }
 
   /* ──────────────────────────────────
@@ -912,6 +920,13 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
   for (const [oid, info] of owners.entries()) {
     const dept = getDept(info.full)
     if (ACTIVE_DEPTS.includes(dept)) allOwnerIds.add(oid)
+  }
+
+  /* Map owner emails → lastLoginAt from admin portal */
+  const adminLogins = await getAllAdminLastLogins()
+  const ownerEmailMap = new Map<string, string>()
+  for (const [oid, info] of owners.entries()) {
+    if (info.email) ownerEmailMap.set(oid, info.email.toLowerCase())
   }
 
   type MemberRow = {
@@ -939,6 +954,18 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     const tk = ownerTasks.get(oid) ?? { open: 0, overdue: 0, completedFocus: 0, completedPrev: 0 }
     const eg = ownerEng.get(oid) ?? { calls: 0, emails: 0, notes: 0, lastTs: 0 }
     const mt = ownerMeetings.get(oid) ?? { total: 0, demos: 0 }
+
+    // Also consider admin portal login as activity
+    let effectiveLastTs = eg.lastTs
+    const ownerEmail = ownerEmailMap.get(oid)
+    if (ownerEmail) {
+      const loginAt = adminLogins.get(ownerEmail)
+      if (loginAt) {
+        const loginTs = new Date(loginAt).getTime()
+        if (loginTs > effectiveLastTs) effectiveLastTs = loginTs
+      }
+    }
+
     memberRows.push({
       name,
       ownerId: oid,
@@ -950,7 +977,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       notes: eg.notes,
       meetings: mt.total,
       demos: mt.demos,
-      lastActivity: eg.lastTs > 0 ? new Date(eg.lastTs).toISOString() : null,
+      lastActivity: effectiveLastTs > 0 ? new Date(effectiveLastTs).toISOString() : null,
       completedFocus: tk.completedFocus,
       completedPrev: tk.completedPrev,
     })

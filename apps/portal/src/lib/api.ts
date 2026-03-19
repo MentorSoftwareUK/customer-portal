@@ -718,6 +718,7 @@ export type CustomerSuccess = {
     hubspotUrl: string
     trainingMeeting: 'completed' | 'scheduled' | 'none'
     successMeeting: 'completed' | 'scheduled' | 'none'
+    isPreReg: boolean
   }>
   earlyChurn?: {
     within60: number

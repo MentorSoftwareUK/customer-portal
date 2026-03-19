@@ -306,6 +306,9 @@ onMounted(() => {
             <span class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-bold text-emerald-400">
               {{ success.newCustomers.length }} in first 60 days
             </span>
+            <span v-if="success.newCustomers.some(c => c.isPreReg)" class="rounded-full bg-purple-500/10 px-2 py-0.5 text-xs font-bold text-purple-400">
+              {{ success.newCustomers.filter(c => c.isPreReg).length }} pre-reg
+            </span>
           </div>
           <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <a
@@ -319,7 +322,10 @@ onMounted(() => {
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                   <div class="truncate text-sm font-semibold text-white/90 group-hover:text-amber-300 transition-colors">{{ cust.name }}</div>
-                  <div class="mt-0.5 text-xs text-white/50">{{ cust.owner }}</div>
+                  <div class="mt-0.5 flex items-center gap-1.5">
+                    <span class="text-xs text-white/50">{{ cust.owner }}</span>
+                    <span v-if="cust.isPreReg" class="rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-purple-300 border border-purple-500/20">Pre-reg</span>
+                  </div>
                 </div>
                 <div class="flex flex-col items-end gap-1 shrink-0">
                   <span class="rounded-full bg-white/[0.06] px-2 py-0.5 text-xs font-bold tabular-nums text-white/80">

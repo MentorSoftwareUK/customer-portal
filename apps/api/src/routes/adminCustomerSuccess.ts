@@ -94,6 +94,7 @@ export type CustomerSuccessDto = {
     hubspotUrl: string
     trainingMeeting: 'completed' | 'scheduled' | 'none'
     successMeeting: 'completed' | 'scheduled' | 'none'
+    isPreReg: boolean
   }>
 
   /* Early churn breakdown */
@@ -231,6 +232,8 @@ const COMPANY_PROPERTIES = [
   'contract_start_date',
   'installdate',
   'date_left',
+  'createdate',
+  'lifecyclestage',
   'hubspot_owner_id',
   'what_prompted_you_to_consider_cancelling_mentor_software',
   'the_main_reason_you_re_leaving__other_',
@@ -240,6 +243,8 @@ const COMPANY_PROPERTIES = [
   'num_notes',
   'num_contacted_notes',
 ]
+
+const PREREG_PIPELINE_ID = '2933345490'
 
 const MEETING_PROPERTIES = [
   'hs_meeting_title',
@@ -729,7 +734,22 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   const newCustCandidates = paying.filter((c) => {
     const start = c.properties.installdate ?? c.properties.contract_start_date
     if (!start) return false
-    return new Date(start) >= sixtyDaysAgo
+    if (new Date(start) < sixtyDaysAgo) return false
+
+    // Exclude renewals: if date_left is set, this company previously churned and came back
+    if (c.properties.date_left) return false
+
+    // Exclude renewals: if the company record was created more than 120 days before the
+    // contract start date, this is likely a returning/renewed customer rather than brand new
+    const created = c.properties.createdate
+    if (created) {
+      const createdDate = new Date(created)
+      const startDate = new Date(start)
+      const daysBetween = Math.floor((startDate.getTime() - createdDate.getTime()) / 86_400_000)
+      if (daysBetween > 120) return false
+    }
+
+    return true
   })
 
   // Fetch associated meetings for each new customer
@@ -773,6 +793,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     const results = await Promise.all(
       batch.map(async (c) => {
         let companyMeetings: HsMeeting[] = []
+        let isPreReg = false
         try {
           // Fetch meeting associations for this company
           const assocRes = await hsFetch(
@@ -798,6 +819,35 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
           /* association fetch failed – treat as no meetings */
         }
 
+        // Check if the company came through the pre-reg pipeline
+        try {
+          const dealAssocRes = await hsFetch(
+            `/crm/v4/objects/companies/${c.id}/associations/deals?limit=100`,
+          )
+          const dealAssocData = (await dealAssocRes.json()) as {
+            results?: Array<{ toObjectId: string }>
+          }
+          const dealIds = (dealAssocData.results ?? []).map((r) => r.toObjectId)
+
+          if (dealIds.length > 0) {
+            const dealReadRes = await hsFetch('/crm/v3/objects/deals/batch/read', {
+              method: 'POST',
+              body: JSON.stringify({
+                inputs: dealIds.map((id) => ({ id })),
+                properties: ['pipeline', 'dealstage'],
+              }),
+            })
+            const dealReadData = (await dealReadRes.json()) as {
+              results?: Array<{ properties: Record<string, string | null> }>
+            }
+            isPreReg = (dealReadData.results ?? []).some(
+              (d) => d.properties.pipeline === PREREG_PIPELINE_ID,
+            )
+          }
+        } catch {
+          /* deal association fetch failed */
+        }
+
         const startDate = (c.properties.installdate ?? c.properties.contract_start_date)!
         return {
           name: c.properties.name ?? 'Unknown',
@@ -811,6 +861,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
           hubspotUrl: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL_ID}/company/${c.id}`,
           trainingMeeting: deriveMeetingStatus(companyMeetings, 'training'),
           successMeeting: deriveMeetingStatus(companyMeetings, 'success'),
+          isPreReg,
         }
       }),
     )
