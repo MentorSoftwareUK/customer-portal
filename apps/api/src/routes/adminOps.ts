@@ -894,8 +894,11 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     const oid = m.properties.hubspot_owner_id ?? 'unknown'
     const row = ownerMeetings.get(oid) ?? { total: 0, demos: 0 }
     row.total++
-    const title = (m.properties.hs_meeting_title ?? '').toLowerCase()
-    if (title.includes('demo') || title.includes('demonstration')) row.demos++
+    const outcome = (m.properties.hs_meeting_outcome ?? '').toUpperCase()
+    if (outcome === 'COMPLETED') {
+      const title = (m.properties.hs_meeting_title ?? '').toLowerCase()
+      if (title.includes('demo') || title.includes('demonstration')) row.demos++
+    }
     ownerMeetings.set(oid, row)
   }
 
