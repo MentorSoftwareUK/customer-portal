@@ -367,13 +367,15 @@ onMounted(() => {
                   <div class="truncate text-sm font-semibold text-white/90 group-hover:text-amber-300 transition-colors">{{ cust.name }}</div>
                   <div class="mt-0.5 flex items-center gap-1.5">
                     <span class="text-xs text-white/50">{{ cust.owner }}</span>
-                    <span v-if="cust.isPreReg" class="rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-purple-300 border border-purple-500/20">Pre-reg</span>
                   </div>
                 </div>
                 <div class="flex flex-col items-end gap-1 shrink-0">
-                  <span class="rounded-full bg-white/[0.06] px-2 py-0.5 text-xs font-bold tabular-nums text-white/80">
-                    Day {{ cust.daysSinceStart }}
-                  </span>
+                  <div class="flex items-center gap-1.5">
+                    <span v-if="cust.isPreReg" class="rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-purple-300 border border-purple-500/20">Pre-reg</span>
+                    <span class="rounded-full bg-white/[0.06] px-2 py-0.5 text-xs font-bold tabular-nums text-white/80">
+                      Day {{ cust.daysSinceStart }}
+                    </span>
+                  </div>
                   <svg class="h-3.5 w-3.5 text-white/30 group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                 </div>
               </div>
