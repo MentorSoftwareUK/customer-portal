@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { getAdminAccessToken } from '../../lib/auth'
 
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
 const BASE = `${API}/admin/old-crm`
 
-function getAdminToken() {
-  try { return localStorage.getItem('admin_access_token') || '' } catch { return '' }
-}
 function authHeaders(): Record<string, string> {
-  return { Authorization: `Bearer ${getAdminToken()}` }
+  const token = getAdminAccessToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
 type Contact = {
