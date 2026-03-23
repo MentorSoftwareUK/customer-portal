@@ -126,7 +126,7 @@ let cachedContacts: OldCrmContact[] | null = null
 function getAllContacts(): OldCrmContact[] {
   if (cachedContacts) return cachedContacts
 
-  const dir = join(__dirname, '..', '..', '..', '..', 'tmp', 'old crm')
+  const dir = join(process.cwd(), 'tmp', 'old crm')
   const all = [
     ...parseOldCrmCsv(join(dir, 'Wants to purchase.csv'), 'Wants to Purchase'),
     ...parseOldCrmCsv(join(dir, 'demo completed.csv'), 'Demo Completed'),
