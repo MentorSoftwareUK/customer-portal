@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from 'fastify'
 import { requireAdmin } from '../auth/requireAdmin'
 import { readFileSync, existsSync } from 'fs'
 import { join, sep } from 'path'
+import { env } from '../env'
 
 /** Walk up from cwd to find the monorepo root (parent of /apps). */
 function repoRoot(): string {
@@ -25,7 +26,9 @@ export type OldCrmContact = {
   postcode: string
   role: string
   provisionType: string
-  source: string // which CSV: "Wants to Purchase" | "Demo Completed" | "Interested in Demo"
+  source: string
+  hubspotMatch: 'customer' | 'past_customer' | 'in_hubspot' | 'not_found'
+  hubspotCompany: string
 }
 
 /* ================================================================== */
@@ -120,6 +123,8 @@ function parseOldCrmCsv(filePath: string, source: string): OldCrmContact[] {
       role: g(26),
       provisionType: g(52),
       source,
+      hubspotMatch: 'not_found',
+      hubspotCompany: '',
     })
   }
 
@@ -147,6 +152,144 @@ function getAllContacts(): OldCrmContact[] {
 }
 
 /* ================================================================== */
+/*  HubSpot cross-reference                                           */
+/* ================================================================== */
+
+const HUBSPOT_BASE = 'https://api.hubapi.com'
+
+async function hsFetch(path: string, init?: RequestInit): Promise<Response> {
+  const token = env.HUBSPOT_PRIVATE_APP_TOKEN
+  if (!token) throw new Error('HUBSPOT_PRIVATE_APP_TOKEN not set')
+  return fetch(`${HUBSPOT_BASE}${path}`, {
+    ...init,
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(init?.headers as Record<string, string> ?? {}) },
+  })
+}
+
+/** Paginated search for companies matching a filter. */
+async function searchCompanies(
+  filterGroups: unknown[],
+  properties: string[],
+): Promise<Array<{ id: string; properties: Record<string, string> }>> {
+  const results: Array<{ id: string; properties: Record<string, string> }> = []
+  let after: string | undefined
+  for (let page = 0; page < 30; page++) {
+    const res = await hsFetch('/crm/v3/objects/companies/search', {
+      method: 'POST',
+      body: JSON.stringify({ filterGroups, properties, limit: 100, ...(after ? { after } : {}) }),
+    })
+    if (!res.ok) break
+    const json = (await res.json()) as {
+      results: Array<{ id: string; properties: Record<string, string> }>
+      paging?: { next?: { after: string } }
+    }
+    for (const r of json.results) results.push(r)
+    after = json.paging?.next?.after
+    if (!after) break
+  }
+  return results
+}
+
+/** Paginated search for contacts matching a filter. */
+async function searchContacts(
+  filterGroups: unknown[],
+  properties: string[],
+): Promise<Array<{ id: string; properties: Record<string, string> }>> {
+  const results: Array<{ id: string; properties: Record<string, string> }> = []
+  let after: string | undefined
+  for (let page = 0; page < 30; page++) {
+    const res = await hsFetch('/crm/v3/objects/contacts/search', {
+      method: 'POST',
+      body: JSON.stringify({ filterGroups, properties, limit: 100, ...(after ? { after } : {}) }),
+    })
+    if (!res.ok) break
+    const json = (await res.json()) as {
+      results: Array<{ id: string; properties: Record<string, string> }>
+      paging?: { next?: { after: string } }
+    }
+    for (const r of json.results) results.push(r)
+    after = json.paging?.next?.after
+    if (!after) break
+  }
+  return results
+}
+
+function normalise(s: string): string {
+  return s.toLowerCase().replace(/\b(ltd|limited|plc|inc|llc|group|uk)\b/g, '').replace(/[^a-z0-9]/g, '').trim()
+}
+
+let enrichedCache: OldCrmContact[] | null = null
+let enrichedCacheTs = 0
+const CACHE_TTL = 10 * 60 * 1000 // 10 min
+
+async function getEnrichedContacts(): Promise<OldCrmContact[]> {
+  const now = Date.now()
+  if (enrichedCache && now - enrichedCacheTs < CACHE_TTL) return enrichedCache
+
+  const contacts = getAllContacts().map((c) => ({ ...c })) // clone
+
+  try {
+    // 1. Fetch all companies that are/were customers
+    const [paying, past] = await Promise.all([
+      searchCompanies(
+        [{ filters: [{ propertyName: 'salesstatus', operator: 'EQ', value: 'paying_customer' }] }],
+        ['name', 'domain', 'salesstatus'],
+      ),
+      searchCompanies(
+        [{ filters: [{ propertyName: 'salesstatus', operator: 'EQ', value: 'Past Customer' }] }],
+        ['name', 'domain', 'salesstatus'],
+      ),
+    ])
+
+    // 2. Also fetch all HubSpot contacts to match by email
+    const hsContacts = await searchContacts(
+      [{ filters: [{ propertyName: 'email', operator: 'HAS_PROPERTY' }] }],
+      ['email', 'company'],
+    )
+    const hsEmailSet = new Set(hsContacts.map((c) => (c.properties.email || '').toLowerCase().trim()).filter(Boolean))
+
+    // 3. Build lookup maps by normalised company name
+    type CompanyInfo = { name: string; status: 'customer' | 'past_customer' }
+    const companyMap = new Map<string, CompanyInfo>()
+
+    for (const c of paying) {
+      const name = (c.properties.name || '').trim()
+      if (name) companyMap.set(normalise(name), { name, status: 'customer' })
+    }
+    for (const c of past) {
+      const name = (c.properties.name || '').trim()
+      const key = normalise(name)
+      if (name && !companyMap.has(key)) companyMap.set(key, { name, status: 'past_customer' })
+    }
+
+    // 4. Match old CRM contacts
+    for (const c of contacts) {
+      // Try company name match first
+      const normCompany = normalise(c.company)
+      const companyHit = normCompany ? companyMap.get(normCompany) : undefined
+      if (companyHit) {
+        c.hubspotMatch = companyHit.status
+        c.hubspotCompany = companyHit.name
+        continue
+      }
+
+      // Try email match
+      const emailLc = c.email.toLowerCase().trim()
+      if (emailLc && hsEmailSet.has(emailLc)) {
+        c.hubspotMatch = 'in_hubspot'
+        continue
+      }
+    }
+  } catch (err) {
+    console.error('[old-crm] HubSpot enrichment failed, returning unenriched data:', (err as Error).message)
+  }
+
+  enrichedCache = contacts
+  enrichedCacheTs = now
+  return contacts
+}
+
+/* ================================================================== */
 /*  Route                                                             */
 /* ================================================================== */
 
@@ -154,7 +297,7 @@ const routes: FastifyPluginAsync = async (app) => {
   app.addHook('onRequest', requireAdmin)
 
   app.get('/', async () => {
-    const contacts = getAllContacts()
+    const contacts = await getEnrichedContacts()
     return { contacts }
   })
 }

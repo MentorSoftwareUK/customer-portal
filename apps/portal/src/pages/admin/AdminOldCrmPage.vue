@@ -20,6 +20,8 @@ type Contact = {
   role: string
   provisionType: string
   source: string
+  hubspotMatch: 'customer' | 'past_customer' | 'in_hubspot' | 'not_found'
+  hubspotCompany: string
 }
 
 const contacts = ref<Contact[]>([])
@@ -27,6 +29,7 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const search = ref('')
 const sourceFilter = ref<string>('all')
+const statusFilter = ref<string>('all')
 
 async function load() {
   loading.value = true
@@ -52,6 +55,9 @@ const filtered = computed(() => {
   let list = contacts.value
   if (sourceFilter.value !== 'all') {
     list = list.filter((c) => c.source === sourceFilter.value)
+  }
+  if (statusFilter.value !== 'all') {
+    list = list.filter((c) => c.hubspotMatch === statusFilter.value)
   }
   const q = search.value.toLowerCase().trim()
   if (q) {
@@ -99,6 +105,13 @@ onMounted(load)
             {{ s === 'all' ? 'All sources' : s }}
           </option>
         </select>
+        <select v-model="statusFilter" class="ui-input">
+          <option value="all">All statuses</option>
+          <option value="customer">Customer</option>
+          <option value="past_customer">Past Customer</option>
+          <option value="in_hubspot">In HubSpot</option>
+          <option value="not_found">Not Found</option>
+        </select>
       </div>
     </div>
 
@@ -127,12 +140,13 @@ onMounted(load)
             <th class="px-4 py-3">Role</th>
             <th class="px-4 py-3">Provision Type</th>
             <th class="px-4 py-3">Source</th>
+            <th class="px-4 py-3">HubSpot Status</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
           <tr v-for="(c, i) in filtered" :key="i" class="hover:bg-gray-50">
-            <td class="whitespace-nowrap px-4 py-3 font-medium text-gray-900">{{ c.name }}</td>
-            <td class="whitespace-nowrap px-4 py-3 text-gray-900">{{ c.company }}</td>
+            <td class="px-4 py-3 font-medium text-gray-900">{{ c.name }}</td>
+            <td class="px-4 py-3 text-gray-900">{{ c.company }}</td>
             <td class="whitespace-nowrap px-4 py-3">
               <a v-if="c.phone" :href="'tel:' + c.phone" class="text-blue-600 hover:underline">{{ c.phone }}</a>
               <span v-else class="text-gray-300">&mdash;</span>
@@ -141,10 +155,10 @@ onMounted(load)
               <a v-if="c.email" :href="'mailto:' + c.email" class="text-blue-600 hover:underline">{{ c.email }}</a>
               <span v-else class="text-gray-300">&mdash;</span>
             </td>
-            <td class="max-w-[200px] truncate px-4 py-3" :title="c.address">{{ c.address || '—' }}</td>
+            <td class="px-4 py-3" :title="c.address">{{ c.address || '—' }}</td>
             <td class="whitespace-nowrap px-4 py-3">{{ c.postcode || '—' }}</td>
-            <td class="whitespace-nowrap px-4 py-3 text-gray-500">{{ c.role || '—' }}</td>
-            <td class="whitespace-nowrap px-4 py-3 text-gray-500">{{ c.provisionType || '—' }}</td>
+            <td class="px-4 py-3 text-gray-500">{{ c.role || '—' }}</td>
+            <td class="px-4 py-3 text-gray-500">{{ c.provisionType || '—' }}</td>
             <td class="whitespace-nowrap px-4 py-3">
               <span
                 class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
@@ -155,9 +169,21 @@ onMounted(load)
                 }"
               >{{ c.source }}</span>
             </td>
+            <td class="whitespace-nowrap px-4 py-3">
+              <span
+                class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                :class="{
+                  'bg-green-100 text-green-800': c.hubspotMatch === 'customer',
+                  'bg-orange-100 text-orange-800': c.hubspotMatch === 'past_customer',
+                  'bg-blue-100 text-blue-800': c.hubspotMatch === 'in_hubspot',
+                  'bg-gray-100 text-gray-500': c.hubspotMatch === 'not_found',
+                }"
+              >{{ c.hubspotMatch === 'customer' ? 'Customer' : c.hubspotMatch === 'past_customer' ? 'Past Customer' : c.hubspotMatch === 'in_hubspot' ? 'In HubSpot' : 'Not Found' }}</span>
+              <span v-if="c.hubspotCompany" class="ml-1 text-xs text-gray-400">{{ c.hubspotCompany }}</span>
+            </td>
           </tr>
           <tr v-if="filtered.length === 0">
-            <td colspan="9" class="px-4 py-8 text-center text-gray-400">No contacts found</td>
+            <td colspan="10" class="px-4 py-8 text-center text-gray-400">No contacts found</td>
           </tr>
         </tbody>
       </table>
