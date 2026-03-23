@@ -1,7 +1,16 @@
 import type { FastifyPluginAsync } from 'fastify'
 import { requireAdmin } from '../auth/requireAdmin'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, existsSync } from 'fs'
+import { join, sep } from 'path'
+
+/** Walk up from cwd to find the monorepo root (parent of /apps). */
+function repoRoot(): string {
+  const cwd = process.cwd()
+  const parts = cwd.split(sep)
+  const appsIdx = parts.lastIndexOf('apps')
+  if (appsIdx > 0) return parts.slice(0, appsIdx).join(sep) || sep
+  return cwd
+}
 
 /* ================================================================== */
 /*  Types                                                             */
@@ -126,7 +135,7 @@ let cachedContacts: OldCrmContact[] | null = null
 function getAllContacts(): OldCrmContact[] {
   if (cachedContacts) return cachedContacts
 
-  const dir = join(process.cwd(), 'tmp', 'old crm')
+  const dir = join(repoRoot(), 'tmp', 'old crm')
   const all = [
     ...parseOldCrmCsv(join(dir, 'Wants to purchase.csv'), 'Wants to Purchase'),
     ...parseOldCrmCsv(join(dir, 'demo completed.csv'), 'Demo Completed'),
