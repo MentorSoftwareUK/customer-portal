@@ -55,7 +55,7 @@ function parseCsvLine(line: string): string[] {
 
 function parseCsvFile(content: string): string[][] {
   return content
-    .split(/\r?\n/)
+    .split(/\r\n|\r|\n/)
     .filter((line) => line.trim().length > 0)
     .map(parseCsvLine)
 }
