@@ -32,6 +32,7 @@ const AdminNotificationsPage = () => import('./pages/admin/AdminNotificationsPag
 const AdminLoginPage = () => import('./pages/admin/AdminLoginPage.vue')
 const AdminHubspotAuditPage = () => import('./pages/admin/AdminHubspotAuditPage.vue')
 const AdminProviderScraperPage = () => import('./pages/admin/AdminProviderScraperPage.vue')
+const AdminOldCrmPage = () => import('./pages/admin/AdminOldCrmPage.vue')
 const AdminTicketStatsPage = () => import('./pages/admin/AdminTicketStatsPage.vue')
 const AdminDashboardPage = () => import('./pages/admin/AdminDashboardPage.vue')
 const AdminMarketingPage = () => import('./pages/admin/AdminMarketingPage.vue')
@@ -91,6 +92,7 @@ export const routes: RouteRecordRaw[] = [
       { path: 'hubspot-audit', redirect: '/admin/tools/hubspot-audit' },
       { path: 'tools/hubspot-audit', component: AdminHubspotAuditPage },
       { path: 'tools/provider-scraper', component: AdminProviderScraperPage },
+      { path: 'tools/old-crm', component: AdminOldCrmPage },
       { path: 'ticket-stats', component: AdminTicketStatsPage },
     ],
   },

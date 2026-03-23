@@ -621,7 +621,6 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     '193457719': 'Liam Kotecha',
     '231709811': 'Joe Hardstaff',
     '29942907': 'Josh Ireland',
-    '78021788': 'Jonathan Hebbes',
     '29285963': 'Dean Bennett',
     '508706004': 'Ian Born',
   }

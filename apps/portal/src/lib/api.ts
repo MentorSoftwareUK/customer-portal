@@ -797,6 +797,7 @@ export type OpsStats = {
     activityThisMonth: number
     meetings: number
     demos: number
+    tickets: number
     lastActivityDate: string | null
     health: 'green' | 'amber' | 'red'
     members: Array<{
@@ -809,6 +810,7 @@ export type OpsStats = {
       notes: number
       meetings: number
       demos: number
+      tickets: number
       lastActivity: string | null
     }>
   }>

@@ -595,6 +595,15 @@ onUnmounted(() => {
                   <span>Provider Scraper</span>
                 </RouterLink>
               </li>
+              <li>
+                <RouterLink
+                  to="/admin/tools/old-crm"
+                  class="group flex items-center rounded-lg p-2 pl-11 text-sm font-medium"
+                  :class="isActive('/admin/tools/old-crm') ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'"
+                >
+                  <span>Old CRM Data</span>
+                </RouterLink>
+              </li>
             </ul>
           </li>
 

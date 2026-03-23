@@ -30,6 +30,7 @@ export type OpsDto = {
     health: 'green' | 'amber' | 'red'
     meetings: number
     demos: number
+    tickets: number
     members: Array<{
       name: string
       ownerId: string
@@ -40,6 +41,7 @@ export type OpsDto = {
       notes: number
       meetings: number
       demos: number
+      tickets: number
       lastActivity: string | null
     }>
   }>
@@ -459,6 +461,30 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
   const emailsPrev = await fetchEngagements('emails', prevStart, prevEnd)
   const notesFocus = await fetchEngagements('notes', focusStart, focusEnd)
   const notesPrev = await fetchEngagements('notes', prevStart, prevEnd)
+
+  /* ── TICKETS (Support team primary metric) ── */
+  const TICKET_PROPS = ['hubspot_owner_id', 'hs_pipeline_stage', 'createdate']
+  const ticketsFocus = await safeSearch(
+    'tickets',
+    {
+      filterGroups: [
+        {
+          filters: [
+            { propertyName: 'createdate', operator: 'GTE', value: focusStart },
+            { propertyName: 'createdate', operator: 'LT', value: focusEnd },
+          ],
+        },
+      ],
+    },
+    TICKET_PROPS,
+  )
+
+  /* Tally tickets per owner */
+  const ownerTickets = new Map<string, number>()
+  for (const t of ticketsFocus) {
+    const oid = t.properties.hubspot_owner_id ?? 'unknown'
+    ownerTickets.set(oid, (ownerTickets.get(oid) ?? 0) + 1)
+  }
 
   /* ────────────────────────────────────────────────────────────────
      PHASE 3: PAYING COMPANIES (for handoff + inactive)
@@ -881,7 +907,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       const row = ensureOwnerEng(oid)
       row[field]++
       const ts = e.properties.hs_timestamp ? new Date(e.properties.hs_timestamp).getTime() : 0
-      if (ts > row.lastTs) row.lastTs = ts
+      if (ts > row.lastTs && ts <= Date.now()) row.lastTs = ts
     }
   }
 
@@ -905,8 +931,9 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     ownerMeetings.set(oid, row)
 
     // Include meeting timestamp in lastActivity so meetings update "last active"
+    // Only count meetings that have already started (not future scheduled ones)
     const mTs = m.properties.hs_meeting_start_time ? new Date(m.properties.hs_meeting_start_time).getTime() : 0
-    if (mTs > 0) {
+    if (mTs > 0 && mTs <= Date.now()) {
       const eng = ensureOwnerEng(oid)
       if (mTs > eng.lastTs) eng.lastTs = mTs
     }
@@ -916,7 +943,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
      SECTION 2: DEPARTMENT HEALTH
   ────────────────────────────────── */
 
-  const allOwnerIds = new Set([...ownerTasks.keys(), ...ownerEng.keys()])
+  const allOwnerIds = new Set([...ownerTasks.keys(), ...ownerEng.keys(), ...ownerTickets.keys()])
   for (const [oid, info] of owners.entries()) {
     const dept = getDept(info.full)
     if (ACTIVE_DEPTS.includes(dept)) allOwnerIds.add(oid)
@@ -940,6 +967,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     notes: number
     meetings: number
     demos: number
+    tickets: number
     lastActivity: string | null
     completedFocus: number
     completedPrev: number
@@ -954,6 +982,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     const tk = ownerTasks.get(oid) ?? { open: 0, overdue: 0, completedFocus: 0, completedPrev: 0 }
     const eg = ownerEng.get(oid) ?? { calls: 0, emails: 0, notes: 0, lastTs: 0 }
     const mt = ownerMeetings.get(oid) ?? { total: 0, demos: 0 }
+    const tix = ownerTickets.get(oid) ?? 0
 
     // Also consider admin portal login as activity
     let effectiveLastTs = eg.lastTs
@@ -977,6 +1006,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       notes: eg.notes,
       meetings: mt.total,
       demos: mt.demos,
+      tickets: tix,
       lastActivity: effectiveLastTs > 0 ? new Date(effectiveLastTs).toISOString() : null,
       completedFocus: tk.completedFocus,
       completedPrev: tk.completedPrev,
@@ -1000,6 +1030,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
     const activity = members.reduce((s, m) => s + m.calls + m.emails + m.notes + m.meetings, 0)
     const meetings = members.reduce((s, m) => s + m.meetings, 0)
     const demos = members.reduce((s, m) => s + m.demos, 0)
+    const tickets = members.reduce((s, m) => s + m.tickets, 0)
     const latestTs = Math.max(
       ...members.map((m) => (m.lastActivity ? new Date(m.lastActivity).getTime() : 0)),
     )
@@ -1020,6 +1051,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
       activityThisMonth: activity,
       meetings,
       demos,
+      tickets,
       lastActivityDate,
       health,
       members: members
@@ -1033,6 +1065,7 @@ async function buildOpsStats(month?: string): Promise<OpsDto> {
           notes: m.notes,
           meetings: m.meetings,
           demos: m.demos,
+          tickets: m.tickets,
           lastActivity: m.lastActivity,
         }))
         .sort((a, b) => b.calls + b.emails + b.notes + b.meetings - (a.calls + a.emails + a.notes + a.meetings)),

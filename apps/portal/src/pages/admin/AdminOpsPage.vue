@@ -185,6 +185,7 @@ onMounted(() => void loadOps())
                   </div>
                   <div><span class="text-white/50">Meetings </span><span class="font-bold text-teal-400">{{ dept.meetings }}</span></div>
                   <div v-if="dept.department === 'Sales'"><span class="text-white/50">Demos </span><span class="font-bold text-cyan-400">{{ dept.demos }}</span></div>
+                  <div v-if="dept.department === 'Support'"><span class="text-white/50">Tickets </span><span class="font-bold text-orange-400">{{ dept.tickets }}</span></div>
                   <div><span class="text-white/50">Activity </span><span class="font-bold text-white">{{ dept.activityThisMonth }}</span></div>
                   <div v-if="dept.lastActivityDate" class="text-white/50">
                     Last: {{ relativeDate(dept.lastActivityDate) }}
@@ -202,19 +203,20 @@ onMounted(() => void loadOps())
               <!-- Expanded members -->
               <div v-if="expandedDepts.has(dept.department)" class="border-t border-white/[0.04] bg-white/[0.01]">
                 <div class="grid gap-1 px-4 py-1.5 text-xs uppercase tracking-wider text-white/50 border-b border-white/[0.04]"
-                  :class="dept.department === 'Sales' ? 'grid-cols-[1fr_repeat(7,_60px)_100px]' : 'grid-cols-[1fr_repeat(6,_60px)_100px]'"
+                  :class="dept.department === 'Sales' || dept.department === 'Support' ? 'grid-cols-[1fr_repeat(7,_60px)_100px]' : 'grid-cols-[1fr_repeat(6,_60px)_100px]'"
                 >
                   <span>Name</span><span class="text-center">Open</span><span class="text-center">Overdue</span>
                   <span class="text-center">Calls</span><span class="text-center">Emails</span><span class="text-center">Notes</span>
                   <span class="text-center">Meetings</span>
                   <span v-if="dept.department === 'Sales'" class="text-center">Demos</span>
+                  <span v-if="dept.department === 'Support'" class="text-center">Tickets</span>
                   <span class="text-right">Last activity</span>
                 </div>
                 <div
                   v-for="member in dept.members"
                   :key="member.ownerId"
                   class="grid gap-1 items-center px-4 py-2 text-sm border-b border-white/[0.03] last:border-0"
-                  :class="dept.department === 'Sales' ? 'grid-cols-[1fr_repeat(7,_60px)_100px]' : 'grid-cols-[1fr_repeat(6,_60px)_100px]'"
+                  :class="dept.department === 'Sales' || dept.department === 'Support' ? 'grid-cols-[1fr_repeat(7,_60px)_100px]' : 'grid-cols-[1fr_repeat(6,_60px)_100px]'"
                 >
                   <span class="text-white/80">{{ member.name }}</span>
                   <span class="text-center tabular-nums text-white/80">{{ member.openTasks }}</span>
@@ -224,6 +226,7 @@ onMounted(() => void loadOps())
                   <span class="text-center tabular-nums text-purple-400">{{ member.notes }}</span>
                   <span class="text-center tabular-nums text-teal-400">{{ member.meetings }}</span>
                   <span v-if="dept.department === 'Sales'" class="text-center tabular-nums text-cyan-400">{{ member.demos }}</span>
+                  <span v-if="dept.department === 'Support'" class="text-center tabular-nums text-orange-400">{{ member.tickets }}</span>
                   <span class="text-right text-white/50 text-xs">{{ member.lastActivity ? relativeDate(member.lastActivity) : '—' }}</span>
                 </div>
               </div>

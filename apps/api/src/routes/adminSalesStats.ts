@@ -194,7 +194,6 @@ const OWNER_MAP: Record<string, string> = {
   '193457719': 'Liam Kotecha',
   '231709811': 'Joe Hardstaff',
   '29942907': 'Josh Ireland',
-  '78021788': 'Jonathan Hebbes',
 }
 
 const STAGE_MAP: Record<string, { label: string; order: number }> = {

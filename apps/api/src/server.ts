@@ -34,6 +34,7 @@ import { adminSalesStatsRoutes } from './routes/adminSalesStats'
 import { adminCustomerSuccessRoutes } from './routes/adminCustomerSuccess'
 import { adminOpsRoutes } from './routes/adminOps'
 import { adminProviderScraperRoutes } from './routes/adminProviderScraper'
+import { adminOldCrmRoutes } from './routes/adminOldCrm'
 import { startEmailWorker } from './jobs/emailWorker'
 import { ensureSeedAdmin } from './store/adminUsers'
 
@@ -106,6 +107,7 @@ export async function buildServer() {
   await app.register(adminCustomerSuccessRoutes, { prefix: '/admin/customer-success' })
   await app.register(adminOpsRoutes, { prefix: '/admin/ops' })
   await app.register(adminProviderScraperRoutes, { prefix: '/admin/provider-scraper' })
+  await app.register(adminOldCrmRoutes, { prefix: '/admin/old-crm' })
   await app.register(usersRoutes, { prefix: '/admin/users' })
   await app.register(eventsRoutes, { prefix: '/events' })
   await app.register(stripeRoutes, { prefix: '/stripe' })

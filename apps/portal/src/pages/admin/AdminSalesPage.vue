@@ -139,7 +139,6 @@ const AGENT_COLORS: Record<string, string> = {
   'Liam Kotecha': '#f472b6',
   'Joe Hardstaff': '#38bdf8',
   'Josh Ireland': '#a855f7',
-  'Jonathan Hebbes': '#f97316',
 }
 
 function agentColor(name: string): string {
