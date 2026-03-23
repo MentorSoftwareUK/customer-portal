@@ -17,6 +17,8 @@ function repoRoot(): string {
 /*  Types                                                             */
 /* ================================================================== */
 
+export type HubSpotStatus = 'customer' | 'past_customer' | 'in_pipeline' | 'lead' | 'subscriber' | 'other' | 'not_found'
+
 export type OldCrmContact = {
   name: string
   company: string
@@ -27,8 +29,9 @@ export type OldCrmContact = {
   role: string
   provisionType: string
   source: string
-  hubspotMatch: 'customer' | 'past_customer' | 'in_hubspot' | 'not_found'
+  hubspotMatch: HubSpotStatus
   hubspotCompany: string
+  hubspotDetail: string   // lifecycle stage or extra context
 }
 
 /* ================================================================== */
@@ -125,6 +128,7 @@ function parseOldCrmCsv(filePath: string, source: string): OldCrmContact[] {
       source,
       hubspotMatch: 'not_found',
       hubspotCompany: '',
+      hubspotDetail: '',
     })
   }
 
@@ -241,12 +245,20 @@ async function getEnrichedContacts(): Promise<OldCrmContact[]> {
       ),
     ])
 
-    // 2. Also fetch all HubSpot contacts to match by email
+    // 2. Fetch all HubSpot contacts (with lifecycle stage) to match by email
     const hsContacts = await searchContacts(
       [{ filters: [{ propertyName: 'email', operator: 'HAS_PROPERTY' }] }],
-      ['email', 'company'],
+      ['email', 'company', 'lifecyclestage', 'hs_lead_status', 'associatedcompanyid'],
     )
-    const hsEmailSet = new Set(hsContacts.map((c) => (c.properties.email || '').toLowerCase().trim()).filter(Boolean))
+    const hsEmailMap = new Map<string, { company: string; lifecycle: string; leadStatus: string }>()
+    for (const hc of hsContacts) {
+      const em = (hc.properties.email || '').toLowerCase().trim()
+      if (em) hsEmailMap.set(em, {
+        company: (hc.properties.company || '').trim(),
+        lifecycle: (hc.properties.lifecyclestage || '').toLowerCase(),
+        leadStatus: (hc.properties.hs_lead_status || '').trim(),
+      })
+    }
 
     // 3. Build lookup maps by normalised company name
     type CompanyInfo = { name: string; status: 'customer' | 'past_customer' }
@@ -270,13 +282,32 @@ async function getEnrichedContacts(): Promise<OldCrmContact[]> {
       if (companyHit) {
         c.hubspotMatch = companyHit.status
         c.hubspotCompany = companyHit.name
+        c.hubspotDetail = companyHit.status === 'customer' ? 'Active customer' : 'Churned'
         continue
       }
 
-      // Try email match
+      // Try email match — classify by lifecycle stage
       const emailLc = c.email.toLowerCase().trim()
-      if (emailLc && hsEmailSet.has(emailLc)) {
-        c.hubspotMatch = 'in_hubspot'
+      const hsHit = emailLc ? hsEmailMap.get(emailLc) : undefined
+      if (hsHit) {
+        const lc = hsHit.lifecycle
+        if (lc === 'customer') {
+          c.hubspotMatch = 'customer'
+          c.hubspotDetail = 'Customer (via contact)'
+        } else if (lc === 'opportunity' || lc === 'salesqualifiedlead') {
+          c.hubspotMatch = 'in_pipeline'
+          c.hubspotDetail = lc === 'opportunity' ? 'Opportunity' : 'SQL'
+        } else if (lc === 'marketingqualifiedlead' || lc === 'lead') {
+          c.hubspotMatch = 'lead'
+          c.hubspotDetail = lc === 'marketingqualifiedlead' ? 'MQL' : 'Lead'
+        } else if (lc === 'subscriber') {
+          c.hubspotMatch = 'subscriber'
+          c.hubspotDetail = 'Subscriber'
+        } else {
+          c.hubspotMatch = 'other'
+          c.hubspotDetail = lc || 'Contact exists'
+        }
+        if (hsHit.company) c.hubspotCompany = hsHit.company
         continue
       }
     }
@@ -298,7 +329,31 @@ const routes: FastifyPluginAsync = async (app) => {
 
   app.get('/', async () => {
     const contacts = await getEnrichedContacts()
-    return { contacts }
+
+    const hasEmail = contacts.filter((c) => c.email).length
+    const hasPhone = contacts.filter((c) => c.phone).length
+    const hasEmailAndPhone = contacts.filter((c) => c.email && c.phone).length
+    const byStatus: Record<string, number> = {}
+    for (const c of contacts) byStatus[c.hubspotMatch] = (byStatus[c.hubspotMatch] || 0) + 1
+    const reEngageable = contacts.filter((c) => c.email && c.hubspotMatch === 'not_found').length
+
+    return {
+      contacts,
+      stats: {
+        total: contacts.length,
+        hasEmail,
+        hasPhone,
+        hasEmailAndPhone,
+        reEngageable,
+        customer: byStatus.customer || 0,
+        pastCustomer: byStatus.past_customer || 0,
+        inPipeline: byStatus.in_pipeline || 0,
+        lead: byStatus.lead || 0,
+        subscriber: byStatus.subscriber || 0,
+        other: byStatus.other || 0,
+        notFound: byStatus.not_found || 0,
+      },
+    }
   })
 }
 
