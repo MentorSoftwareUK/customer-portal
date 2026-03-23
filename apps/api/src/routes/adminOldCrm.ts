@@ -142,10 +142,7 @@ function getAllContacts(): OldCrmContact[] {
 /* ================================================================== */
 
 const routes: FastifyPluginAsync = async (app) => {
-  app.addHook('preHandler', async (req, reply) => {
-    const ok = await requireAdmin(req, reply)
-    if (!ok) return reply
-  })
+  app.addHook('onRequest', requireAdmin)
 
   app.get('/', async () => {
     const contacts = getAllContacts()
