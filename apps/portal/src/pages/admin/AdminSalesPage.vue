@@ -290,7 +290,7 @@ onMounted(() => {
           <div class="mt-4 flex items-end gap-6">
             <span class="text-5xl font-bold tabular-nums text-white">{{ sales.freeCustomers.conversionRate ?? 0 }}<span class="text-3xl text-white/40">%</span></span>
             <span class="mb-1 text-sm text-white/50">
-              {{ sales.freeCustomers.converted ?? 0 }} of {{ sales.freeCustomers.totalFreeCompanies ?? 0 }} free companies converted to paid
+              {{ sales.freeCustomers.converted ?? 0 }} of {{ sales.freeCustomers.totalFreeCompanies ?? 0 }} pre-registered companies converted to paid
             </span>
           </div>
 

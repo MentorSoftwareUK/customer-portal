@@ -704,150 +704,141 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     : null
 
   /* ── Free customer stats (company-level, all-time) ── */
-  const preRegWon = preRegClosedDeals.filter((d) => d.properties.dealstage === '4014021838')
-  const preRegLost = preRegClosedDeals.filter((d) => d.properties.dealstage === '4014021839')
-  const isFreeWon = (d: HsDeal) =>
-    d.properties.pipeline === PREREG_PIPELINE_ID
-      ? d.properties.dealstage === '4014021838'
-      : (d.properties.dealstage === 'closedwon' && amt(d) === 0)
-  const isFreeLost = (d: HsDeal) =>
-    d.properties.pipeline === PREREG_PIPELINE_ID && d.properties.dealstage === '4014021839'
-
-  // Combine all-time won deals + pre-reg won + pre-reg lost for the full picture
-  const allDealsForFree = [...allTimeWonDeals, ...preRegWon, ...preRegLost, ...openDeals, ...preRegOpenDeals]
-  const uniqueDealIds = [...new Set(allDealsForFree.map((d) => d.id))]
-  const dealToCompany = uniqueDealIds.length > 0
-    ? await batchDealCompanyMap(uniqueDealIds)
+  // Collect ALL pre-reg pipeline deals (won + lost + open) to find every company that entered the free trial
+  const allPreRegDeals = [...preRegClosedDeals, ...preRegOpenDeals]
+  const preRegDealIds = [...new Set(allPreRegDeals.map((d) => d.id))]
+  const preRegDealToCompany = preRegDealIds.length > 0
+    ? await batchDealCompanyMap(preRegDealIds)
     : new Map<string, string>()
 
-  // Group all deals by company (deduplicated)
-  const companyDeals = new Map<string, HsDeal[]>()
-  const seenDealIds = new Set<string>()
-  for (const deal of allDealsForFree) {
-    if (seenDealIds.has(deal.id)) continue
-    seenDealIds.add(deal.id)
-    const cid = dealToCompany.get(deal.id)
+  // Unique companies that ever had a pre-reg pipeline deal = total free trial pool
+  const preRegCompanyIds = new Set<string>()
+  const preRegCompanyDeals = new Map<string, HsDeal[]>()
+  for (const deal of allPreRegDeals) {
+    const cid = preRegDealToCompany.get(deal.id)
     if (!cid) continue
-    if (!companyDeals.has(cid)) companyDeals.set(cid, [])
-    companyDeals.get(cid)!.push(deal)
+    preRegCompanyIds.add(cid)
+    if (!preRegCompanyDeals.has(cid)) preRegCompanyDeals.set(cid, [])
+    preRegCompanyDeals.get(cid)!.push(deal)
   }
 
-  // "Free company" = has at least one free won deal on or before the selected month
-  const freeCompanyIds = new Set<string>()
-  for (const [cid, deals] of companyDeals) {
-    if (deals.some((d) => isFreeWon(d) && (monthOfDeal(d) ?? '9999') <= currentMonthKey)) {
-      freeCompanyIds.add(cid)
-    }
-  }
-
-  // "Lost during trial" = pre-reg closed-lost company that never had a free won deal or paying deal
-  const lostDuringTrialIds = new Set<string>()
-  for (const [cid, deals] of companyDeals) {
-    if (freeCompanyIds.has(cid)) continue // already counted as free/converted
-    if (deals.some((d) => isFreeLost(d) && (monthOfDeal(d) ?? '9999') <= currentMonthKey)) {
-      lostDuringTrialIds.add(cid)
-    }
-  }
-
-  // Converted = free company that ALSO has a paying closedwon deal on or before selected month
-  const convertedIds = new Set<string>()
-  let convertedRevenue = 0
-  let convertedThisMonthCount = 0
-  let convertedRevenueThisMonth = 0
-  for (const cid of freeCompanyIds) {
-    const deals = companyDeals.get(cid)!
-    const payingWon = deals.filter(
-      (d) => d.properties.dealstage === 'closedwon'
-        && d.properties.pipeline === MAIN_PIPELINE_ID
-        && amt(d) > 0
-        && (monthOfDeal(d) ?? '9999') <= currentMonthKey,
-    )
-    if (payingWon.length > 0) {
-      convertedIds.add(cid)
-      convertedRevenue += payingWon.reduce((s, d) => s + amt(d), 0)
-      // Check if any paying deal closed in the selected month
-      const payingThisMonth = payingWon.filter((d) => monthOfDeal(d) === currentMonthKey)
-      if (payingThisMonth.length > 0) {
-        convertedThisMonthCount++
-        convertedRevenueThisMonth += payingThisMonth.reduce((s, d) => s + amt(d), 0)
-      }
-    }
-  }
-
-  const notConvertedCount = freeCompanyIds.size - convertedIds.size
-  const lostDuringTrialCount = lostDuringTrialIds.size
-  const totalEnquired = freeCompanyIds.size + lostDuringTrialCount
-  const conversionRate = totalEnquired > 0
-    ? Math.round((convertedIds.size / totalEnquired) * 100)
-    : 0
-
-  // Batch-fetch company names
-  const companyIdArr = [...freeCompanyIds, ...lostDuringTrialIds]
-  const companyNames = new Map<string, string>()
-  for (let i = 0; i < companyIdArr.length; i += 100) {
-    const batch = companyIdArr.slice(i, i + 100)
+  // Batch-fetch company details (name + salesstatus) for all pre-reg companies
+  const preRegCompanyArr = [...preRegCompanyIds]
+  const companyInfo = new Map<string, { name: string; salesstatus: string | null }>()
+  for (let i = 0; i < preRegCompanyArr.length; i += 100) {
+    const batch = preRegCompanyArr.slice(i, i + 100)
     const res = await hsFetch('/crm/v3/objects/companies/batch/read', {
       method: 'POST',
       body: JSON.stringify({
         inputs: batch.map((id) => ({ id })),
-        properties: ['name'],
+        properties: ['name', 'salesstatus'],
       }),
     })
     const json = (await res.json()) as { results: Array<{ id: string; properties: Record<string, string | null> }> }
     for (const c of json.results) {
-      companyNames.set(c.id, c.properties.name ?? `Company ${c.id}`)
+      companyInfo.set(c.id, {
+        name: c.properties.name ?? `Company ${c.id}`,
+        salesstatus: c.properties.salesstatus ?? null,
+      })
     }
   }
 
-  // Build detail list sorted: converted first (by revenue desc), then free, then lost (alpha)
+  // Also map pre-reg companies to their main-pipeline paying deals for revenue info
+  const mainPipelineDeals = [...allTimeWonDeals]
+  const mainDealIds = [...new Set(mainPipelineDeals.map((d) => d.id))]
+  const mainDealToCompany = mainDealIds.length > 0
+    ? await batchDealCompanyMap(mainDealIds)
+    : new Map<string, string>()
+  const preRegMainDeals = new Map<string, HsDeal[]>()
+  for (const deal of mainPipelineDeals) {
+    const cid = mainDealToCompany.get(deal.id)
+    if (!cid || !preRegCompanyIds.has(cid)) continue
+    if (!preRegMainDeals.has(cid)) preRegMainDeals.set(cid, [])
+    preRegMainDeals.get(cid)!.push(deal)
+  }
+
+  // Classify each pre-reg company by their current salesstatus
+  const convertedIds = new Set<string>()
+  const stillFreeIds = new Set<string>()
+  const lostDuringTrialIds = new Set<string>()
+  let convertedRevenue = 0
+  let convertedThisMonthCount = 0
+  let convertedRevenueThisMonth = 0
+
+  for (const cid of preRegCompanyIds) {
+    const info = companyInfo.get(cid)
+    const status = info?.salesstatus
+
+    if (status === 'paying_customer') {
+      // Converted: was pre-registered and is now a paying customer
+      convertedIds.add(cid)
+      const payingDeals = (preRegMainDeals.get(cid) ?? []).filter(
+        (d) => d.properties.dealstage === 'closedwon' && amt(d) > 0
+          && (monthOfDeal(d) ?? '9999') <= currentMonthKey,
+      )
+      convertedRevenue += payingDeals.reduce((s, d) => s + amt(d), 0)
+      const payingThisMonth = payingDeals.filter((d) => monthOfDeal(d) === currentMonthKey)
+      if (payingThisMonth.length > 0) {
+        convertedThisMonthCount++
+        convertedRevenueThisMonth += payingThisMonth.reduce((s, d) => s + amt(d), 0)
+      }
+    } else if (status === 'Past Customer') {
+      // Lost: was pre-registered but churned / never converted
+      lostDuringTrialIds.add(cid)
+    } else {
+      // Still on free trial (no salesstatus, or any other status)
+      stillFreeIds.add(cid)
+    }
+  }
+
+  const totalPreReg = preRegCompanyIds.size
+  const lostDuringTrialCount = lostDuringTrialIds.size
+  const notConvertedCount = stillFreeIds.size
+  const conversionRate = totalPreReg > 0
+    ? Math.round((convertedIds.size / totalPreReg) * 100)
+    : 0
+
+  // Build detail list sorted: converted first, then free, then lost
   const companies: Array<{ companyId: string; name: string; status: 'converted' | 'free' | 'lost'; revenue: number; freeDealName: string; convertedDate: string | null }> = []
-  for (const cid of freeCompanyIds) {
-    const deals = companyDeals.get(cid)!
-    const freeDeal = deals.find((d) => isFreeWon(d) && (monthOfDeal(d) ?? '9999') <= currentMonthKey)
-    const payingWon = deals.filter(
-      (d) => d.properties.dealstage === 'closedwon'
-        && d.properties.pipeline === MAIN_PIPELINE_ID
-        && amt(d) > 0
+  for (const cid of preRegCompanyIds) {
+    const info = companyInfo.get(cid)
+    const preRegDeals = preRegCompanyDeals.get(cid) ?? []
+    const freeDeal = preRegDeals[0] // first pre-reg deal as reference
+
+    let status: 'converted' | 'free' | 'lost' = 'free'
+    if (convertedIds.has(cid)) status = 'converted'
+    else if (lostDuringTrialIds.has(cid)) status = 'lost'
+
+    // Revenue from main pipeline paying deals (for converted companies)
+    const payingDeals = (preRegMainDeals.get(cid) ?? []).filter(
+      (d) => d.properties.dealstage === 'closedwon' && amt(d) > 0
         && (monthOfDeal(d) ?? '9999') <= currentMonthKey,
     )
-    const rev = payingWon.reduce((s, d) => s + amt(d), 0)
-    // Earliest paying deal close date = conversion date
+    const rev = payingDeals.reduce((s, d) => s + amt(d), 0)
+
     let convertedDate: string | null = null
-    if (payingWon.length > 0) {
-      const dates = payingWon
+    if (payingDeals.length > 0) {
+      const dates = payingDeals
         .map((d) => d.properties.hs_v2_date_entered_closedwon ?? d.properties.closedate)
         .filter(Boolean)
         .map((s) => new Date(s!))
         .sort((a, b) => a.getTime() - b.getTime())
       if (dates.length > 0) convertedDate = dates[0]!.toISOString()
     }
+
     companies.push({
       companyId: cid,
-      name: companyNames.get(cid) ?? `Company ${cid}`,
-      status: convertedIds.has(cid) ? 'converted' : 'free',
+      name: info?.name ?? `Company ${cid}`,
+      status,
       revenue: Math.round(rev * 100) / 100,
       freeDealName: freeDeal?.properties.dealname ?? '',
       convertedDate,
-    })
-  }
-  // Add lost-during-trial companies
-  for (const cid of lostDuringTrialIds) {
-    const deals = companyDeals.get(cid)!
-    const lostDeal = deals.find((d) => isFreeLost(d) && (monthOfDeal(d) ?? '9999') <= currentMonthKey)
-    companies.push({
-      companyId: cid,
-      name: companyNames.get(cid) ?? `Company ${cid}`,
-      status: 'lost',
-      revenue: 0,
-      freeDealName: lostDeal?.properties.dealname ?? '',
-      convertedDate: null,
     })
   }
   const statusOrder: Record<string, number> = { converted: 0, free: 1, lost: 2 }
   companies.sort((a, b) => {
     if (a.status !== b.status) return (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9)
     if (a.status === 'converted') {
-      // Most recently converted first
       const da = a.convertedDate ? new Date(a.convertedDate).getTime() : 0
       const db = b.convertedDate ? new Date(b.convertedDate).getTime() : 0
       return db - da
@@ -856,7 +847,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   })
 
   const freeCustomers = {
-    totalFreeCompanies: totalEnquired,
+    totalFreeCompanies: totalPreReg,
     converted: convertedIds.size,
     convertedRevenue: Math.round(convertedRevenue * 100) / 100,
     convertedThisMonth: convertedThisMonthCount,
@@ -926,8 +917,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   // Avg MRR per converted free company (from their paying deals)
   let convertedMrrTotal = 0
   for (const cid of convertedIds) {
-    const deals = companyDeals.get(cid)!
-    const payingWon = deals.filter(
+    const payingWon = (preRegMainDeals.get(cid) ?? []).filter(
       (d) => d.properties.dealstage === 'closedwon'
         && d.properties.pipeline === MAIN_PIPELINE_ID
         && amt(d) > 0,
