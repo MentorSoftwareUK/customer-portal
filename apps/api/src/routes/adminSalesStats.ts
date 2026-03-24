@@ -715,7 +715,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
   // Classify each pre-reg company by registration_status:
   //   'Pre-registered (Paid)' → converted
-  //   'Unregistered' + salesstatus='Past Customer' → lost during trial
+  //   'Unregistered' + salesstatus='Past Customer' or 'Off-boarding' → lost during trial
   //   'Unregistered' + anything else → still on free
   const convertedIds = new Set<string>()
   const stillFreeIds = new Set<string>()
@@ -739,7 +739,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
         convertedThisMonthCount++
         convertedRevenueThisMonth += payingThisMonth.reduce((s, d) => s + amt(d), 0)
       }
-    } else if (info?.salesstatus === 'Past Customer') {
+    } else if (info?.salesstatus === 'Past Customer' || info?.salesstatus === 'Off-boarding') {
       lostDuringTrialIds.add(cid)
     } else {
       stillFreeIds.add(cid)
