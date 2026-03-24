@@ -51,6 +51,7 @@ export type CustomerSuccessDto = {
     owner: string
     riskScore: number        // 0-100, higher = more at risk
     riskLevel: 'high' | 'medium' | 'low'
+    sentiment: 'healthy' | 'neutral' | 'at_risk' | null
     reasons: string[]
     daysSinceLastContact: number | null
     daysSinceLastMeeting: number | null
@@ -645,8 +646,19 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
       : null
     const salesActivities = parseInt(c.properties.num_notes ?? '0', 10) || 0
 
+    const sentiment = (c.properties.hs_csm_sentiment ?? '').toLowerCase() as 'healthy' | 'neutral' | 'at_risk' | ''
+    const sentimentValue: 'healthy' | 'neutral' | 'at_risk' | null = sentiment === 'healthy' || sentiment === 'neutral' || sentiment === 'at_risk' ? sentiment : null
+
     const reasons: string[] = []
     let score = 0
+
+    // Customer sentiment from CSM
+    if (sentiment === 'at_risk') {
+      reasons.push('Sentiment: At-Risk')
+      score += 30
+    } else if (sentiment === 'healthy') {
+      score -= 15
+    }
 
     // No contact in 90+ days => high risk signal
     if (daysSinceContact === null) {
@@ -700,6 +712,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
       owner: OWNER_NAMES[c.properties.hubspot_owner_id ?? ''] ?? 'Unassigned',
       riskScore: Math.min(score, 100),
       riskLevel,
+      sentiment: sentimentValue,
       reasons,
       daysSinceLastContact: daysSinceContact,
       daysSinceLastMeeting: daysSinceMeeting,

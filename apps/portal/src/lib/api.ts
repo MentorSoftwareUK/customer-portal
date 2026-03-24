@@ -722,6 +722,7 @@ export type CustomerSuccess = {
     owner: string
     riskScore: number
     riskLevel: 'high' | 'medium' | 'low'
+    sentiment: 'healthy' | 'neutral' | 'at_risk' | null
     reasons: string[]
     daysSinceLastContact: number | null
     daysSinceLastMeeting: number | null

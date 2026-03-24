@@ -500,6 +500,7 @@ onMounted(() => {
                   <th class="pb-2 pr-4 font-semibold text-white/60">Company</th>
                   <th class="pb-2 pr-4 font-semibold text-white/60">Owner</th>
                   <th class="pb-2 pr-4 text-center font-semibold text-white/60">Risk</th>
+                  <th class="pb-2 pr-4 text-center font-semibold text-white/60">Sentiment</th>
                   <th class="pb-2 pr-4 text-right font-semibold text-white/60">Contract start</th>
                   <th class="pb-2 pr-4 text-right font-semibold text-white/60">Last contact</th>
                   <th class="pb-2 pr-4 text-right font-semibold text-white/60">Last meeting</th>
@@ -519,6 +520,17 @@ onMounted(() => {
                       class="inline-flex rounded-full px-2 py-0.5 text-xs font-bold"
                       :class="c.riskLevel === 'high' ? 'bg-rose-500/15 text-rose-400' : c.riskLevel === 'medium' ? 'bg-amber-500/15 text-amber-400' : 'bg-sky-500/15 text-sky-400'"
                     >{{ c.riskScore }}</span>
+                  </td>
+                  <td class="py-2.5 pr-4 text-center">
+                    <span
+                      v-if="c.sentiment"
+                      class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
+                      :class="c.sentiment === 'at_risk' ? 'bg-rose-500/15 text-rose-400' : c.sentiment === 'healthy' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'"
+                    >
+                      <span class="h-1.5 w-1.5 rounded-full" :class="c.sentiment === 'at_risk' ? 'bg-rose-400' : c.sentiment === 'healthy' ? 'bg-emerald-400' : 'bg-amber-400'" />
+                      {{ c.sentiment === 'at_risk' ? 'At-Risk' : c.sentiment === 'healthy' ? 'Healthy' : 'Neutral' }}
+                    </span>
+                    <span v-else class="text-white/30">—</span>
                   </td>
                   <td class="py-2.5 pr-4 text-right tabular-nums text-white/50">
                     {{ c.contractStartDate ? new Date(c.contractStartDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—' }}
