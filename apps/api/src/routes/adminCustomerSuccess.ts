@@ -483,6 +483,8 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   for (const oid of successOwnerIds) {
     ownerTaskCounts.set(oid, { open: 0, overdue: 0 })
   }
+  // Brief pause to avoid HubSpot secondly rate limit from preceding requests
+  await new Promise((r) => setTimeout(r, 1100))
   try {
     const taskRes = await hsFetch('/crm/v3/objects/tasks/search', {
       method: 'POST',
