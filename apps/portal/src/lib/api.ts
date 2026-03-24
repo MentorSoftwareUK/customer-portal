@@ -725,6 +725,7 @@ export type CustomerSuccess = {
     riskScore: number
     riskLevel: 'high' | 'medium' | 'low'
     sentiment: 'healthy' | 'neutral' | 'at_risk' | null
+    accountRestriction: 'Frozen Support' | 'Unhosted' | null
     hubspotUrl: string
     reasons: string[]
     daysSinceLastContact: number | null

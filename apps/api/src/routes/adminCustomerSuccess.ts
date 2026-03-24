@@ -54,6 +54,7 @@ export type CustomerSuccessDto = {
     riskScore: number        // 0-100, higher = more at risk
     riskLevel: 'high' | 'medium' | 'low'
     sentiment: 'healthy' | 'neutral' | 'at_risk' | null
+    accountRestriction: 'Frozen Support' | 'Unhosted' | null
     hubspotUrl: string
     reasons: string[]
     daysSinceLastContact: number | null
@@ -249,6 +250,7 @@ const COMPANY_PROPERTIES = [
   'num_contacted_notes',
   'registration_status',
   'hs_csm_sentiment',
+  'account_restrictions',
 ]
 
 const MEETING_PROPERTIES = [
@@ -681,6 +683,12 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     const sentiment = (c.properties.hs_csm_sentiment ?? '').toLowerCase() as 'healthy' | 'neutral' | 'at_risk' | ''
     const sentimentValue: 'healthy' | 'neutral' | 'at_risk' | null = sentiment === 'healthy' || sentiment === 'neutral' || sentiment === 'at_risk' ? sentiment : null
 
+    const rawRestriction = c.properties.account_restrictions ?? ''
+    const accountRestriction: 'Frozen Support' | 'Unhosted' | null =
+      rawRestriction === 'Frozen Support' ? 'Frozen Support'
+      : rawRestriction === 'Unhosted' ? 'Unhosted'
+      : null
+
     const reasons: string[] = []
     let score = 0
 
@@ -690,6 +698,15 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
       score += 30
     } else if (sentiment === 'healthy') {
       score -= 15
+    }
+
+    // Account restrictions
+    if (accountRestriction === 'Unhosted') {
+      reasons.push('Unhosted')
+      score += 25
+    } else if (accountRestriction === 'Frozen Support') {
+      reasons.push('Frozen Support')
+      score += 15
     }
 
     // No contact in 90+ days => high risk signal
@@ -745,6 +762,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
       riskScore: Math.min(score, 100),
       riskLevel,
       sentiment: sentimentValue,
+      accountRestriction,
       hubspotUrl: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL_ID}/company/${c.id}`,
       reasons,
       daysSinceLastContact: daysSinceContact,
