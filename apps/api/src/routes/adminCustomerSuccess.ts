@@ -31,10 +31,12 @@ export type CustomerSuccessDto = {
   meetingsByAgent: Array<{
     name: string
     ownerId: string
+    role: 'success' | 'renewals'
     total: number
     completed: number
     noShow: number
-    companiesAssigned: number
+    openTasks: number
+    overdueTasks: number
   }>
 
   /* Monthly churn trend (last 6 months) */
@@ -475,25 +477,51 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     agentMeetingMap.set(oid, bucket)
   }
 
-  /* Count companies assigned to each success team member */
-  const allCompanies = [...paying, ...churned, ...offboarding]
-  const companyCounts = new Map<string, number>()
-  for (const c of allCompanies) {
-    const oid = c.properties.hubspot_owner_id ?? ''
-    if (SUCCESS_TEAM[oid]) {
-      companyCounts.set(oid, (companyCounts.get(oid) ?? 0) + 1)
-    }
+  /* Count open & overdue tasks for each success team member */
+  const successOwnerIds = Object.keys(SUCCESS_TEAM)
+  const ownerTaskCounts = new Map<string, { open: number; overdue: number }>()
+  for (const oid of successOwnerIds) {
+    ownerTaskCounts.set(oid, { open: 0, overdue: 0 })
   }
+  try {
+    const taskRes = await hsFetch('/crm/v3/objects/tasks/search', {
+      method: 'POST',
+      body: JSON.stringify({
+        filterGroups: successOwnerIds.map((oid) => ({
+          filters: [
+            { propertyName: 'hubspot_owner_id', operator: 'EQ', value: oid },
+            { propertyName: 'hs_task_status', operator: 'NEQ', value: 'COMPLETED' },
+          ],
+        })),
+        properties: ['hubspot_owner_id', 'hs_task_status', 'hs_timestamp'],
+        limit: 200,
+      }),
+    })
+    const taskData = (await taskRes.json()) as { results?: Array<{ properties: Record<string, string | null> }> }
+    for (const t of taskData.results ?? []) {
+      const oid = t.properties.hubspot_owner_id ?? ''
+      const row = ownerTaskCounts.get(oid)
+      if (!row) continue
+      row.open++
+      const due = t.properties.hs_timestamp ? new Date(t.properties.hs_timestamp) : null
+      if (due && due < refDate) row.overdue++
+    }
+  } catch { /* task search failed */ }
+
+  const RENEWALS_OWNER_ID = '588615646' // Hope Schindler
 
   /* Ensure all success team members appear, even with 0 meetings */
   const meetingsByAgent = Object.entries(SUCCESS_TEAM)
     .map(([ownerId, name]) => {
       const bucket = agentMeetingMap.get(ownerId) ?? { total: 0, completed: 0, noShow: 0 }
+      const tasks = ownerTaskCounts.get(ownerId) ?? { open: 0, overdue: 0 }
       return {
         name,
         ownerId,
+        role: ownerId === RENEWALS_OWNER_ID ? 'renewals' as const : 'success' as const,
         ...bucket,
-        companiesAssigned: companyCounts.get(ownerId) ?? 0,
+        openTasks: tasks.open,
+        overdueTasks: tasks.overdue,
       }
     })
     .sort((a, b) => b.total - a.total)

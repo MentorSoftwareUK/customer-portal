@@ -708,10 +708,12 @@ export type CustomerSuccess = {
   meetingsByAgent: Array<{
     name: string
     ownerId: string
+    role: 'success' | 'renewals'
     total: number
     completed: number
     noShow: number
-    companiesAssigned: number
+    openTasks: number
+    overdueTasks: number
   }>
   churnTrend: Array<{ month: string; churned: number; newCustomers: number }>
   avgTenureMonths: number

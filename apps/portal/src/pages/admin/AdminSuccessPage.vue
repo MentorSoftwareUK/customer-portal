@@ -143,8 +143,8 @@ const successKpiCards = computed(() => {
       color: '#a78bfa',
     },
     {
-      label: 'Completed',
-      sub: 'Meetings completed',
+      label: 'Meetings completed',
+      sub: 'Completed in last 30 days',
       val: s.meetingsCompleted.toString(),
       delta: prev ? pctDelta(s.meetingsCompleted, prev.completedMonth) : { value: 0, dir: 'flat' as const },
       suffix: '%',
@@ -309,23 +309,29 @@ onMounted(() => {
               </div>
               <div class="mt-3 grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
                 <div>
-                  <div class="text-white/50">Companies</div>
-                  <div class="text-lg font-bold tabular-nums text-white">{{ agent.companiesAssigned }}</div>
+                  <div class="text-white/50">Tasks</div>
+                  <div class="text-lg font-bold tabular-nums text-white">{{ agent.openTasks }}</div>
                 </div>
                 <div>
-                  <div class="text-white/50">Meetings</div>
-                  <div class="text-lg font-bold tabular-nums text-white">{{ agent.total }}</div>
+                  <div class="text-white/50">Overdue</div>
+                  <div class="text-lg font-bold tabular-nums" :class="agent.overdueTasks > 0 ? 'text-rose-400' : 'text-white/50'">{{ agent.overdueTasks }}</div>
                 </div>
-                <div>
-                  <div class="text-white/50">Completed</div>
-                  <div class="text-lg font-bold tabular-nums text-emerald-400">{{ agent.completed }}</div>
-                </div>
-                <div>
-                  <div class="text-white/50">No-show</div>
-                  <div class="text-lg font-bold tabular-nums text-rose-400">{{ agent.noShow }}</div>
-                </div>
+                <template v-if="agent.role !== 'renewals'">
+                  <div>
+                    <div class="text-white/50">Meetings</div>
+                    <div class="text-lg font-bold tabular-nums text-white">{{ agent.total }}</div>
+                  </div>
+                  <div>
+                    <div class="text-white/50">Completed</div>
+                    <div class="text-lg font-bold tabular-nums text-emerald-400">{{ agent.completed }}</div>
+                  </div>
+                  <div>
+                    <div class="text-white/50">No-show</div>
+                    <div class="text-lg font-bold tabular-nums text-rose-400">{{ agent.noShow }}</div>
+                  </div>
+                </template>
               </div>
-              <div v-if="agent.total > 0" class="mt-3">
+              <div v-if="agent.role !== 'renewals' && agent.total > 0" class="mt-3">
                 <div class="flex items-center justify-between text-xs">
                   <span class="text-white/50">Completion rate</span>
                   <span class="font-bold tabular-nums text-white/50">{{ Math.round((agent.completed / agent.total) * 100) }}%</span>
@@ -337,6 +343,7 @@ onMounted(() => {
                   />
                 </div>
               </div>
+              <div v-else-if="agent.role === 'renewals'" class="mt-3 text-xs text-white/50">Renewals &amp; retention</div>
               <div v-else class="mt-3 text-xs text-white/50">No meetings logged</div>
             </div>
           </div>
