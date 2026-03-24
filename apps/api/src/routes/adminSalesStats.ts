@@ -704,29 +704,41 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     : null
 
   /* ── Free customer stats (company-level, all-time) ── */
-  // Collect ALL pre-reg pipeline deals (won + lost + open) to find every company that entered the free trial
+  // Find all companies with lifecyclestage = "Pre-Registration Customer" (2520059085)
+  const PREREG_LIFECYCLE_STAGE = '2520059085'
+  const preRegCompanies = await searchCompanies(
+    [{ filters: [{ propertyName: 'lifecyclestage', operator: 'EQ', value: PREREG_LIFECYCLE_STAGE }] }],
+    ['name', 'salesstatus'],
+  )
+
+  // Also find companies that WERE pre-reg but have since moved to paying_customer or Past Customer
+  // (their lifecyclestage may have changed). Check salesstatus = paying_customer with a pre-reg deal.
   const allPreRegDeals = [...preRegClosedDeals, ...preRegOpenDeals]
   const preRegDealIds = [...new Set(allPreRegDeals.map((d) => d.id))]
   const preRegDealToCompany = preRegDealIds.length > 0
     ? await batchDealCompanyMap(preRegDealIds)
     : new Map<string, string>()
 
-  // Unique companies that ever had a pre-reg pipeline deal = total free trial pool
+  // Combine: companies currently at pre-reg lifecycle stage + companies that had pre-reg pipeline deals
   const preRegCompanyIds = new Set<string>()
-  const preRegCompanyDeals = new Map<string, HsDeal[]>()
+  const companyInfo = new Map<string, { name: string; salesstatus: string | null }>()
+
+  for (const c of preRegCompanies) {
+    preRegCompanyIds.add(c.id)
+    companyInfo.set(c.id, {
+      name: c.properties.name ?? `Company ${c.id}`,
+      salesstatus: c.properties.salesstatus ?? null,
+    })
+  }
   for (const deal of allPreRegDeals) {
     const cid = preRegDealToCompany.get(deal.id)
-    if (!cid) continue
-    preRegCompanyIds.add(cid)
-    if (!preRegCompanyDeals.has(cid)) preRegCompanyDeals.set(cid, [])
-    preRegCompanyDeals.get(cid)!.push(deal)
+    if (cid) preRegCompanyIds.add(cid)
   }
 
-  // Batch-fetch company details (name + salesstatus) for all pre-reg companies
-  const preRegCompanyArr = [...preRegCompanyIds]
-  const companyInfo = new Map<string, { name: string; salesstatus: string | null }>()
-  for (let i = 0; i < preRegCompanyArr.length; i += 100) {
-    const batch = preRegCompanyArr.slice(i, i + 100)
+  // Batch-fetch details for any company found via deals but not already loaded
+  const missingIds = [...preRegCompanyIds].filter((id) => !companyInfo.has(id))
+  for (let i = 0; i < missingIds.length; i += 100) {
+    const batch = missingIds.slice(i, i + 100)
     const res = await hsFetch('/crm/v3/objects/companies/batch/read', {
       method: 'POST',
       body: JSON.stringify({
@@ -743,7 +755,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     }
   }
 
-  // Also map pre-reg companies to their main-pipeline paying deals for revenue info
+  // Map pre-reg companies to their main-pipeline paying deals for revenue info
   const mainPipelineDeals = [...allTimeWonDeals]
   const mainDealIds = [...new Set(mainPipelineDeals.map((d) => d.id))]
   const mainDealToCompany = mainDealIds.length > 0
@@ -770,7 +782,6 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     const status = info?.salesstatus
 
     if (status === 'paying_customer') {
-      // Converted: was pre-registered and is now a paying customer
       convertedIds.add(cid)
       const payingDeals = (preRegMainDeals.get(cid) ?? []).filter(
         (d) => d.properties.dealstage === 'closedwon' && amt(d) > 0,
@@ -782,10 +793,8 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
         convertedRevenueThisMonth += payingThisMonth.reduce((s, d) => s + amt(d), 0)
       }
     } else if (status === 'Past Customer') {
-      // Lost: was pre-registered but churned / never converted
       lostDuringTrialIds.add(cid)
     } else {
-      // Still on free trial (no salesstatus, or any other status)
       stillFreeIds.add(cid)
     }
   }
@@ -801,14 +810,11 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   const companies: Array<{ companyId: string; name: string; status: 'converted' | 'free' | 'lost'; revenue: number; freeDealName: string; convertedDate: string | null }> = []
   for (const cid of preRegCompanyIds) {
     const info = companyInfo.get(cid)
-    const preRegDeals = preRegCompanyDeals.get(cid) ?? []
-    const freeDeal = preRegDeals[0] // first pre-reg deal as reference
 
     let status: 'converted' | 'free' | 'lost' = 'free'
     if (convertedIds.has(cid)) status = 'converted'
     else if (lostDuringTrialIds.has(cid)) status = 'lost'
 
-    // Revenue from main pipeline paying deals (for converted companies)
     const payingDeals = (preRegMainDeals.get(cid) ?? []).filter(
       (d) => d.properties.dealstage === 'closedwon' && amt(d) > 0,
     )
@@ -829,7 +835,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
       name: info?.name ?? `Company ${cid}`,
       status,
       revenue: Math.round(rev * 100) / 100,
-      freeDealName: freeDeal?.properties.dealname ?? '',
+      freeDealName: '',
       convertedDate,
     })
   }
