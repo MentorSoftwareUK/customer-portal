@@ -773,8 +773,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
       // Converted: was pre-registered and is now a paying customer
       convertedIds.add(cid)
       const payingDeals = (preRegMainDeals.get(cid) ?? []).filter(
-        (d) => d.properties.dealstage === 'closedwon' && amt(d) > 0
-          && (monthOfDeal(d) ?? '9999') <= currentMonthKey,
+        (d) => d.properties.dealstage === 'closedwon' && amt(d) > 0,
       )
       convertedRevenue += payingDeals.reduce((s, d) => s + amt(d), 0)
       const payingThisMonth = payingDeals.filter((d) => monthOfDeal(d) === currentMonthKey)
@@ -811,8 +810,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
     // Revenue from main pipeline paying deals (for converted companies)
     const payingDeals = (preRegMainDeals.get(cid) ?? []).filter(
-      (d) => d.properties.dealstage === 'closedwon' && amt(d) > 0
-        && (monthOfDeal(d) ?? '9999') <= currentMonthKey,
+      (d) => d.properties.dealstage === 'closedwon' && amt(d) > 0,
     )
     const rev = payingDeals.reduce((s, d) => s + amt(d), 0)
 
