@@ -185,7 +185,6 @@ async function hsFetch(path: string, init?: RequestInit) {
 /* ------------------------------------------------------------------ */
 
 const MAIN_PIPELINE_ID = 'default'
-const PREREG_PIPELINE_ID = '2933345490'
 
 /* ── Key sales agent IDs ── */
 const OWNER_MAP: Record<string, string> = {
@@ -674,69 +673,30 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     : null
 
   /* ── Free customer stats (company-level, all-time) ── */
-  // Find ALL companies that were ever pre-registered (free trial).
-  // We combine two sources:
-  //  1. Companies currently on the pre-reg lifecycle stage
-  //  2. Companies with any deal in the pre-reg pipeline (covers companies
-  //     whose lifecycle stage has since changed to paid/customer)
-  const PREREG_LIFECYCLE_STAGE = '2520059085'
+  // registration_status tells us exactly where each company sits:
+  //   'Unregistered'          → label "Pre-registered (Free)" – entered free trial
+  //   'Pre-registered (Paid)' → converted from free to paid
+  //   'Registered'            → normal paying customer, NOT part of the free funnel
+  // The pool = Unregistered + Pre-registered (Paid).
+
   const preRegCompanies = await searchCompanies(
     [
-      // Currently on the pre-reg lifecycle stage
-      { filters: [{ propertyName: 'lifecyclestage', operator: 'EQ', value: PREREG_LIFECYCLE_STAGE }] },
-      // Has registration_status = Registered (persists after stage changes)
-      { filters: [{ propertyName: 'registration_status', operator: 'EQ', value: 'Registered' }] },
+      { filters: [{ propertyName: 'registration_status', operator: 'EQ', value: 'Unregistered' }] },
+      { filters: [{ propertyName: 'registration_status', operator: 'EQ', value: 'Pre-registered (Paid)' }] },
     ],
-    ['name', 'salesstatus', 'lifecyclestage'],
+    ['name', 'salesstatus', 'registration_status'],
   )
 
-  // Find ALL deals in the pre-reg pipeline (any stage) to catch every company that ever entered
-  const allPreRegPipelineDeals = await searchDeals(
-    [{ filters: [{ propertyName: 'pipeline', operator: 'EQ', value: PREREG_PIPELINE_ID }] }],
-    DEAL_PROPERTIES,
-  )
-  const allPreRegDeals = allPreRegPipelineDeals
-  const preRegDealIds = [...new Set(allPreRegDeals.map((d) => d.id))]
-  const preRegDealToCompany = preRegDealIds.length > 0
-    ? await batchDealCompanyMap(preRegDealIds)
-    : new Map<string, string>()
-
-  // Combine: companies ever at pre-reg lifecycle stage + companies with pre-reg pipeline deals
   const preRegCompanyIds = new Set<string>()
-  const companyInfo = new Map<string, { name: string; salesstatus: string | null; lifecyclestage: string | null }>()
+  const companyInfo = new Map<string, { name: string; salesstatus: string | null; registrationStatus: string | null }>()
 
   for (const c of preRegCompanies) {
     preRegCompanyIds.add(c.id)
     companyInfo.set(c.id, {
       name: c.properties.name ?? `Company ${c.id}`,
       salesstatus: c.properties.salesstatus ?? null,
-      lifecyclestage: c.properties.lifecyclestage ?? null,
+      registrationStatus: c.properties.registration_status ?? null,
     })
-  }
-  for (const deal of allPreRegDeals) {
-    const cid = preRegDealToCompany.get(deal.id)
-    if (cid) preRegCompanyIds.add(cid)
-  }
-
-  // Batch-fetch details for any company found via deals but not already loaded
-  const missingIds = [...preRegCompanyIds].filter((id) => !companyInfo.has(id))
-  for (let i = 0; i < missingIds.length; i += 100) {
-    const batch = missingIds.slice(i, i + 100)
-    const res = await hsFetch('/crm/v3/objects/companies/batch/read', {
-      method: 'POST',
-      body: JSON.stringify({
-        inputs: batch.map((id) => ({ id })),
-        properties: ['name', 'salesstatus', 'lifecyclestage'],
-      }),
-    })
-    const json = (await res.json()) as { results: Array<{ id: string; properties: Record<string, string | null> }> }
-    for (const c of json.results) {
-      companyInfo.set(c.id, {
-        name: c.properties.name ?? `Company ${c.id}`,
-        salesstatus: c.properties.salesstatus ?? null,
-        lifecyclestage: c.properties.lifecyclestage ?? null,
-      })
-    }
   }
 
   // Map pre-reg companies to their main-pipeline paying deals for revenue info
@@ -753,10 +713,10 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     preRegMainDeals.get(cid)!.push(deal)
   }
 
-  // Classify each pre-reg company:
-  // - salesstatus = 'paying_customer' → converted
-  // - salesstatus = 'Past Customer' → lost during trial
-  // - everything else (still on pre-reg free or pre-reg paid lifecycle) → still on free
+  // Classify each pre-reg company by registration_status:
+  //   'Pre-registered (Paid)' → converted
+  //   'Unregistered' + salesstatus='Past Customer' → lost during trial
+  //   'Unregistered' + anything else → still on free
   const convertedIds = new Set<string>()
   const stillFreeIds = new Set<string>()
   const lostDuringTrialIds = new Set<string>()
@@ -766,9 +726,9 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
   for (const cid of preRegCompanyIds) {
     const info = companyInfo.get(cid)
-    const status = info?.salesstatus
+    const regStatus = info?.registrationStatus
 
-    if (status === 'paying_customer') {
+    if (regStatus === 'Pre-registered (Paid)') {
       convertedIds.add(cid)
       const payingDeals = (preRegMainDeals.get(cid) ?? []).filter(
         (d) => d.properties.dealstage === 'closedwon' && amt(d) > 0,
@@ -779,7 +739,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
         convertedThisMonthCount++
         convertedRevenueThisMonth += payingThisMonth.reduce((s, d) => s + amt(d), 0)
       }
-    } else if (status === 'Past Customer') {
+    } else if (info?.salesstatus === 'Past Customer') {
       lostDuringTrialIds.add(cid)
     } else {
       stillFreeIds.add(cid)
