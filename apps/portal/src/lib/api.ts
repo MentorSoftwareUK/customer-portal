@@ -723,6 +723,7 @@ export type CustomerSuccess = {
     riskScore: number
     riskLevel: 'high' | 'medium' | 'low'
     sentiment: 'healthy' | 'neutral' | 'at_risk' | null
+    hubspotUrl: string
     reasons: string[]
     daysSinceLastContact: number | null
     daysSinceLastMeeting: number | null

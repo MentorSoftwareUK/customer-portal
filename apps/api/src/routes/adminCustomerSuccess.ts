@@ -52,6 +52,7 @@ export type CustomerSuccessDto = {
     riskScore: number        // 0-100, higher = more at risk
     riskLevel: 'high' | 'medium' | 'low'
     sentiment: 'healthy' | 'neutral' | 'at_risk' | null
+    hubspotUrl: string
     reasons: string[]
     daysSinceLastContact: number | null
     daysSinceLastMeeting: number | null
@@ -617,6 +618,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   }
 
   /* ── 12. At-risk customers ── */
+  const HUBSPOT_PORTAL_ID = '145032754'
   const OWNER_NAMES: Record<string, string> = {
     ...SUCCESS_TEAM,
     '711739855': 'Naheed Dad',
@@ -713,6 +715,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
       riskScore: Math.min(score, 100),
       riskLevel,
       sentiment: sentimentValue,
+      hubspotUrl: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL_ID}/company/${c.id}`,
       reasons,
       daysSinceLastContact: daysSinceContact,
       daysSinceLastMeeting: daysSinceMeeting,
@@ -836,7 +839,6 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   }
 
   /* ── 16. New customers (within first 60 days) ── */
-  const HUBSPOT_PORTAL_ID = '145032754'
   const sixtyDaysAgo = new Date(refDate.getTime() - 60 * 86_400_000)
 
   const newCustCandidates = paying.filter((c) => {
