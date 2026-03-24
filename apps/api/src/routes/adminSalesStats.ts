@@ -704,30 +704,39 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     : null
 
   /* ── Free customer stats (company-level, all-time) ── */
-  // Find all companies with lifecyclestage = "Pre-Registration Customer" (2520059085)
+  // Find ALL companies that were ever pre-registered (free trial).
+  // HubSpot sets hs_lifecyclestage_<id>_date when a company enters a stage,
+  // and it persists even after the stage changes to paid/customer.
+  // Also query companies currently at the pre-reg stage, or at "Pre-Registration (Paid)".
   const PREREG_LIFECYCLE_STAGE = '2520059085'
+  const PREREG_DATE_PROP = `hs_lifecyclestage_${PREREG_LIFECYCLE_STAGE}_date`
   const preRegCompanies = await searchCompanies(
-    [{ filters: [{ propertyName: 'lifecyclestage', operator: 'EQ', value: PREREG_LIFECYCLE_STAGE }] }],
-    ['name', 'salesstatus'],
+    [
+      // Currently on free pre-reg stage
+      { filters: [{ propertyName: 'lifecyclestage', operator: 'EQ', value: PREREG_LIFECYCLE_STAGE }] },
+      // Were ever on the pre-reg stage (date property is set even after stage changes)
+      { filters: [{ propertyName: PREREG_DATE_PROP, operator: 'HAS_PROPERTY' }] },
+    ],
+    ['name', 'salesstatus', 'lifecyclestage'],
   )
 
-  // Also find companies that WERE pre-reg but have since moved to paying_customer or Past Customer
-  // (their lifecyclestage may have changed). Check salesstatus = paying_customer with a pre-reg deal.
+  // Also find companies via pre-reg pipeline deals as a fallback
   const allPreRegDeals = [...preRegClosedDeals, ...preRegOpenDeals]
   const preRegDealIds = [...new Set(allPreRegDeals.map((d) => d.id))]
   const preRegDealToCompany = preRegDealIds.length > 0
     ? await batchDealCompanyMap(preRegDealIds)
     : new Map<string, string>()
 
-  // Combine: companies currently at pre-reg lifecycle stage + companies that had pre-reg pipeline deals
+  // Combine: companies ever at pre-reg lifecycle stage + companies with pre-reg pipeline deals
   const preRegCompanyIds = new Set<string>()
-  const companyInfo = new Map<string, { name: string; salesstatus: string | null }>()
+  const companyInfo = new Map<string, { name: string; salesstatus: string | null; lifecyclestage: string | null }>()
 
   for (const c of preRegCompanies) {
     preRegCompanyIds.add(c.id)
     companyInfo.set(c.id, {
       name: c.properties.name ?? `Company ${c.id}`,
       salesstatus: c.properties.salesstatus ?? null,
+      lifecyclestage: c.properties.lifecyclestage ?? null,
     })
   }
   for (const deal of allPreRegDeals) {
@@ -743,7 +752,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
       method: 'POST',
       body: JSON.stringify({
         inputs: batch.map((id) => ({ id })),
-        properties: ['name', 'salesstatus'],
+        properties: ['name', 'salesstatus', 'lifecyclestage'],
       }),
     })
     const json = (await res.json()) as { results: Array<{ id: string; properties: Record<string, string | null> }> }
@@ -751,6 +760,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
       companyInfo.set(c.id, {
         name: c.properties.name ?? `Company ${c.id}`,
         salesstatus: c.properties.salesstatus ?? null,
+        lifecyclestage: c.properties.lifecyclestage ?? null,
       })
     }
   }
@@ -769,7 +779,10 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     preRegMainDeals.get(cid)!.push(deal)
   }
 
-  // Classify each pre-reg company by their current salesstatus
+  // Classify each pre-reg company:
+  // - salesstatus = 'paying_customer' → converted
+  // - salesstatus = 'Past Customer' → lost during trial
+  // - everything else (still on pre-reg free or pre-reg paid lifecycle) → still on free
   const convertedIds = new Set<string>()
   const stillFreeIds = new Set<string>()
   const lostDuringTrialIds = new Set<string>()
