@@ -406,37 +406,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     DEAL_PROPERTIES,
   )
 
-  /* ── Query 3: Pre-registered pipeline deals (for free customer stats) ── */
-  const preRegClosedDeals = await searchDeals(
-    [
-      {
-        filters: [
-          { propertyName: 'pipeline', operator: 'EQ', value: PREREG_PIPELINE_ID },
-          { propertyName: 'dealstage', operator: 'EQ', value: '4014021838' }, // Closed Won
-        ],
-      },
-      {
-        filters: [
-          { propertyName: 'pipeline', operator: 'EQ', value: PREREG_PIPELINE_ID },
-          { propertyName: 'dealstage', operator: 'EQ', value: '4014021839' }, // Closed Lost
-        ],
-      },
-    ],
-    DEAL_PROPERTIES,
-  )
-  const preRegOpenDeals = await searchDeals(
-    [
-      {
-        filters: [
-          { propertyName: 'pipeline', operator: 'EQ', value: PREREG_PIPELINE_ID },
-          { propertyName: 'hs_is_closed', operator: 'EQ', value: 'false' },
-        ],
-      },
-    ],
-    DEAL_PROPERTIES,
-  )
-
-  /* ── Query 4: ALL closedwon deals (no date filter) for accurate free→paid analysis ── */
+  /* ── Query 3: ALL closedwon deals (no date filter) for accurate free→paid analysis ── */
   const allTimeWonDeals = await searchDeals(
     [
       {
@@ -705,23 +675,24 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
   /* ── Free customer stats (company-level, all-time) ── */
   // Find ALL companies that were ever pre-registered (free trial).
-  // HubSpot sets hs_lifecyclestage_<id>_date when a company enters a stage,
-  // and it persists even after the stage changes to paid/customer.
-  // Also query companies currently at the pre-reg stage, or at "Pre-Registration (Paid)".
+  // We combine two sources:
+  //  1. Companies currently on the pre-reg lifecycle stage
+  //  2. Companies with any deal in the pre-reg pipeline (covers companies
+  //     whose lifecycle stage has since changed to paid/customer)
   const PREREG_LIFECYCLE_STAGE = '2520059085'
-  const PREREG_DATE_PROP = `hs_lifecyclestage_${PREREG_LIFECYCLE_STAGE}_date`
   const preRegCompanies = await searchCompanies(
     [
-      // Currently on free pre-reg stage
       { filters: [{ propertyName: 'lifecyclestage', operator: 'EQ', value: PREREG_LIFECYCLE_STAGE }] },
-      // Were ever on the pre-reg stage (date property is set even after stage changes)
-      { filters: [{ propertyName: PREREG_DATE_PROP, operator: 'HAS_PROPERTY' }] },
     ],
     ['name', 'salesstatus', 'lifecyclestage'],
   )
 
-  // Also find companies via pre-reg pipeline deals as a fallback
-  const allPreRegDeals = [...preRegClosedDeals, ...preRegOpenDeals]
+  // Find ALL deals in the pre-reg pipeline (any stage) to catch every company that ever entered
+  const allPreRegPipelineDeals = await searchDeals(
+    [{ filters: [{ propertyName: 'pipeline', operator: 'EQ', value: PREREG_PIPELINE_ID }] }],
+    DEAL_PROPERTIES,
+  )
+  const allPreRegDeals = allPreRegPipelineDeals
   const preRegDealIds = [...new Set(allPreRegDeals.map((d) => d.id))]
   const preRegDealToCompany = preRegDealIds.length > 0
     ? await batchDealCompanyMap(preRegDealIds)
