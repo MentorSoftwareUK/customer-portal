@@ -734,7 +734,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     if (regStatus === 'Pre-registered (Paid)') {
       convertedIds.add(cid)
       // Track post-conversion retention
-      if (info?.salesstatus === 'Past Customer' || info?.salesstatus === 'Off-boarding') {
+      if (info?.salesstatus === 'Past Customer' || info?.salesstatus?.startsWith('Off-boarding')) {
         convertedChurnedIds.add(cid)
       } else {
         convertedActiveIds.add(cid)
@@ -748,7 +748,7 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
         convertedThisMonthCount++
         convertedRevenueThisMonth += payingThisMonth.reduce((s, d) => s + amt(d), 0)
       }
-    } else if (info?.salesstatus === 'Past Customer' || info?.salesstatus === 'Off-boarding') {
+    } else if (info?.salesstatus === 'Past Customer' || info?.salesstatus?.startsWith('Off-boarding')) {
       lostDuringTrialIds.add(cid)
     } else if (info?.salesstatus === 'paying_customer') {
       stillFreeIds.add(cid)
