@@ -306,8 +306,8 @@ onMounted(() => {
             <span>100%</span>
           </div>
 
-          <!-- Two KPI boxes -->
-          <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- KPI boxes -->
+          <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <!-- Converted -->
             <div class="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.05] px-5 py-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-emerald-400/80">Converted to paid</div>
@@ -316,6 +316,15 @@ onMounted(() => {
                 <span class="text-sm text-white/40">companies</span>
               </div>
               <div class="mt-1 text-sm text-emerald-400/70">{{ formatCurrency(sales.freeCustomers.convertedRevenue ?? 0) }} total revenue</div>
+            </div>
+
+            <!-- Post-conversion retention -->
+            <div class="rounded-lg border border-violet-500/20 bg-violet-500/[0.05] px-5 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wider text-violet-400/80">Retained after conversion</div>
+              <div class="mt-2 flex items-baseline gap-3">
+                <span class="text-3xl font-bold tabular-nums text-violet-400">{{ sales.freeCustomers.postConversionRetention ?? 0 }}<span class="text-xl text-violet-400/50">%</span></span>
+              </div>
+              <div class="mt-1 text-sm text-violet-400/70">{{ sales.freeCustomers.convertedRetained ?? 0 }} active · {{ sales.freeCustomers.convertedChurned ?? 0 }} churned</div>
             </div>
 
             <!-- Converted this month -->

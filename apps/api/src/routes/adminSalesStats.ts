@@ -719,6 +719,8 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   //   'Unregistered' + salesstatus='Past Customer' or 'Off-boarding' → lost during trial
   //   'Unregistered' + anything else → in opportunity, not yet on trial (excluded from funnel)
   const convertedIds = new Set<string>()
+  const convertedActiveIds = new Set<string>()
+  const convertedChurnedIds = new Set<string>()
   const stillFreeIds = new Set<string>()
   const lostDuringTrialIds = new Set<string>()
   let convertedRevenue = 0
@@ -731,6 +733,12 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
     if (regStatus === 'Pre-registered (Paid)') {
       convertedIds.add(cid)
+      // Track post-conversion retention
+      if (info?.salesstatus === 'Past Customer' || info?.salesstatus === 'Off-boarding') {
+        convertedChurnedIds.add(cid)
+      } else {
+        convertedActiveIds.add(cid)
+      }
       const payingDeals = (preRegMainDeals.get(cid) ?? []).filter(
         (d) => d.properties.dealstage === 'closedwon' && amt(d) > 0,
       )
@@ -754,6 +762,9 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   const notConvertedCount = stillFreeIds.size
   const conversionRate = totalPreReg > 0
     ? Math.round((convertedIds.size / totalPreReg) * 100)
+    : 0
+  const postConversionRetention = convertedIds.size > 0
+    ? Math.round((convertedActiveIds.size / convertedIds.size) * 100)
     : 0
 
   // Build detail list — only companies in the funnel (converted + free + lost)
@@ -810,6 +821,9 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     notConverted: notConvertedCount,
     lostDuringTrial: lostDuringTrialCount,
     conversionRate,
+    convertedRetained: convertedActiveIds.size,
+    convertedChurned: convertedChurnedIds.size,
+    postConversionRetention,
     companies,
   }
 

@@ -627,6 +627,9 @@ export type SalesStats = {
     notConverted: number
     lostDuringTrial: number
     conversionRate: number
+    convertedRetained: number
+    convertedChurned: number
+    postConversionRetention: number
     companies?: Array<{
       companyId: string
       name: string
