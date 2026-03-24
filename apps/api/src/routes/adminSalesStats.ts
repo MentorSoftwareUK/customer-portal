@@ -713,10 +713,11 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     preRegMainDeals.get(cid)!.push(deal)
   }
 
-  // Classify each pre-reg company by registration_status:
-  //   'Pre-registered (Paid)' → converted
+  // Classify each pre-reg company by registration_status + salesstatus:
+  //   'Pre-registered (Paid)' → converted to paid
+  //   'Unregistered' + salesstatus='paying_customer' → still on free (actively using trial)
   //   'Unregistered' + salesstatus='Past Customer' or 'Off-boarding' → lost during trial
-  //   'Unregistered' + anything else → still on free
+  //   'Unregistered' + anything else → in opportunity, not yet on trial (excluded from funnel)
   const convertedIds = new Set<string>()
   const stillFreeIds = new Set<string>()
   const lostDuringTrialIds = new Set<string>()
@@ -741,21 +742,24 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
       }
     } else if (info?.salesstatus === 'Past Customer' || info?.salesstatus === 'Off-boarding') {
       lostDuringTrialIds.add(cid)
-    } else {
+    } else if (info?.salesstatus === 'paying_customer') {
       stillFreeIds.add(cid)
     }
+    // else: Unregistered but not yet on trial (in opportunity) — excluded from funnel
   }
 
-  const totalPreReg = preRegCompanyIds.size
+  // Funnel total = only companies that actually entered the trial (converted + free + lost)
+  const totalPreReg = convertedIds.size + stillFreeIds.size + lostDuringTrialIds.size
   const lostDuringTrialCount = lostDuringTrialIds.size
   const notConvertedCount = stillFreeIds.size
   const conversionRate = totalPreReg > 0
     ? Math.round((convertedIds.size / totalPreReg) * 100)
     : 0
 
-  // Build detail list sorted: converted first, then free, then lost
+  // Build detail list — only companies in the funnel (converted + free + lost)
+  const funnelIds = new Set([...convertedIds, ...stillFreeIds, ...lostDuringTrialIds])
   const companies: Array<{ companyId: string; name: string; status: 'converted' | 'free' | 'lost'; revenue: number; freeDealName: string; convertedDate: string | null }> = []
-  for (const cid of preRegCompanyIds) {
+  for (const cid of funnelIds) {
     const info = companyInfo.get(cid)
 
     let status: 'converted' | 'free' | 'lost' = 'free'
