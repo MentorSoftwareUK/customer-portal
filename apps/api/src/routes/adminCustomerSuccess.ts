@@ -94,6 +94,7 @@ export type CustomerSuccessDto = {
     hubspotUrl: string
     trainingMeeting: 'completed' | 'scheduled' | 'none'
     successMeeting: 'completed' | 'scheduled' | 'none'
+    sentiment: 'positive' | 'neutral' | 'negative'
     isPreReg: boolean
   }>
 
@@ -243,6 +244,7 @@ const COMPANY_PROPERTIES = [
   'num_notes',
   'num_contacted_notes',
   'registration_status',
+  'hs_csm_sentiment',
 ]
 
 const MEETING_PROPERTIES = [
@@ -872,7 +874,12 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     const results = await Promise.all(
       batch.map(async (c) => {
         let companyMeetings: HsMeeting[] = []
-        const isPreReg = c.properties.registration_status === 'Registered'
+        const isPreReg = c.properties.registration_status === 'Unregistered' || c.properties.registration_status === 'Pre-registered (Paid)'
+        const rawSentiment = (c.properties.hs_csm_sentiment ?? '').toLowerCase()
+        const sentiment: 'positive' | 'neutral' | 'negative' =
+          rawSentiment === 'healthy' ? 'positive'
+          : rawSentiment === 'at_risk' ? 'negative'
+          : 'neutral'
         try {
           // Fetch meeting associations for this company
           const assocRes = await hsFetch(
@@ -911,6 +918,7 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
           hubspotUrl: `https://app.hubspot.com/contacts/${HUBSPOT_PORTAL_ID}/company/${c.id}`,
           trainingMeeting: deriveMeetingStatus(companyMeetings, 'training'),
           successMeeting: deriveMeetingStatus(companyMeetings, 'success'),
+          sentiment,
           isPreReg,
         }
       }),

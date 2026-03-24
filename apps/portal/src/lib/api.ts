@@ -759,6 +759,7 @@ export type CustomerSuccess = {
     hubspotUrl: string
     trainingMeeting: 'completed' | 'scheduled' | 'none'
     successMeeting: 'completed' | 'scheduled' | 'none'
+    sentiment: 'positive' | 'neutral' | 'negative'
     isPreReg: boolean
   }>
   earlyChurn?: {

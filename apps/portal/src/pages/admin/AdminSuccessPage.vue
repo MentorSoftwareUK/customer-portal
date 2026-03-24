@@ -398,12 +398,21 @@ onMounted(() => {
                     Success {{ cust.successMeeting === 'completed' ? '✓' : cust.successMeeting === 'scheduled' ? '⏳' : '—' }}
                   </span>
                 </div>
+                <div class="flex items-center gap-1.5">
+                  <div
+                    class="h-2 w-2 rounded-full"
+                    :class="cust.sentiment === 'positive' ? 'bg-emerald-400' : cust.sentiment === 'negative' ? 'bg-rose-400' : 'bg-white/20'"
+                  />
+                  <span class="text-xs" :class="cust.sentiment === 'positive' ? 'text-emerald-400' : cust.sentiment === 'negative' ? 'text-rose-400' : 'text-white/40'">
+                    Sentiment {{ cust.sentiment === 'positive' ? '✓' : cust.sentiment === 'negative' ? '✗' : '—' }}
+                  </span>
+                </div>
               </div>
               <div class="mt-3">
                 <div class="h-1.5 overflow-hidden rounded-full bg-white/[0.04]">
                   <div
                     class="h-full rounded-full transition-all duration-500"
-                    :class="cust.daysSinceStart <= 30 ? 'bg-emerald-500/60' : cust.daysSinceStart <= 45 ? 'bg-amber-500/60' : 'bg-rose-500/60'"
+                    :class="cust.trainingMeeting === 'completed' && cust.successMeeting === 'completed' && cust.sentiment === 'positive' ? 'bg-emerald-500/60' : cust.sentiment === 'negative' ? 'bg-rose-500/60' : cust.daysSinceStart <= 30 ? 'bg-emerald-500/60' : cust.daysSinceStart <= 45 ? 'bg-amber-500/60' : 'bg-rose-500/60'"
                     :style="{ width: Math.min(100, Math.round((cust.daysSinceStart / 60) * 100)) + '%' }"
                   />
                 </div>
