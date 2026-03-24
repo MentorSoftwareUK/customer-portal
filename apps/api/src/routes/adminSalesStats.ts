@@ -71,11 +71,12 @@ export type SalesStatsDto = {
     convertedThisMonth: number
     convertedRevenueThisMonth: number
     notConverted: number
+    lostDuringTrial: number
     conversionRate: number
     companies: Array<{
       companyId: string
       name: string
-      status: 'converted' | 'free'
+      status: 'converted' | 'free' | 'lost'
       revenue: number
       freeDealName: string
       convertedDate: string | null
@@ -704,13 +705,16 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
 
   /* ── Free customer stats (company-level, all-time) ── */
   const preRegWon = preRegClosedDeals.filter((d) => d.properties.dealstage === '4014021838')
+  const preRegLost = preRegClosedDeals.filter((d) => d.properties.dealstage === '4014021839')
   const isFreeWon = (d: HsDeal) =>
     d.properties.pipeline === PREREG_PIPELINE_ID
       ? d.properties.dealstage === '4014021838'
       : (d.properties.dealstage === 'closedwon' && amt(d) === 0)
+  const isFreeLost = (d: HsDeal) =>
+    d.properties.pipeline === PREREG_PIPELINE_ID && d.properties.dealstage === '4014021839'
 
-  // Combine all-time won deals + pre-reg won for the full picture
-  const allDealsForFree = [...allTimeWonDeals, ...preRegWon, ...openDeals, ...preRegOpenDeals]
+  // Combine all-time won deals + pre-reg won + pre-reg lost for the full picture
+  const allDealsForFree = [...allTimeWonDeals, ...preRegWon, ...preRegLost, ...openDeals, ...preRegOpenDeals]
   const uniqueDealIds = [...new Set(allDealsForFree.map((d) => d.id))]
   const dealToCompany = uniqueDealIds.length > 0
     ? await batchDealCompanyMap(uniqueDealIds)
@@ -733,6 +737,15 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   for (const [cid, deals] of companyDeals) {
     if (deals.some((d) => isFreeWon(d) && (monthOfDeal(d) ?? '9999') <= currentMonthKey)) {
       freeCompanyIds.add(cid)
+    }
+  }
+
+  // "Lost during trial" = pre-reg closed-lost company that never had a free won deal or paying deal
+  const lostDuringTrialIds = new Set<string>()
+  for (const [cid, deals] of companyDeals) {
+    if (freeCompanyIds.has(cid)) continue // already counted as free/converted
+    if (deals.some((d) => isFreeLost(d) && (monthOfDeal(d) ?? '9999') <= currentMonthKey)) {
+      lostDuringTrialIds.add(cid)
     }
   }
 
@@ -762,12 +775,14 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   }
 
   const notConvertedCount = freeCompanyIds.size - convertedIds.size
-  const conversionRate = freeCompanyIds.size > 0
-    ? Math.round((convertedIds.size / freeCompanyIds.size) * 100)
+  const lostDuringTrialCount = lostDuringTrialIds.size
+  const totalEnquired = freeCompanyIds.size + lostDuringTrialCount
+  const conversionRate = totalEnquired > 0
+    ? Math.round((convertedIds.size / totalEnquired) * 100)
     : 0
 
   // Batch-fetch company names
-  const companyIdArr = [...freeCompanyIds]
+  const companyIdArr = [...freeCompanyIds, ...lostDuringTrialIds]
   const companyNames = new Map<string, string>()
   for (let i = 0; i < companyIdArr.length; i += 100) {
     const batch = companyIdArr.slice(i, i + 100)
@@ -784,8 +799,8 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
     }
   }
 
-  // Build detail list sorted: converted first (by revenue desc), then free (alpha)
-  const companies: Array<{ companyId: string; name: string; status: 'converted' | 'free'; revenue: number; freeDealName: string; convertedDate: string | null }> = []
+  // Build detail list sorted: converted first (by revenue desc), then free, then lost (alpha)
+  const companies: Array<{ companyId: string; name: string; status: 'converted' | 'free' | 'lost'; revenue: number; freeDealName: string; convertedDate: string | null }> = []
   for (const cid of freeCompanyIds) {
     const deals = companyDeals.get(cid)!
     const freeDeal = deals.find((d) => isFreeWon(d) && (monthOfDeal(d) ?? '9999') <= currentMonthKey)
@@ -815,8 +830,22 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
       convertedDate,
     })
   }
+  // Add lost-during-trial companies
+  for (const cid of lostDuringTrialIds) {
+    const deals = companyDeals.get(cid)!
+    const lostDeal = deals.find((d) => isFreeLost(d) && (monthOfDeal(d) ?? '9999') <= currentMonthKey)
+    companies.push({
+      companyId: cid,
+      name: companyNames.get(cid) ?? `Company ${cid}`,
+      status: 'lost',
+      revenue: 0,
+      freeDealName: lostDeal?.properties.dealname ?? '',
+      convertedDate: null,
+    })
+  }
+  const statusOrder: Record<string, number> = { converted: 0, free: 1, lost: 2 }
   companies.sort((a, b) => {
-    if (a.status !== b.status) return a.status === 'converted' ? -1 : 1
+    if (a.status !== b.status) return (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9)
     if (a.status === 'converted') {
       // Most recently converted first
       const da = a.convertedDate ? new Date(a.convertedDate).getTime() : 0
@@ -827,12 +856,13 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   })
 
   const freeCustomers = {
-    totalFreeCompanies: freeCompanyIds.size,
+    totalFreeCompanies: totalEnquired,
     converted: convertedIds.size,
     convertedRevenue: Math.round(convertedRevenue * 100) / 100,
     convertedThisMonth: convertedThisMonthCount,
     convertedRevenueThisMonth: Math.round(convertedRevenueThisMonth * 100) / 100,
     notConverted: notConvertedCount,
+    lostDuringTrial: lostDuringTrialCount,
     conversionRate,
     companies,
   }

@@ -307,7 +307,7 @@ onMounted(() => {
           </div>
 
           <!-- Two KPI boxes -->
-          <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <!-- Converted -->
             <div class="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.05] px-5 py-4">
               <div class="text-xs font-semibold uppercase tracking-wider text-emerald-400/80">Converted to paid</div>
@@ -337,6 +337,16 @@ onMounted(() => {
               </div>
               <div class="mt-1 text-sm text-amber-400/70">Awaiting conversion</div>
             </div>
+
+            <!-- Lost during trial -->
+            <div class="rounded-lg border border-rose-500/20 bg-rose-500/[0.05] px-5 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wider text-rose-400/80">Lost during trial</div>
+              <div class="mt-2 flex items-baseline gap-3">
+                <span class="text-3xl font-bold tabular-nums text-rose-400">{{ sales.freeCustomers.lostDuringTrial ?? 0 }}</span>
+                <span class="text-sm text-white/40">companies</span>
+              </div>
+              <div class="mt-1 text-sm text-rose-400/70">Did not convert</div>
+            </div>
           </div>
 
           <!-- Company detail table -->
@@ -362,8 +372,10 @@ onMounted(() => {
                       class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
                       :class="co.status === 'converted'
                         ? 'bg-emerald-500/10 text-emerald-400'
-                        : 'bg-amber-500/10 text-amber-400'"
-                    >{{ co.status === 'converted' ? 'Converted' : 'Free' }}</span>
+                        : co.status === 'lost'
+                          ? 'bg-rose-500/10 text-rose-400'
+                          : 'bg-amber-500/10 text-amber-400'"
+                    >{{ co.status === 'converted' ? 'Converted' : co.status === 'lost' ? 'Lost' : 'Free' }}</span>
                   </td>
                   <td class="px-4 py-2.5 text-center text-xs tabular-nums text-white/50">{{ co.convertedDate ? new Date(co.convertedDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—' }}</td>
                   <td class="px-4 py-2.5 text-right tabular-nums" :class="co.revenue > 0 ? 'text-emerald-400/80' : 'text-white/30'">{{ co.revenue > 0 ? formatCurrency(co.revenue) : '—' }}</td>
