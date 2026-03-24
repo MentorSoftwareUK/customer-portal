@@ -682,7 +682,10 @@ async function buildSalesStats(selectedMonth?: string): Promise<SalesStatsDto> {
   const PREREG_LIFECYCLE_STAGE = '2520059085'
   const preRegCompanies = await searchCompanies(
     [
+      // Currently on the pre-reg lifecycle stage
       { filters: [{ propertyName: 'lifecyclestage', operator: 'EQ', value: PREREG_LIFECYCLE_STAGE }] },
+      // Has registration_status = Registered (persists after stage changes)
+      { filters: [{ propertyName: 'registration_status', operator: 'EQ', value: 'Registered' }] },
     ],
     ['name', 'salesstatus', 'lifecyclestage'],
   )
