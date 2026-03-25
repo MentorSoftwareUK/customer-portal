@@ -19,6 +19,8 @@ function repoRoot(): string {
 
 export type HubSpotStatus = 'customer' | 'past_customer' | 'in_pipeline' | 'lead' | 'subscriber' | 'other' | 'not_found'
 
+export type CompaniesHouseStatus = 'active' | 'dissolved' | 'liquidation' | 'administration' | 'voluntary-arrangement' | 'converted-closed' | 'insolvency-proceedings' | 'registered' | 'removed' | 'not_found' | 'unknown' | 'skipped'
+
 export type OldCrmContact = {
   name: string
   company: string
@@ -32,6 +34,9 @@ export type OldCrmContact = {
   hubspotMatch: HubSpotStatus
   hubspotCompany: string
   hubspotDetail: string   // lifecycle stage or extra context
+  chStatus: CompaniesHouseStatus
+  chName: string
+  chNumber: string
 }
 
 /* ================================================================== */
@@ -129,6 +134,9 @@ function parseOldCrmCsv(filePath: string, source: string): OldCrmContact[] {
       hubspotMatch: 'not_found',
       hubspotCompany: '',
       hubspotDetail: '',
+      chStatus: 'skipped',
+      chName: '',
+      chNumber: '',
     })
   }
 
@@ -153,6 +161,82 @@ function getAllContacts(): OldCrmContact[] {
 
   cachedContacts = all
   return all
+}
+
+/* ================================================================== */
+/*  Companies House lookup                                            */
+/* ================================================================== */
+
+const CH_BASE = 'https://api.company-information.service.gov.uk'
+const CH_MIN_GAP_MS = 520 // 600 requests / 5 min
+
+async function chSearch(query: string, apiKey: string): Promise<{ items?: Array<{ title: string; company_number: string; company_status: string }> }> {
+  const url = `${CH_BASE}/search/companies?q=${encodeURIComponent(query)}&items_per_page=3`
+  const res = await fetch(url, {
+    headers: { Authorization: `Basic ${Buffer.from(`${apiKey}:`).toString('base64')}` },
+  })
+  if (res.status === 429) {
+    await new Promise((r) => setTimeout(r, 5000))
+    return chSearch(query, apiKey)
+  }
+  if (!res.ok) return { items: [] }
+  return res.json() as Promise<{ items?: Array<{ title: string; company_number: string; company_status: string }> }>
+}
+
+function chNormalise(s: string): string {
+  return s.toLowerCase().replace(/\b(ltd|limited|plc|inc|llc|group|uk|the|of)\b/g, '').replace(/[^a-z0-9]/g, '').trim()
+}
+
+async function enrichWithCompaniesHouse(contacts: OldCrmContact[]): Promise<void> {
+  const apiKey = env.COMPANIES_HOUSE_API_KEY
+  if (!apiKey) return
+
+  // Deduplicate company names
+  const companySet = new Map<string, string>() // normalised -> original
+  for (const c of contacts) {
+    if (c.company) {
+      const norm = chNormalise(c.company)
+      if (norm && !companySet.has(norm)) companySet.set(norm, c.company)
+    }
+  }
+
+  // Lookup each unique company
+  type CHResult = { status: CompaniesHouseStatus; name: string; number: string }
+  const results = new Map<string, CHResult>()
+
+  for (const [norm, original] of companySet) {
+    try {
+      const data = await chSearch(original, apiKey)
+      const items = data.items || []
+      // Try exact match, then first result
+      let match = items.find((it) => chNormalise(it.title) === norm)
+      if (!match && items.length > 0) match = items[0]
+
+      if (match) {
+        results.set(norm, {
+          status: (match.company_status || 'unknown') as CompaniesHouseStatus,
+          name: match.title,
+          number: match.company_number,
+        })
+      } else {
+        results.set(norm, { status: 'not_found', name: '', number: '' })
+      }
+    } catch {
+      results.set(norm, { status: 'not_found', name: '', number: '' })
+    }
+    await new Promise((r) => setTimeout(r, CH_MIN_GAP_MS))
+  }
+
+  // Apply results to contacts
+  for (const c of contacts) {
+    if (!c.company) continue
+    const hit = results.get(chNormalise(c.company))
+    if (hit) {
+      c.chStatus = hit.status
+      c.chName = hit.name
+      c.chNumber = hit.number
+    }
+  }
 }
 
 /* ================================================================== */
@@ -315,6 +399,13 @@ async function getEnrichedContacts(): Promise<OldCrmContact[]> {
     console.error('[old-crm] HubSpot enrichment failed, returning unenriched data:', (err as Error).message)
   }
 
+  // Companies House enrichment
+  try {
+    await enrichWithCompaniesHouse(contacts)
+  } catch (err) {
+    console.error('[old-crm] Companies House enrichment failed:', (err as Error).message)
+  }
+
   enrichedCache = contacts
   enrichedCacheTs = now
   return contacts
@@ -337,6 +428,11 @@ const routes: FastifyPluginAsync = async (app) => {
     for (const c of contacts) byStatus[c.hubspotMatch] = (byStatus[c.hubspotMatch] || 0) + 1
     const reEngageable = contacts.filter((c) => c.email && c.hubspotMatch === 'not_found').length
 
+    const chActive = contacts.filter((c) => c.chStatus === 'active').length
+    const chDissolved = contacts.filter((c) => c.chStatus === 'dissolved').length
+    const chOther = contacts.filter((c) => !['active', 'dissolved', 'skipped', 'not_found'].includes(c.chStatus)).length
+    const chNotFound = contacts.filter((c) => c.chStatus === 'not_found').length
+
     return {
       contacts,
       stats: {
@@ -352,6 +448,10 @@ const routes: FastifyPluginAsync = async (app) => {
         subscriber: byStatus.subscriber || 0,
         other: byStatus.other || 0,
         notFound: byStatus.not_found || 0,
+        chActive,
+        chDissolved,
+        chOther,
+        chNotFound,
       },
     }
   })

@@ -25,6 +25,9 @@ type Contact = {
   hubspotMatch: HubSpotStatus
   hubspotCompany: string
   hubspotDetail: string
+  chStatus: string
+  chName: string
+  chNumber: string
 }
 
 type Stats = {
@@ -40,6 +43,10 @@ type Stats = {
   subscriber: number
   other: number
   notFound: number
+  chActive: number
+  chDissolved: number
+  chOther: number
+  chNotFound: number
 }
 
 const contacts = ref<Contact[]>([])
@@ -49,6 +56,7 @@ const error = ref<string | null>(null)
 const search = ref('')
 const sourceFilter = ref<string>('all')
 const statusFilter = ref<string>('all')
+const chFilter = ref<string>('all')
 
 async function load() {
   loading.value = true
@@ -79,6 +87,13 @@ const filtered = computed(() => {
   if (statusFilter.value !== 'all') {
     list = list.filter((c) => c.hubspotMatch === statusFilter.value)
   }
+  if (chFilter.value !== 'all') {
+    if (chFilter.value === 'other_ch') {
+      list = list.filter((c) => !['active', 'dissolved', 'not_found', 'skipped'].includes(c.chStatus))
+    } else {
+      list = list.filter((c) => c.chStatus === chFilter.value)
+    }
+  }
   const q = search.value.toLowerCase().trim()
   if (q) {
     list = list.filter(
@@ -100,6 +115,10 @@ function pct(n: number, total: number): string {
 
 function filterByStatus(status: string) {
   statusFilter.value = statusFilter.value === status ? 'all' : status
+}
+
+function filterByCh(status: string) {
+  chFilter.value = chFilter.value === status ? 'all' : status
 }
 
 onMounted(load)
@@ -127,7 +146,7 @@ onMounted(load)
 
     <template v-else>
       <!-- Stat Cards -->
-      <div v-if="stats" class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+      <div v-if="stats" class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5">
         <!-- Total -->
         <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <div class="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Contacts</div>
@@ -160,28 +179,6 @@ onMounted(load)
           <div class="mt-1 text-xs text-green-500">became paying customers</div>
         </button>
 
-        <!-- Past Customers -->
-        <button
-          class="rounded-xl border p-4 text-left shadow-sm transition-colors"
-          :class="statusFilter === 'past_customer' ? 'border-orange-400 bg-orange-50 ring-1 ring-orange-300' : 'border-gray-200 bg-white hover:border-orange-300'"
-          @click="filterByStatus('past_customer')"
-        >
-          <div class="text-xs font-semibold uppercase tracking-wider text-orange-600">Past Customers</div>
-          <div class="mt-1 text-2xl font-bold tabular-nums text-orange-700">{{ stats.pastCustomer }}</div>
-          <div class="mt-1 text-xs text-orange-500">churned &mdash; win-back?</div>
-        </button>
-
-        <!-- Already in HubSpot -->
-        <button
-          class="rounded-xl border p-4 text-left shadow-sm transition-colors"
-          :class="['lead', 'in_pipeline', 'subscriber', 'other'].includes(statusFilter) ? 'border-blue-400 bg-blue-50 ring-1 ring-blue-300' : 'border-gray-200 bg-white hover:border-blue-300'"
-          @click="filterByStatus('lead')"
-        >
-          <div class="text-xs font-semibold uppercase tracking-wider text-blue-600">In HubSpot</div>
-          <div class="mt-1 text-2xl font-bold tabular-nums text-blue-700">{{ stats.lead + stats.inPipeline + stats.subscriber + stats.other }}</div>
-          <div class="mt-1 text-xs text-blue-500">already tracked</div>
-        </button>
-
         <!-- Re-engageable (KEY METRIC) -->
         <button
           class="rounded-xl border p-4 text-left shadow-sm transition-colors"
@@ -194,11 +191,55 @@ onMounted(load)
         </button>
       </div>
 
+      <!-- Companies House Cards -->
+      <div v-if="stats && (stats.chActive > 0 || stats.chDissolved > 0)" class="mb-6">
+        <h3 class="mb-3 text-sm font-semibold text-gray-700">Companies House Status</h3>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <button
+            class="rounded-xl border p-4 text-left shadow-sm transition-colors"
+            :class="chFilter === 'active' ? 'border-green-400 bg-green-50 ring-1 ring-green-300' : 'border-gray-200 bg-white hover:border-green-300'"
+            @click="filterByCh('active')"
+          >
+            <div class="text-xs font-semibold uppercase tracking-wider text-green-600">Active</div>
+            <div class="mt-1 text-2xl font-bold tabular-nums text-green-700">{{ stats.chActive }}</div>
+            <div class="mt-1 text-xs text-green-500">still trading</div>
+          </button>
+          <button
+            class="rounded-xl border p-4 text-left shadow-sm transition-colors"
+            :class="chFilter === 'dissolved' ? 'border-red-400 bg-red-50 ring-1 ring-red-300' : 'border-gray-200 bg-white hover:border-red-300'"
+            @click="filterByCh('dissolved')"
+          >
+            <div class="text-xs font-semibold uppercase tracking-wider text-red-600">Dissolved</div>
+            <div class="mt-1 text-2xl font-bold tabular-nums text-red-700">{{ stats.chDissolved }}</div>
+            <div class="mt-1 text-xs text-red-500">no longer exists</div>
+          </button>
+          <button
+            v-if="stats.chOther > 0"
+            class="rounded-xl border p-4 text-left shadow-sm transition-colors"
+            :class="chFilter === 'other_ch' ? 'border-amber-400 bg-amber-50 ring-1 ring-amber-300' : 'border-gray-200 bg-white hover:border-amber-300'"
+            @click="chFilter = chFilter === 'other_ch' ? 'all' : 'other_ch'"
+          >
+            <div class="text-xs font-semibold uppercase tracking-wider text-amber-600">Other</div>
+            <div class="mt-1 text-2xl font-bold tabular-nums text-amber-700">{{ stats.chOther }}</div>
+            <div class="mt-1 text-xs text-amber-500">liquidation / admin etc</div>
+          </button>
+          <button
+            class="rounded-xl border p-4 text-left shadow-sm transition-colors"
+            :class="chFilter === 'not_found' ? 'border-gray-400 bg-gray-50 ring-1 ring-gray-300' : 'border-gray-200 bg-white hover:border-gray-300'"
+            @click="filterByCh('not_found')"
+          >
+            <div class="text-xs font-semibold uppercase tracking-wider text-gray-500">Not Found</div>
+            <div class="mt-1 text-2xl font-bold tabular-nums text-gray-700">{{ stats.chNotFound }}</div>
+            <div class="mt-1 text-xs text-gray-400">no CH match (councils etc)</div>
+          </button>
+        </div>
+      </div>
+
       <!-- Filters -->
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-gray-500">
           <span class="font-semibold text-gray-900">{{ filtered.length }}</span> of {{ contacts.length }} contacts
-          <button v-if="statusFilter !== 'all' || sourceFilter !== 'all'" class="ml-2 text-xs text-indigo-600 hover:underline" @click="statusFilter = 'all'; sourceFilter = 'all'">Clear filters</button>
+          <button v-if="statusFilter !== 'all' || sourceFilter !== 'all' || chFilter !== 'all'" class="ml-2 text-xs text-indigo-600 hover:underline" @click="statusFilter = 'all'; sourceFilter = 'all'; chFilter = 'all'">Clear filters</button>
         </p>
         <div class="flex items-center gap-3">
           <div class="relative">
@@ -225,6 +266,13 @@ onMounted(load)
             <option value="other">Other (in HS)</option>
             <option value="not_found">Not in HubSpot</option>
           </select>
+          <select v-model="chFilter" class="ui-input">
+            <option value="all">All CH statuses</option>
+            <option value="active">CH: Active</option>
+            <option value="dissolved">CH: Dissolved</option>
+            <option value="not_found">CH: Not Found</option>
+            <option value="skipped">CH: Not checked</option>
+          </select>
         </div>
       </div>
 
@@ -242,6 +290,7 @@ onMounted(load)
               <th class="px-4 py-3">Provision Type</th>
               <th class="px-4 py-3">Source</th>
               <th class="px-4 py-3">HubSpot Status</th>
+              <th class="px-4 py-3">Companies House</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
@@ -284,9 +333,32 @@ onMounted(load)
                 >{{ c.hubspotDetail || 'Not Found' }}</span>
                 <span v-if="c.hubspotCompany" class="ml-1 text-xs text-gray-400">{{ c.hubspotCompany }}</span>
               </td>
+              <td class="whitespace-nowrap px-4 py-3">
+                <template v-if="c.chStatus === 'skipped'">
+                  <span class="text-gray-300">&mdash;</span>
+                </template>
+                <template v-else>
+                  <span
+                    class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                    :class="{
+                      'bg-green-100 text-green-800': c.chStatus === 'active',
+                      'bg-red-100 text-red-800': c.chStatus === 'dissolved',
+                      'bg-amber-100 text-amber-800': !['active', 'dissolved', 'not_found', 'skipped'].includes(c.chStatus),
+                      'bg-gray-100 text-gray-500': c.chStatus === 'not_found',
+                    }"
+                  >{{ c.chStatus === 'not_found' ? 'Not Found' : c.chStatus }}</span>
+                  <a
+                    v-if="c.chNumber"
+                    :href="'https://find-and-update.company-information.service.gov.uk/company/' + c.chNumber"
+                    target="_blank"
+                    rel="noopener"
+                    class="ml-1 text-xs text-blue-500 hover:underline"
+                  >{{ c.chNumber }}</a>
+                </template>
+              </td>
             </tr>
             <tr v-if="filtered.length === 0">
-              <td colspan="9" class="px-4 py-8 text-center text-gray-400">No contacts found</td>
+              <td colspan="10" class="px-4 py-8 text-center text-gray-400">No contacts found</td>
             </tr>
           </tbody>
         </table>
