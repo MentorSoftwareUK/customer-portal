@@ -52,21 +52,6 @@ const HEALTH_STYLES: Record<string, { bg: string; text: string; label: string }>
   red: { bg: 'bg-rose-500/10', text: 'text-rose-400', label: 'Critical' },
 }
 
-/* ── At-risk by owner (from inactive companies data) ── */
-const inactiveByOwner = computed(() => {
-  if (!ops.value) return []
-  const map = new Map<string, { count14to30: number; count30plus: number }>()
-  for (const c of ops.value.inactiveCompanies.companies) {
-    const row = map.get(c.owner) ?? { count14to30: 0, count30plus: 0 }
-    if (c.daysInactive >= 30) row.count30plus++
-    else row.count14to30++
-    map.set(c.owner, row)
-  }
-  return [...map.entries()]
-    .map(([name, counts]) => ({ name, ...counts }))
-    .sort((a, b) => (b.count30plus + b.count14to30) - (a.count30plus + a.count14to30))
-})
-
 /* ── Workload distribution ── */
 const workloadDistribution = computed(() => {
   if (!ops.value) return []
