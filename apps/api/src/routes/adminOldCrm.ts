@@ -171,7 +171,12 @@ const CH_BASE = 'https://api.company-information.service.gov.uk'
 const CH_MIN_GAP_MS = 520 // 600 requests / 5 min
 
 async function chSearch(query: string, apiKey: string): Promise<{ items?: Array<{ title: string; company_number: string; company_status: string }> }> {
-  const url = `${CH_BASE}/search/companies?q=${encodeURIComponent(query)}&items_per_page=3`
+  // Strip common suffixes that hurt search — CH search works better with just the trading name
+  const cleaned = query
+    .replace(/\b(ltd|limited|plc|inc|llc|uk|the)\b\.?/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  const url = `${CH_BASE}/search/companies?q=${encodeURIComponent(cleaned)}&items_per_page=5`
   const res = await fetch(url, {
     headers: { Authorization: `Basic ${Buffer.from(`${apiKey}:`).toString('base64')}` },
   })
@@ -179,12 +184,32 @@ async function chSearch(query: string, apiKey: string): Promise<{ items?: Array<
     await new Promise((r) => setTimeout(r, 5000))
     return chSearch(query, apiKey)
   }
-  if (!res.ok) return { items: [] }
+  if (!res.ok) {
+    console.error(`[old-crm] CH search failed for "${cleaned}": ${res.status}`)
+    return { items: [] }
+  }
   return res.json() as Promise<{ items?: Array<{ title: string; company_number: string; company_status: string }> }>
 }
 
 function chNormalise(s: string): string {
-  return s.toLowerCase().replace(/\b(ltd|limited|plc|inc|llc|group|uk|the|of)\b/g, '').replace(/[^a-z0-9]/g, '').trim()
+  return s.toLowerCase().replace(/\b(ltd|limited|plc|inc|llc|group|uk|the|of|children'?s|childrens)\b/g, '').replace(/[^a-z0-9]/g, '').trim()
+}
+
+/** Score how well a CH result matches the CRM name (lower = better). */
+function chMatchScore(crmNorm: string, chTitle: string): number {
+  const chNorm = chNormalise(chTitle)
+  if (chNorm === crmNorm) return 0 // exact
+  if (chNorm.startsWith(crmNorm) || crmNorm.startsWith(chNorm)) return 1 // prefix
+  if (chNorm.includes(crmNorm) || crmNorm.includes(chNorm)) return 2 // contains
+
+  // Word overlap — count shared words
+  const crmWords = new Set(crmNorm.match(/[a-z0-9]+/g) || [])
+  const chWords = new Set(chNorm.match(/[a-z0-9]+/g) || [])
+  let shared = 0
+  for (const w of crmWords) if (chWords.has(w)) shared++
+  if (shared === 0) return 99 // no overlap at all
+  const overlap = shared / Math.max(crmWords.size, chWords.size)
+  return overlap >= 0.5 ? 3 : 10 // decent overlap vs poor
 }
 
 async function enrichWithCompaniesHouse(contacts: OldCrmContact[]): Promise<void> {
@@ -208,15 +233,23 @@ async function enrichWithCompaniesHouse(contacts: OldCrmContact[]): Promise<void
     try {
       const data = await chSearch(original, apiKey)
       const items = data.items || []
-      // Try exact match, then first result
-      let match = items.find((it) => chNormalise(it.title) === norm)
-      if (!match && items.length > 0) match = items[0]
 
-      if (match) {
+      // Score all results and pick the best one (if it's a reasonable match)
+      let bestMatch: (typeof items)[0] | undefined
+      let bestScore = 99
+      for (const it of items) {
+        const score = chMatchScore(norm, it.title)
+        if (score < bestScore) {
+          bestScore = score
+          bestMatch = it
+        }
+      }
+
+      if (bestMatch && bestScore < 10) {
         results.set(norm, {
-          status: (match.company_status || 'unknown') as CompaniesHouseStatus,
-          name: match.title,
-          number: match.company_number,
+          status: (bestMatch.company_status || 'unknown') as CompaniesHouseStatus,
+          name: bestMatch.title,
+          number: bestMatch.company_number,
         })
       } else {
         results.set(norm, { status: 'not_found', name: '', number: '' })
