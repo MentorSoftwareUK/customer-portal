@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue'
-import SparkLine from '../../components/SparkLine.vue'
 import DashboardSubNav from '../../components/DashboardSubNav.vue'
 import { adminGetOps, type OpsStats } from '../../lib/api'
-import { pctDelta, relativeDate } from '../../lib/dashboard-helpers'
+import { relativeDate } from '../../lib/dashboard-helpers'
 import { useDashboardMonth } from '../../lib/useDashboardMonth'
 
 const { selectedMonth, monthOptions } = useDashboardMonth()
@@ -37,16 +36,6 @@ function toggleDept(dept: string) {
 
 const dismissedAlerts = ref<Set<string>>(new Set())
 
-/* ── Inactive companies filter ── */
-const inactiveFilter = ref<'all' | '14to30' | '30plus'>('all')
-const filteredInactive = computed(() => {
-  if (!ops.value) return []
-  const list = ops.value.inactiveCompanies.companies
-  if (inactiveFilter.value === '14to30') return list.filter(c => c.daysInactive >= 14 && c.daysInactive < 30)
-  if (inactiveFilter.value === '30plus') return list.filter(c => c.daysInactive >= 30)
-  return list
-})
-
 /* ── Colors ── */
 const DEPT_COLORS: Record<string, string> = {
   Sales: '#34d399',
@@ -63,7 +52,100 @@ const HEALTH_STYLES: Record<string, { bg: string; text: string; label: string }>
   red: { bg: 'bg-rose-500/10', text: 'text-rose-400', label: 'Critical' },
 }
 
+/* ── At-risk by owner (from inactive companies data) ── */
+const inactiveByOwner = computed(() => {
+  if (!ops.value) return []
+  const map = new Map<string, { count14to30: number; count30plus: number }>()
+  for (const c of ops.value.inactiveCompanies.companies) {
+    const row = map.get(c.owner) ?? { count14to30: 0, count30plus: 0 }
+    if (c.daysInactive >= 30) row.count30plus++
+    else row.count14to30++
+    map.set(c.owner, row)
+  }
+  return [...map.entries()]
+    .map(([name, counts]) => ({ name, ...counts }))
+    .sort((a, b) => (b.count30plus + b.count14to30) - (a.count30plus + a.count14to30))
+})
 
+/* ── Workload distribution ── */
+const workloadDistribution = computed(() => {
+  if (!ops.value) return []
+  return ops.value.departments
+    .flatMap(d => d.members.map(m => ({
+      name: m.name,
+      department: d.department,
+      openTasks: m.openTasks,
+      overdueTasks: m.overdueTasks,
+    })))
+    .sort((a, b) => b.openTasks - a.openTasks)
+})
+
+const avgOpenTasks = computed(() => {
+  const list = workloadDistribution.value
+  if (list.length === 0) return 0
+  return Math.round(list.reduce((s, m) => s + m.openTasks, 0) / list.length * 10) / 10
+})
+
+const maxOpenTasks = computed(() => Math.max(...workloadDistribution.value.map(m => m.openTasks), 1))
+
+/* ── Communication channel balance ── */
+const channelBalance = computed(() => {
+  if (!ops.value) return null
+  let totalCalls = 0, totalEmails = 0
+  const byDept = new Map<string, { calls: number; emails: number }>()
+  for (const d of ops.value.departments) {
+    let dCalls = 0, dEmails = 0
+    for (const m of d.members) {
+      totalCalls += m.calls
+      totalEmails += m.emails
+      dCalls += m.calls
+      dEmails += m.emails
+    }
+    byDept.set(d.department, { calls: dCalls, emails: dEmails })
+  }
+  const ratio = totalEmails > 0 ? totalCalls / totalEmails : 0
+  return {
+    totalCalls,
+    totalEmails,
+    ratio,
+    ratioDisplay: ratio >= 1
+      ? `${ratio.toFixed(1)}:1`
+      : totalCalls > 0 ? `1:${(totalEmails / totalCalls).toFixed(1)}` : '0:0',
+    byDepartment: ops.value.departments
+      .map(d => {
+        const data = byDept.get(d.department)!
+        const dRatio = data.emails > 0 ? data.calls / data.emails : 0
+        return {
+          department: d.department,
+          calls: data.calls,
+          emails: data.emails,
+          ratio: dRatio,
+          ratioDisplay: dRatio >= 1
+            ? `${dRatio.toFixed(1)}:1`
+            : data.calls > 0 ? `1:${(data.emails / data.calls).toFixed(1)}` : '—',
+        }
+      })
+      .filter(d => d.calls > 0 || d.emails > 0),
+  }
+})
+
+/* ── Gauge SVG helpers ── */
+function gaugeArcPath(startRatio: number, endRatio: number, cx = 100, cy = 100, r = 80): string {
+  const maxR = 4
+  const startAngle = Math.PI * (1 - Math.min(startRatio / maxR, 1))
+  const endAngle = Math.PI * (1 - Math.min(endRatio / maxR, 1))
+  const x1 = cx + r * Math.cos(startAngle)
+  const y1 = cy - r * Math.sin(startAngle)
+  const x2 = cx + r * Math.cos(endAngle)
+  const y2 = cy - r * Math.sin(endAngle)
+  const largeArc = Math.abs(startAngle - endAngle) > Math.PI ? 1 : 0
+  return `M ${x1},${y1} A ${r},${r} 0 ${largeArc} 1 ${x2},${y2}`
+}
+
+function gaugePoint(ratio: number, cx = 100, cy = 100, r = 80) {
+  const angle = Math.PI * (1 - Math.min(ratio / 4, 1))
+  return { x: cx + r * Math.cos(angle), y: cy - r * Math.sin(angle) }
+}
 
 watch(selectedMonth, () => void loadOps())
 onMounted(() => void loadOps())
@@ -183,9 +265,10 @@ onMounted(() => void loadOps())
                     </span>
                     <span class="text-white/50 ml-0.5">({{ dept.overdueRate }}%)</span>
                   </div>
-                  <div><span class="text-white/50">Meetings </span><span class="font-bold text-teal-400">{{ dept.meetings }}</span></div>
+                  <div v-if="dept.department !== 'Retention'"><span class="text-white/50">Meetings </span><span class="font-bold text-teal-400">{{ dept.meetings }}</span></div>
                   <div v-if="dept.department === 'Sales'"><span class="text-white/50">Demos </span><span class="font-bold text-cyan-400">{{ dept.demos }}</span></div>
                   <div v-if="dept.department === 'Support'"><span class="text-white/50">Tickets </span><span class="font-bold text-orange-400">{{ dept.tickets }}</span></div>
+                  <div v-if="dept.department === 'Retention'"><span class="text-white/50">Renewals </span><span class="font-bold text-pink-400">{{ dept.meetings }}</span></div>
                   <div><span class="text-white/50">Activity </span><span class="font-bold text-white">{{ dept.activityThisMonth }}</span></div>
                   <div v-if="dept.lastActivityDate" class="text-white/50">
                     Last: {{ relativeDate(dept.lastActivityDate) }}
@@ -207,7 +290,8 @@ onMounted(() => void loadOps())
                 >
                   <span>Name</span><span class="text-center">Open</span><span class="text-center">Overdue</span>
                   <span class="text-center">Calls</span><span class="text-center">Emails</span><span class="text-center">Notes</span>
-                  <span class="text-center">Meetings</span>
+                  <span v-if="dept.department !== 'Retention'" class="text-center">Meetings</span>
+                  <span v-if="dept.department === 'Retention'" class="text-center">Renewals</span>
                   <span v-if="dept.department === 'Sales'" class="text-center">Demos</span>
                   <span v-if="dept.department === 'Support'" class="text-center">Tickets</span>
                   <span class="text-right">Last activity</span>
@@ -224,7 +308,7 @@ onMounted(() => void loadOps())
                   <span class="text-center tabular-nums text-indigo-400">{{ member.calls }}</span>
                   <span class="text-center tabular-nums text-sky-400">{{ member.emails }}</span>
                   <span class="text-center tabular-nums text-purple-400">{{ member.notes }}</span>
-                  <span class="text-center tabular-nums text-teal-400">{{ member.meetings }}</span>
+                  <span class="text-center tabular-nums" :class="dept.department === 'Retention' ? 'text-pink-400' : 'text-teal-400'">{{ member.meetings }}</span>
                   <span v-if="dept.department === 'Sales'" class="text-center tabular-nums text-cyan-400">{{ member.demos }}</span>
                   <span v-if="dept.department === 'Support'" class="text-center tabular-nums text-orange-400">{{ member.tickets }}</span>
                   <span class="text-right text-white/50 text-xs">{{ member.lastActivity ? relativeDate(member.lastActivity) : '—' }}</span>
@@ -298,205 +382,125 @@ onMounted(() => void loadOps())
         </div>
 
         <!-- ═══════════════════════════════════════════════
-             6. TASK & WORKLOAD OVERVIEW
+             4. AT-RISK CUSTOMERS BY OWNER
         ═══════════════════════════════════════════════ -->
-        <div id="task-workload" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Task & Workload</div>
+        <div id="at-risk-owners" class="mt-8">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">At-Risk Customers by Owner</div>
 
-          <!-- KPI cards -->
-          <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs text-white/50">Total open</div>
-              <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.taskWorkload.totalOpen }}</div>
-            </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs text-white/50">Overdue</div>
-              <div class="mt-1 text-2xl font-bold tabular-nums" :class="ops.taskWorkload.overdueRate > 20 ? 'text-rose-400' : ops.taskWorkload.overdueRate >= 10 ? 'text-amber-400' : 'text-white'">
-                {{ ops.taskWorkload.totalOverdue }}
-              </div>
-              <div class="mt-0.5 text-[10px] text-white/30">{{ ops.taskWorkload.overdueRate }}% of open</div>
-            </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs text-white/50">Completed this month</div>
-              <div class="mt-1 text-2xl font-bold tabular-nums text-emerald-400">{{ ops.taskWorkload.completedThisMonth }}</div>
-              <div class="mt-0.5 flex items-center gap-1">
-                <span v-if="ops.taskWorkload.completedPrev > 0"
-                  class="text-[10px] font-bold rounded-full px-1.5 py-0.5"
-                  :class="ops.taskWorkload.completedThisMonth >= ops.taskWorkload.completedPrev ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'"
-                >
-                  {{ pctDelta(ops.taskWorkload.completedThisMonth, ops.taskWorkload.completedPrev).dir === 'up' ? '+' : '' }}{{ pctDelta(ops.taskWorkload.completedThisMonth, ops.taskWorkload.completedPrev).value }}%
-                </span>
-                <span class="text-[10px] text-white/30">vs prev</span>
-              </div>
-            </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs text-white/50">Avg completion time</div>
-              <div class="mt-1 text-2xl font-bold tabular-nums text-white">{{ ops.taskWorkload.avgCompletionDays }}d</div>
-              <div class="mt-0.5 text-[10px] text-white/30">Prev: {{ ops.taskWorkload.avgCompletionDaysPrev }}d</div>
-            </div>
-          </div>
-
-          <!-- Overdue by owner (horizontal bar chart) -->
-          <div v-if="ops.taskWorkload.overdueByOwner.length > 0" class="mt-4">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2">Overdue tasks by owner</div>
-            <div class="space-y-1.5">
-              <div v-for="o in ops.taskWorkload.overdueByOwner" :key="o.name" class="flex items-center gap-3">
-                <span class="w-28 shrink-0 text-xs text-white/60 text-right truncate">{{ o.name }}</span>
-                <div class="flex-1 h-5 rounded-full bg-white/[0.04] overflow-hidden">
-                  <div
-                    class="h-full rounded-full bg-rose-500/40 flex items-center justify-end pr-2"
-                    :style="{ width: Math.max((o.count / (ops.taskWorkload.overdueByOwner[0]?.count || 1)) * 100, 8) + '%' }"
-                  >
-                    <span class="text-[10px] font-bold text-rose-300 tabular-nums">{{ o.count }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Volume by department (this month vs prev) -->
-          <div v-if="ops.taskWorkload.volumeByDept.length > 0" class="mt-5">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2">Tasks completed by department</div>
-            <div class="space-y-2">
-              <div v-for="v in ops.taskWorkload.volumeByDept" :key="v.department" class="flex items-center gap-3">
-                <span class="w-20 shrink-0 text-xs text-white/60 text-right">{{ v.department }}</span>
-                <div class="flex-1 flex gap-1">
-                  <div class="h-5 rounded-l-full bg-cyan-500/40 flex items-center justify-end pr-2"
-                    :style="{ width: Math.max((v.thisMonth / Math.max(...ops.taskWorkload.volumeByDept.map(d => Math.max(d.thisMonth, d.prevMonth)), 1)) * 50, 4) + '%' }">
-                    <span class="text-[10px] font-bold text-cyan-300 tabular-nums">{{ v.thisMonth }}</span>
-                  </div>
-                  <div class="h-5 rounded-r-full bg-white/[0.06] flex items-center justify-end pr-2"
-                    :style="{ width: Math.max((v.prevMonth / Math.max(...ops.taskWorkload.volumeByDept.map(d => Math.max(d.thisMonth, d.prevMonth)), 1)) * 50, 4) + '%' }">
-                    <span class="text-[10px] font-bold text-white/30 tabular-nums">{{ v.prevMonth }}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="flex items-center gap-4 pl-24 text-[10px] text-white/30">
-                <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-cyan-500/40"></span> This month</span>
-                <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-white/[0.06]"></span> Prev month</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════
-             7. COMPANIES WITH NO RECENT ACTIVITY
-        ═══════════════════════════════════════════════ -->
-        <div id="inactive" class="mt-8">
-          <div class="flex items-center justify-between">
-            <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Inactive Paying Customers</div>
-            <div class="flex gap-1 text-[10px]">
-              <button
-                v-for="opt in [{ key: 'all', label: 'All' }, { key: '14to30', label: '14–30d' }, { key: '30plus', label: '30+d' }] as const"
-                :key="opt.key"
-                class="rounded-full px-2.5 py-1 font-semibold transition-colors"
-                :class="inactiveFilter === opt.key ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60'"
-                @click="inactiveFilter = opt.key"
-              >{{ opt.label }}</button>
-            </div>
-          </div>
-
-          <!-- Summary pills -->
-          <div class="mt-3 flex gap-3">
-            <div class="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-2">
-              <span class="text-[10px] text-amber-300/60 uppercase tracking-wider">14–30 days</span>
-              <div class="text-lg font-bold tabular-nums text-amber-400">{{ ops.inactiveCompanies.count14to30 }}</div>
-            </div>
-            <div class="rounded-lg border border-rose-500/20 bg-rose-500/5 px-4 py-2">
-              <span class="text-[10px] text-rose-300/60 uppercase tracking-wider">30+ days</span>
-              <div class="text-lg font-bold tabular-nums text-rose-400">{{ ops.inactiveCompanies.count30plus }}</div>
-            </div>
-          </div>
-
-          <!-- Table -->
-          <div v-if="filteredInactive.length > 0" class="mt-3 rounded-lg border border-white/[0.06] overflow-hidden">
+          <div v-if="inactiveByOwner.length > 0" class="mt-3 rounded-lg border border-white/[0.06] overflow-hidden">
             <table class="w-full text-xs">
               <thead><tr class="border-b border-white/[0.06] text-white/40">
-                <th class="px-3 py-2 text-left font-medium">Company</th>
                 <th class="px-3 py-2 text-left font-medium">Owner</th>
-                <th class="px-3 py-2 text-left font-medium">Stage</th>
-                <th class="px-3 py-2 text-right font-medium">Last activity</th>
-                <th class="px-3 py-2 text-right font-medium">Days inactive</th>
+                <th class="px-3 py-2 text-right font-medium">14–30 days</th>
+                <th class="px-3 py-2 text-right font-medium">30+ days</th>
               </tr></thead>
               <tbody>
-                <tr v-for="c in filteredInactive.slice(0, 30)" :key="c.companyId" class="border-b border-white/[0.03] last:border-0">
-                  <td class="px-3 py-2 text-white/80">{{ c.name }}</td>
-                  <td class="px-3 py-2 text-white/60">{{ c.owner }}</td>
-                  <td class="px-3 py-2 text-white/40">{{ c.lifecycleStage }}</td>
-                  <td class="px-3 py-2 text-right text-white/40">{{ c.lastActivityDate ? new Date(c.lastActivityDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'Never' }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums font-bold" :class="c.daysInactive >= 30 ? 'text-rose-400' : 'text-amber-400'">{{ c.daysInactive === 999 ? '∞' : c.daysInactive + 'd' }}</td>
+                <tr v-for="o in inactiveByOwner" :key="o.name" class="border-b border-white/[0.03] last:border-0">
+                  <td class="px-3 py-2 text-white/80">{{ o.name }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums font-bold" :class="o.count14to30 > 0 ? 'text-amber-400' : 'text-white/30'">{{ o.count14to30 }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums font-bold" :class="o.count30plus > 0 ? 'text-rose-400' : 'text-white/30'">{{ o.count30plus }}</td>
                 </tr>
               </tbody>
             </table>
-            <div v-if="filteredInactive.length > 30" class="px-3 py-2 text-[10px] text-white/30 border-t border-white/[0.04]">
-              Showing 30 of {{ filteredInactive.length }} — export for full list
-            </div>
           </div>
-          <div v-else class="mt-3 text-xs text-white/40">No inactive companies in this range.</div>
+          <div v-else class="mt-3 text-xs text-white/40">No inactive customers.</div>
         </div>
 
         <!-- ═══════════════════════════════════════════════
-             8. PROCESS EFFICIENCY INDICATORS
+             5. WORKLOAD DISTRIBUTION
         ═══════════════════════════════════════════════ -->
-        <div id="process" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Process Efficiency</div>
+        <div id="workload" class="mt-8">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Workload Distribution</div>
 
-          <!-- Stat cards 2×3 grid -->
-          <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-start justify-between">
-                <div class="text-xs text-white/50">MQL → Demo booked</div>
-                <SparkLine v-if="ops.processEfficiency.sparklines.mqlToDemo.length > 1" :data="ops.processEfficiency.sparklines.mqlToDemo" color="#34d399" :width="56" :height="20" />
-              </div>
-              <div class="mt-2 text-2xl font-bold tabular-nums text-white">
-                {{ ops.processEfficiency.avgMqlToDemo != null ? ops.processEfficiency.avgMqlToDemo + 'd' : '—' }}
-              </div>
-              <div class="mt-0.5 text-[10px] text-white/30">Avg days</div>
-            </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-start justify-between">
-                <div class="text-xs text-white/50">Demo → Deal closed</div>
-                <SparkLine v-if="ops.processEfficiency.sparklines.demoToClose.length > 1" :data="ops.processEfficiency.sparklines.demoToClose" color="#818cf8" :width="56" :height="20" />
-              </div>
-              <div class="mt-2 text-2xl font-bold tabular-nums text-white">
-                {{ ops.processEfficiency.avgDemoToClose != null ? ops.processEfficiency.avgDemoToClose + 'd' : '—' }}
-              </div>
-              <div class="mt-0.5 text-[10px] text-white/30">Avg days</div>
-            </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs text-white/50">Won → First contact</div>
-              <div class="mt-2 text-2xl font-bold tabular-nums text-white">
-                {{ ops.processEfficiency.avgWonToFirstContact != null ? ops.processEfficiency.avgWonToFirstContact + 'd' : '—' }}
-              </div>
-              <div class="mt-0.5 text-[10px] text-white/30">Avg days</div>
-            </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="flex items-start justify-between">
-                <div class="text-xs text-white/50">Meeting no-show rate</div>
-                <SparkLine v-if="ops.processEfficiency.sparklines.noShowRate.length > 1" :data="ops.processEfficiency.sparklines.noShowRate" color="#f472b6" :width="56" :height="20" />
-              </div>
-              <div class="mt-2 text-2xl font-bold tabular-nums" :class="(ops.processEfficiency.meetingNoShowRate ?? 0) > 15 ? 'text-rose-400' : 'text-white'">
-                {{ ops.processEfficiency.meetingNoShowRate != null ? ops.processEfficiency.meetingNoShowRate + '%' : '—' }}
-              </div>
-              <div v-if="ops.processEfficiency.meetingNoShowRatePrev != null" class="mt-0.5 text-[10px] text-white/30">
-                Prev: {{ ops.processEfficiency.meetingNoShowRatePrev }}%
-              </div>
-            </div>
-            <!-- Task completion rate by dept -->
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 col-span-2">
-              <div class="text-xs text-white/50 mb-3">Task completion rate by department</div>
-              <div class="space-y-2">
-                <div v-for="d in ops.processEfficiency.taskCompletionRateByDept" :key="d.department" class="flex items-center gap-3">
-                  <span class="w-20 shrink-0 text-xs text-white/60 text-right">{{ d.department }}</span>
-                  <div class="flex-1 h-4 rounded-full bg-white/[0.04] overflow-hidden">
-                    <div
-                      class="h-full rounded-full transition-all"
-                      :class="d.rate >= 70 ? 'bg-emerald-500/50' : d.rate >= 40 ? 'bg-amber-500/40' : 'bg-rose-500/40'"
-                      :style="{ width: Math.max(d.rate, 2) + '%' }"
-                    />
-                  </div>
-                  <span class="w-10 text-right text-xs font-bold tabular-nums" :class="d.rate >= 70 ? 'text-emerald-400' : d.rate >= 40 ? 'text-amber-400' : 'text-rose-400'">{{ d.rate }}%</span>
+          <div v-if="workloadDistribution.length > 0" class="mt-3 space-y-1.5">
+            <div v-for="m in workloadDistribution" :key="m.name" class="flex items-center gap-3">
+              <span class="w-32 shrink-0 text-xs text-white/60 text-right truncate">{{ m.name }}</span>
+              <span class="w-16 shrink-0 text-[10px] text-white/30">{{ m.department }}</span>
+              <div class="flex-1 h-5 rounded-full bg-white/[0.04] overflow-hidden">
+                <div
+                  class="h-full rounded-full flex items-center justify-end pr-2"
+                  :class="m.overdueTasks >= 6 ? 'bg-rose-500/40' : m.overdueTasks >= 1 ? 'bg-amber-500/30' : 'bg-emerald-500/30'"
+                  :style="{ width: Math.max((m.openTasks / maxOpenTasks) * 100, 6) + '%' }"
+                >
+                  <span class="text-[10px] font-bold tabular-nums text-white/80">{{ m.openTasks }}</span>
                 </div>
+              </div>
+              <span class="w-14 text-right text-[10px] tabular-nums font-bold" :class="m.overdueTasks >= 6 ? 'text-rose-400' : m.overdueTasks >= 1 ? 'text-amber-400' : 'text-white/30'">
+                {{ m.overdueTasks }} od
+              </span>
+            </div>
+            <div class="flex items-center gap-3 pt-1.5 border-t border-white/[0.04]">
+              <span class="w-32 shrink-0 text-xs text-white/40 text-right">Team avg</span>
+              <span class="w-16 shrink-0"></span>
+              <div class="flex-1 text-[10px] text-white/30">{{ avgOpenTasks }} open tasks</div>
+            </div>
+            <div class="flex items-center gap-4 pl-52 text-[10px] text-white/30">
+              <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-emerald-500/30"></span> 0 overdue</span>
+              <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-amber-500/30"></span> 1–5 overdue</span>
+              <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-rose-500/40"></span> 6+ overdue</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             6. COMMUNICATION CHANNEL BALANCE
+        ═══════════════════════════════════════════════ -->
+        <div v-if="channelBalance" id="channel-balance" class="mt-8">
+          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Communication Channel Balance</div>
+
+          <div class="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-6">
+            <div class="flex flex-col items-center">
+              <!-- Gauge -->
+              <svg viewBox="0 0 200 115" class="w-64 h-auto">
+                <!-- Background track -->
+                <path :d="gaugeArcPath(0, 4)" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="16" />
+                <!-- Red zone: ratio 0–0.6 (email heavy) -->
+                <path :d="gaugeArcPath(0, 0.6)" fill="none" stroke="#f43f5e" stroke-width="14" opacity="0.45" />
+                <!-- Amber zone: ratio 0.6–1.5 (transitional) -->
+                <path :d="gaugeArcPath(0.6, 1.5)" fill="none" stroke="#f59e0b" stroke-width="14" opacity="0.4" />
+                <!-- Green zone: ratio 1.5–4.0 (at or near target) -->
+                <path :d="gaugeArcPath(1.5, 4.0)" fill="none" stroke="#10b981" stroke-width="14" opacity="0.4" />
+                <!-- Target marker at 2:1 -->
+                <line :x1="gaugePoint(2.0, 100, 100, 68).x" :y1="gaugePoint(2.0, 100, 100, 68).y"
+                      :x2="gaugePoint(2.0, 100, 100, 92).x" :y2="gaugePoint(2.0, 100, 100, 92).y"
+                      stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
+                <!-- Needle -->
+                <line x1="100" y1="100"
+                      :x2="gaugePoint(channelBalance.ratio, 100, 100, 70).x"
+                      :y2="gaugePoint(channelBalance.ratio, 100, 100, 70).y"
+                      stroke="white" stroke-width="2.5" stroke-linecap="round" />
+                <circle cx="100" cy="100" r="4" fill="white" />
+                <!-- Labels -->
+                <text x="16" y="112" fill="rgba(255,255,255,0.3)" font-size="7" text-anchor="start">Emails</text>
+                <text x="184" y="112" fill="rgba(255,255,255,0.3)" font-size="7" text-anchor="end">Calls</text>
+                <text :x="gaugePoint(2.0, 100, 100, 60).x" :y="gaugePoint(2.0, 100, 100, 60).y - 2" fill="#f59e0b" font-size="7" text-anchor="middle" opacity="0.7">2:1</text>
+              </svg>
+
+              <!-- Ratio + totals -->
+              <div class="mt-2 text-3xl font-bold tabular-nums text-white">{{ channelBalance.ratioDisplay }}</div>
+              <div class="mt-1 flex items-center gap-4 text-xs text-white/50">
+                <span><span class="font-bold text-indigo-400 tabular-nums">{{ channelBalance.totalCalls }}</span> calls</span>
+                <span><span class="font-bold text-sky-400 tabular-nums">{{ channelBalance.totalEmails }}</span> emails</span>
+              </div>
+              <div class="mt-0.5 text-[10px] text-white/30">Target: 2:1 calls to emails</div>
+            </div>
+
+            <!-- Per-department breakdown -->
+            <div class="mt-5 space-y-2">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2">By department</div>
+              <div v-for="d in channelBalance.byDepartment" :key="d.department" class="flex items-center gap-3">
+                <span class="w-20 shrink-0 text-xs text-white/60 text-right">{{ d.department }}</span>
+                <div class="flex-1 h-5 rounded-full bg-white/[0.04] overflow-hidden flex">
+                  <div class="h-full bg-indigo-500/50" :style="{ width: (d.calls / Math.max(d.calls + d.emails, 1) * 100) + '%' }" />
+                  <div class="h-full bg-sky-500/30" :style="{ width: (d.emails / Math.max(d.calls + d.emails, 1) * 100) + '%' }" />
+                </div>
+                <span class="w-14 text-right text-xs font-bold tabular-nums" :class="d.ratio >= 2 ? 'text-emerald-400' : 'text-rose-400'">
+                  {{ d.ratioDisplay }}
+                </span>
+              </div>
+              <div class="flex items-center gap-4 pl-24 text-[10px] text-white/30">
+                <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-indigo-500/50"></span> Calls</span>
+                <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-sky-500/30"></span> Emails</span>
               </div>
             </div>
           </div>

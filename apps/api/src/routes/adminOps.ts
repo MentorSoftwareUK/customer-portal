@@ -280,7 +280,6 @@ const DEPT_MAP: Record<string, string> = {
   joe: 'Support',
   rupert: 'Support',
   liam: 'Marketing',
-  jonathan: 'Sales',
   debbie: 'Finance',
 }
 
