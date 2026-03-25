@@ -150,10 +150,10 @@ function gaugePoint(ratio: number, cx = 100, cy = 100, r = 80) {
 /* ── Needle animation ── */
 const needleAnimated = ref(false)
 const needleRotation = computed(() => {
-  if (!channelBalance.value || !needleAnimated.value) return 90 // start at far left (0 ratio)
-  // Map ratio 0–4 to 90deg (left / 180°) down to -90deg (right / 0°)
+  if (!channelBalance.value || !needleAnimated.value) return -180 // start at far left (0 ratio)
+  // Map ratio 0–4 → -180° (left) to 0° (right) through the top of the arc
   const clamped = Math.min(channelBalance.value.ratio / 4, 1)
-  return 90 - clamped * 180
+  return -180 * (1 - clamped)
 })
 
 watch(selectedMonth, () => void loadOps())
