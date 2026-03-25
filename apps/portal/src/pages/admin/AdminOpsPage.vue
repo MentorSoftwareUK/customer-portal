@@ -147,7 +147,24 @@ function gaugePoint(ratio: number, cx = 100, cy = 100, r = 80) {
   return { x: cx + r * Math.cos(angle), y: cy - r * Math.sin(angle) }
 }
 
+/* ── Needle animation ── */
+const needleAnimated = ref(false)
+const needleRotation = computed(() => {
+  if (!channelBalance.value || !needleAnimated.value) return 90 // start at far left (0 ratio)
+  // Map ratio 0–4 to 90deg (left / 180°) down to -90deg (right / 0°)
+  const clamped = Math.min(channelBalance.value.ratio / 4, 1)
+  return 90 - clamped * 180
+})
+
 watch(selectedMonth, () => void loadOps())
+watch(() => channelBalance.value, (v) => {
+  if (v) {
+    needleAnimated.value = false
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { needleAnimated.value = true })
+    })
+  }
+})
 onMounted(() => void loadOps())
 </script>
 
@@ -449,58 +466,59 @@ onMounted(() => void loadOps())
           <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Communication Channel Balance</div>
 
           <div class="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.03] p-6">
-            <div class="flex flex-col items-center">
-              <!-- Gauge -->
-              <svg viewBox="0 0 200 115" class="w-64 h-auto">
-                <!-- Background track -->
-                <path :d="gaugeArcPath(0, 4)" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="16" />
-                <!-- Red zone: ratio 0–0.6 (email heavy) -->
-                <path :d="gaugeArcPath(0, 0.6)" fill="none" stroke="#f43f5e" stroke-width="14" opacity="0.45" />
-                <!-- Amber zone: ratio 0.6–1.5 (transitional) -->
-                <path :d="gaugeArcPath(0.6, 1.5)" fill="none" stroke="#f59e0b" stroke-width="14" opacity="0.4" />
-                <!-- Green zone: ratio 1.5–4.0 (at or near target) -->
-                <path :d="gaugeArcPath(1.5, 4.0)" fill="none" stroke="#10b981" stroke-width="14" opacity="0.4" />
-                <!-- Target marker at 2:1 -->
-                <line :x1="gaugePoint(2.0, 100, 100, 68).x" :y1="gaugePoint(2.0, 100, 100, 68).y"
-                      :x2="gaugePoint(2.0, 100, 100, 92).x" :y2="gaugePoint(2.0, 100, 100, 92).y"
-                      stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
-                <!-- Needle -->
-                <line x1="100" y1="100"
-                      :x2="gaugePoint(channelBalance.ratio, 100, 100, 70).x"
-                      :y2="gaugePoint(channelBalance.ratio, 100, 100, 70).y"
-                      stroke="white" stroke-width="2.5" stroke-linecap="round" />
-                <circle cx="100" cy="100" r="4" fill="white" />
-                <!-- Labels -->
-                <text x="16" y="112" fill="rgba(255,255,255,0.3)" font-size="7" text-anchor="start">Emails</text>
-                <text x="184" y="112" fill="rgba(255,255,255,0.3)" font-size="7" text-anchor="end">Calls</text>
-                <text :x="gaugePoint(2.0, 100, 100, 60).x" :y="gaugePoint(2.0, 100, 100, 60).y - 2" fill="#f59e0b" font-size="7" text-anchor="middle" opacity="0.7">2:1</text>
-              </svg>
+            <div class="flex flex-col lg:flex-row gap-6">
+              <!-- Gauge (1/3) -->
+              <div class="lg:w-1/3 flex flex-col items-center justify-center">
+                <svg viewBox="0 0 200 115" class="w-full max-w-[220px] h-auto">
+                  <!-- Background track -->
+                  <path :d="gaugeArcPath(0, 4)" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="16" />
+                  <!-- Red zone: ratio 0–0.6 (email heavy) -->
+                  <path :d="gaugeArcPath(0, 0.6)" fill="none" stroke="#f43f5e" stroke-width="14" opacity="0.45" />
+                  <!-- Amber zone: ratio 0.6–1.5 (transitional) -->
+                  <path :d="gaugeArcPath(0.6, 1.5)" fill="none" stroke="#f59e0b" stroke-width="14" opacity="0.4" />
+                  <!-- Green zone: ratio 1.5–4.0 (at or near target) -->
+                  <path :d="gaugeArcPath(1.5, 4.0)" fill="none" stroke="#10b981" stroke-width="14" opacity="0.4" />
+                  <!-- Target marker at 2:1 -->
+                  <line :x1="gaugePoint(2.0, 100, 100, 68).x" :y1="gaugePoint(2.0, 100, 100, 68).y"
+                        :x2="gaugePoint(2.0, 100, 100, 92).x" :y2="gaugePoint(2.0, 100, 100, 92).y"
+                        stroke="#f59e0b" stroke-width="3" stroke-linecap="round" />
+                  <!-- Animated needle -->
+                  <g :style="{ transform: `rotate(${needleRotation}deg)`, transformOrigin: '100px 100px', transition: needleAnimated ? 'transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none' }">
+                    <line x1="100" y1="100" x2="170" y2="100" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+                  </g>
+                  <circle cx="100" cy="100" r="4" fill="white" />
+                  <!-- Labels -->
+                  <text x="16" y="112" fill="rgba(255,255,255,0.3)" font-size="7" text-anchor="start">Emails</text>
+                  <text x="184" y="112" fill="rgba(255,255,255,0.3)" font-size="7" text-anchor="end">Calls</text>
+                  <text :x="gaugePoint(2.0, 100, 100, 60).x" :y="gaugePoint(2.0, 100, 100, 60).y - 2" fill="#f59e0b" font-size="7" text-anchor="middle" opacity="0.7">2:1</text>
+                </svg>
 
-              <!-- Ratio + totals -->
-              <div class="mt-2 text-3xl font-bold tabular-nums text-white">{{ channelBalance.ratioDisplay }}</div>
-              <div class="mt-1 flex items-center gap-4 text-xs text-white/50">
-                <span><span class="font-bold text-indigo-400 tabular-nums">{{ channelBalance.totalCalls }}</span> calls</span>
-                <span><span class="font-bold text-sky-400 tabular-nums">{{ channelBalance.totalEmails }}</span> emails</span>
-              </div>
-              <div class="mt-0.5 text-[10px] text-white/30">Target: 2:1 calls to emails</div>
-            </div>
-
-            <!-- Per-department breakdown -->
-            <div class="mt-5 space-y-2">
-              <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2">By department</div>
-              <div v-for="d in channelBalance.byDepartment" :key="d.department" class="flex items-center gap-3">
-                <span class="w-20 shrink-0 text-xs text-white/60 text-right">{{ d.department }}</span>
-                <div class="flex-1 h-5 rounded-full bg-white/[0.04] overflow-hidden flex">
-                  <div class="h-full bg-indigo-500/50" :style="{ width: (d.calls / Math.max(d.calls + d.emails, 1) * 100) + '%' }" />
-                  <div class="h-full bg-sky-500/30" :style="{ width: (d.emails / Math.max(d.calls + d.emails, 1) * 100) + '%' }" />
+                <!-- Ratio + totals -->
+                <div class="mt-2 text-3xl font-bold tabular-nums text-white">{{ channelBalance.ratioDisplay }}</div>
+                <div class="mt-1 flex items-center gap-4 text-xs text-white/50">
+                  <span><span class="font-bold text-indigo-400 tabular-nums">{{ channelBalance.totalCalls }}</span> calls</span>
+                  <span><span class="font-bold text-sky-400 tabular-nums">{{ channelBalance.totalEmails }}</span> emails</span>
                 </div>
-                <span class="w-14 text-right text-xs font-bold tabular-nums" :class="d.ratio >= 2 ? 'text-emerald-400' : 'text-rose-400'">
-                  {{ d.ratioDisplay }}
-                </span>
+                <div class="mt-0.5 text-[10px] text-white/30">Target: 2:1 calls to emails</div>
               </div>
-              <div class="flex items-center gap-4 pl-24 text-[10px] text-white/30">
-                <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-indigo-500/50"></span> Calls</span>
-                <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-sky-500/30"></span> Emails</span>
+
+              <!-- Per-department breakdown (2/3) -->
+              <div class="lg:w-2/3 flex flex-col justify-center space-y-2">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2">By department</div>
+                <div v-for="d in channelBalance.byDepartment" :key="d.department" class="flex items-center gap-3">
+                  <span class="w-20 shrink-0 text-xs text-white/60 text-right">{{ d.department }}</span>
+                  <div class="flex-1 h-5 rounded-full bg-white/[0.04] overflow-hidden flex">
+                    <div class="h-full bg-indigo-500/50" :style="{ width: (d.calls / Math.max(d.calls + d.emails, 1) * 100) + '%' }" />
+                    <div class="h-full bg-sky-500/30" :style="{ width: (d.emails / Math.max(d.calls + d.emails, 1) * 100) + '%' }" />
+                  </div>
+                  <span class="w-14 text-right text-xs font-bold tabular-nums" :class="d.ratio >= 2 ? 'text-emerald-400' : 'text-rose-400'">
+                    {{ d.ratioDisplay }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-4 pl-24 text-[10px] text-white/30">
+                  <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-indigo-500/50"></span> Calls</span>
+                  <span class="flex items-center gap-1"><span class="inline-block h-2 w-4 rounded bg-sky-500/30"></span> Emails</span>
+                </div>
               </div>
             </div>
           </div>
