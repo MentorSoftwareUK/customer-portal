@@ -135,7 +135,7 @@ const successKpiCards = computed(() => {
     },
     {
       label: 'Meetings (30d)',
-      sub: 'All meetings last 30 days',
+      sub: `Completed ${s.meetingsCompleted} · Scheduled ${s.meetingsScheduled} · Cancelled ${s.meetingsCancelled} · No-show ${s.meetingsNoShow}`,
       val: s.meetingsThisMonth.toString(),
       delta: prev ? pctDelta(s.meetingsThisMonth, prev.meetingsMonth) : { value: 0, dir: 'flat' as const },
       suffix: '%',
@@ -153,6 +153,18 @@ const successKpiCards = computed(() => {
       valClass: 'text-emerald-400',
     },
     {
+      label: 'Scheduled',
+      sub: 'Upcoming this month',
+      val: s.meetingsScheduled.toString(),
+      delta: prev
+        ? { value: Math.abs(s.meetingsScheduled - (prev.scheduledMonth ?? 0)), dir: s.meetingsScheduled > (prev.scheduledMonth ?? 0) ? 'up' as const : s.meetingsScheduled < (prev.scheduledMonth ?? 0) ? 'down' as const : 'flat' as const }
+        : { value: 0, dir: 'flat' as const },
+      suffix: '',
+      spark: spark?.scheduled ?? [],
+      color: '#38bdf8',
+      valClass: 'text-sky-400',
+    },
+    {
       label: 'No-show',
       sub: 'Customer no-shows',
       val: s.meetingsNoShow.toString(),
@@ -163,6 +175,19 @@ const successKpiCards = computed(() => {
       spark: spark?.noShow ?? [],
       color: '#fb7185',
       valClass: 'text-rose-400',
+      invertDelta: true,
+    },
+    {
+      label: 'Cancelled',
+      sub: 'Cancelled this month',
+      val: s.meetingsCancelled.toString(),
+      delta: prev
+        ? { value: Math.abs(s.meetingsCancelled - (prev.cancelledMonth ?? 0)), dir: s.meetingsCancelled < (prev.cancelledMonth ?? 0) ? 'up' as const : s.meetingsCancelled > (prev.cancelledMonth ?? 0) ? 'down' as const : 'flat' as const }
+        : { value: 0, dir: 'flat' as const },
+      suffix: '',
+      spark: spark?.cancelled ?? [],
+      color: '#f59e0b',
+      valClass: 'text-amber-400',
       invertDelta: true,
     },
   ]

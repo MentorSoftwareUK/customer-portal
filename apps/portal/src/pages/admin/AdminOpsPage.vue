@@ -336,95 +336,7 @@ onMounted(() => void loadOps())
         </div>
 
         <!-- ═══════════════════════════════════════════════
-             3. HANDOFF & ONBOARDING PIPELINE
-        ═══════════════════════════════════════════════ -->
-        <div id="handoff" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Handoff & Onboarding</div>
-
-          <!-- Summary cards -->
-          <div class="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs text-white/50">Not assigned to CS/Training</div>
-              <div class="mt-1 text-2xl font-bold tabular-nums" :class="ops.handoff.unassignedWon.length > 0 ? 'text-rose-400' : 'text-emerald-400'">
-                {{ ops.handoff.unassignedWon.length }}
-              </div>
-              <div class="mt-0.5 text-[10px] text-white/30">Won deals, 3+ days</div>
-            </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs text-white/50">No contact (5+ days)</div>
-              <div class="mt-1 text-2xl font-bold tabular-nums" :class="ops.handoff.noContactNewCustomers.length > 0 ? 'text-rose-400' : 'text-emerald-400'">
-                {{ ops.handoff.noContactNewCustomers.length }}
-              </div>
-              <div class="mt-0.5 text-[10px] text-white/30">New customers &lt; 30d</div>
-            </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs text-white/50">No notes logged</div>
-              <div class="mt-1 text-2xl font-bold tabular-nums" :class="ops.handoff.noNotesNewCustomers.length > 0 ? 'text-amber-400' : 'text-emerald-400'">
-                {{ ops.handoff.noNotesNewCustomers.length }}
-              </div>
-              <div class="mt-0.5 text-[10px] text-white/30">New customers &lt; 30d</div>
-            </div>
-            <div class="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
-              <div class="text-xs text-white/50">Avg days to first contact</div>
-              <div class="mt-1 text-2xl font-bold tabular-nums text-white">
-                {{ ops.handoff.avgDaysToFirstContact != null ? ops.handoff.avgDaysToFirstContact + 'd' : '—' }}
-              </div>
-              <div class="mt-0.5 text-[10px] text-white/30">Deal won → first touch</div>
-            </div>
-          </div>
-
-          <!-- Unassigned won deals table — removed -->
-
-          <!-- No contact new customers table -->
-          <div v-if="ops.handoff.noContactNewCustomers.length > 0" class="mt-4">
-            <div class="text-[11px] font-semibold uppercase tracking-wider text-rose-400/80 mb-2">New customers — no contact logged</div>
-            <div class="rounded-lg border border-white/[0.06] overflow-hidden">
-              <table class="w-full text-xs">
-                <thead><tr class="border-b border-white/[0.06] text-white/40">
-                  <th class="px-3 py-2 text-left font-medium">Company</th>
-                  <th class="px-3 py-2 text-left font-medium">Owner</th>
-                  <th class="px-3 py-2 text-right font-medium">Days since won</th>
-                </tr></thead>
-                <tbody>
-                  <tr v-for="(c, i) in ops.handoff.noContactNewCustomers" :key="i" class="border-b border-white/[0.03] last:border-0">
-                    <td class="px-3 py-2 text-white/80">{{ c.company }}</td>
-                    <td class="px-3 py-2 text-white/60">{{ c.owner }}</td>
-                    <td class="px-3 py-2 text-right tabular-nums text-rose-400">{{ c.daysSinceWon }}d</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- ═══════════════════════════════════════════════
-             4. AT-RISK CUSTOMERS BY OWNER
-        ═══════════════════════════════════════════════ -->
-        <div id="at-risk-owners" class="mt-8">
-          <div class="text-xs font-semibold uppercase tracking-wider text-white/60">At-Risk Customers by Owner</div>
-
-          <div v-if="inactiveByOwner.length > 0" class="mt-3 rounded-lg border border-white/[0.06] overflow-hidden">
-            <table class="w-full text-xs">
-              <thead><tr class="border-b border-white/[0.06] text-white/40">
-                <th class="px-3 py-2 text-left font-medium">Owner</th>
-                <th class="px-3 py-2 text-right font-medium">14–30 days</th>
-                <th class="px-3 py-2 text-right font-medium">30+ days</th>
-              </tr></thead>
-              <tbody>
-                <tr v-for="o in inactiveByOwner" :key="o.name" class="border-b border-white/[0.03] last:border-0">
-                  <td class="px-3 py-2 text-white/80">{{ o.name }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums font-bold" :class="o.count14to30 > 0 ? 'text-amber-400' : 'text-white/30'">{{ o.count14to30 }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums font-bold" :class="o.count30plus > 0 ? 'text-rose-400' : 'text-white/30'">{{ o.count30plus }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div v-else class="mt-3 text-xs text-white/40">No inactive customers.</div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════
-             5. WORKLOAD DISTRIBUTION
+             3. WORKLOAD DISTRIBUTION
         ═══════════════════════════════════════════════ -->
         <div id="workload" class="mt-8">
           <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Workload Distribution</div>
@@ -460,7 +372,7 @@ onMounted(() => void loadOps())
         </div>
 
         <!-- ═══════════════════════════════════════════════
-             6. COMMUNICATION CHANNEL BALANCE
+             4. COMMUNICATION CHANNEL BALANCE
         ═══════════════════════════════════════════════ -->
         <div v-if="channelBalance" id="channel-balance" class="mt-8">
           <div class="text-xs font-semibold uppercase tracking-wider text-white/60">Communication Channel Balance</div>

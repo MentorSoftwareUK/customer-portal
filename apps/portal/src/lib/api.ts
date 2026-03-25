@@ -705,6 +705,8 @@ export type CustomerSuccess = {
   meetingsThisMonth: number
   meetingsCompleted: number
   meetingsNoShow: number
+  meetingsCancelled: number
+  meetingsScheduled: number
   meetingsByAgent: Array<{
     name: string
     ownerId: string
@@ -746,6 +748,8 @@ export type CustomerSuccess = {
     meetings: number[]
     completed: number[]
     noShow: number[]
+    cancelled: number[]
+    scheduled: number[]
   }
   previousPeriod?: {
     totalPayingCustomers: number
@@ -754,6 +758,8 @@ export type CustomerSuccess = {
     meetingsMonth: number
     completedMonth: number
     noShowMonth: number
+    cancelledMonth: number
+    scheduledMonth: number
   }
   newCustomers?: Array<{
     name: string

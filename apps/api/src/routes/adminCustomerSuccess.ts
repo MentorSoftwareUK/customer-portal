@@ -28,6 +28,8 @@ export type CustomerSuccessDto = {
   meetingsThisMonth: number
   meetingsCompleted: number
   meetingsNoShow: number
+  meetingsCancelled: number
+  meetingsScheduled: number
   meetingsByAgent: Array<{
     name: string
     ownerId: string
@@ -77,6 +79,8 @@ export type CustomerSuccessDto = {
     meetings: number[]
     completed: number[]
     noShow: number[]
+    cancelled: number[]
+    scheduled: number[]
   }
 
   /* Previous-period values for delta indicators */
@@ -87,6 +91,8 @@ export type CustomerSuccessDto = {
     meetingsMonth: number
     completedMonth: number
     noShowMonth: number
+    cancelledMonth: number
+    scheduledMonth: number
   }
 
   /* New customers (within first 60 days of contract start) */
@@ -458,6 +464,18 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   const meetingsNoShow = meetings.filter(
     (m) => m.properties.hs_meeting_outcome === 'NO_SHOW',
   ).length
+  const meetingsCancelled = meetings.filter(
+    (m) => m.properties.hs_meeting_outcome === 'CANCELLED',
+  ).length
+  const now_ = new Date()
+  const meetingsScheduled = meetings.filter(
+    (m) =>
+      m.properties.hs_meeting_outcome !== 'COMPLETED' &&
+      m.properties.hs_meeting_outcome !== 'NO_SHOW' &&
+      m.properties.hs_meeting_outcome !== 'CANCELLED' &&
+      m.properties.hs_meeting_start_time != null &&
+      new Date(m.properties.hs_meeting_start_time) > now_,
+  ).length
 
   /* ── 9. Meetings by Success team agent ── */
   const agentMeetingMap = new Map<
@@ -784,15 +802,23 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   }
 
   /* ── 13. Monthly meeting buckets (for sparklines) ── */
-  const meetingsByMonthMap = new Map<string, { total: number; completed: number; noShow: number }>()
+  const meetingsByMonthMap = new Map<string, { total: number; completed: number; noShow: number; cancelled: number; scheduled: number }>()
   for (const m of allMeetings) {
     const st = m.properties.hs_meeting_start_time
     if (!st) continue
-    const mk = monthKey(new Date(st))
-    const b = meetingsByMonthMap.get(mk) ?? { total: 0, completed: 0, noShow: 0 }
+    const mDate = new Date(st)
+    const mk = monthKey(mDate)
+    const b = meetingsByMonthMap.get(mk) ?? { total: 0, completed: 0, noShow: 0, cancelled: 0, scheduled: 0 }
     b.total++
     if (m.properties.hs_meeting_outcome === 'COMPLETED') b.completed++
     if (m.properties.hs_meeting_outcome === 'NO_SHOW') b.noShow++
+    if (m.properties.hs_meeting_outcome === 'CANCELLED') b.cancelled++
+    if (
+      m.properties.hs_meeting_outcome !== 'COMPLETED' &&
+      m.properties.hs_meeting_outcome !== 'NO_SHOW' &&
+      m.properties.hs_meeting_outcome !== 'CANCELLED' &&
+      mDate > now
+    ) b.scheduled++
     meetingsByMonthMap.set(mk, b)
   }
 
@@ -849,15 +875,19 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
   const meetingsSpark: number[] = []
   const completedSpark: number[] = []
   const noShowSpark: number[] = []
+  const cancelledSpark: number[] = []
+  const scheduledSpark: number[] = []
   const churnedSpark: number[] = []
   const retentionSpark: number[] = []
   for (let i = 5; i >= 0; i--) {
     const d = new Date(focusDate.getFullYear(), focusDate.getMonth() - i, 1)
     const mk = monthKey(d)
-    const mb = meetingsByMonthMap.get(mk) ?? { total: 0, completed: 0, noShow: 0 }
+    const mb = meetingsByMonthMap.get(mk) ?? { total: 0, completed: 0, noShow: 0, cancelled: 0, scheduled: 0 }
     meetingsSpark.push(mb.total)
     completedSpark.push(mb.completed)
     noShowSpark.push(mb.noShow)
+    cancelledSpark.push(mb.cancelled)
+    scheduledSpark.push(mb.scheduled)
     churnedSpark.push(churnTrend[5 - i]?.churned ?? 0)
     // Retention % estimate for sparkline
     const estPay = payingSpark[5 - i] ?? livePayingCount
@@ -872,11 +902,13 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     meetings: meetingsSpark,
     completed: completedSpark,
     noShow: noShowSpark,
+    cancelled: cancelledSpark,
+    scheduled: scheduledSpark,
   }
 
   /* ── 15. Previous period for delta comparison ── */
   const prevMK = monthKey(new Date(focusDate.getFullYear(), focusDate.getMonth() - 1, 1))
-  const prevMeetingBucket = meetingsByMonthMap.get(prevMK) ?? { total: 0, completed: 0, noShow: 0 }
+  const prevMeetingBucket = meetingsByMonthMap.get(prevMK) ?? { total: 0, completed: 0, noShow: 0, cancelled: 0, scheduled: 0 }
   const previousPeriod = {
     totalPayingCustomers: payingSpark[4] ?? livePayingCount,
     retentionRate: retentionSpark[4] ?? retentionRate,
@@ -884,6 +916,8 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     meetingsMonth: prevMeetingBucket.total,
     completedMonth: prevMeetingBucket.completed,
     noShowMonth: prevMeetingBucket.noShow,
+    cancelledMonth: prevMeetingBucket.cancelled,
+    scheduledMonth: prevMeetingBucket.scheduled,
   }
 
   /* ── 16. New customers (within first 60 days) ── */
@@ -1028,6 +1062,8 @@ async function buildCustomerSuccessStats(selectedMonth?: string): Promise<Custom
     meetingsThisMonth,
     meetingsCompleted,
     meetingsNoShow,
+    meetingsCancelled,
+    meetingsScheduled,
     meetingsByAgent,
     churnTrend,
     avgTenureMonths,
