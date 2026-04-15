@@ -181,7 +181,7 @@ function openArticle(article: KnowledgeBaseArticleDto) {
           type="button"
           class="rounded-xl border bg-[#14192d] p-5 text-left shadow-sm transition"
           :class="category === 'All'
-            ? 'border-l-primary-500 border-l-2 border-t-white/10 border-r-white/10 border-b-white/10 bg-white/[0.03]'
+            ? 'border-white/20 bg-white/5'
             : 'border-white/10 hover:bg-white/[0.03]'"
           @click="category = 'All'"
         >
@@ -201,7 +201,7 @@ function openArticle(article: KnowledgeBaseArticleDto) {
           type="button"
           class="rounded-xl border bg-[#14192d] p-5 text-left shadow-sm transition"
           :class="category === cat.name
-            ? 'border-l-primary-500 border-l-2 border-t-white/10 border-r-white/10 border-b-white/10 bg-white/[0.03]'
+            ? 'border-white/20 bg-white/5'
             : 'border-white/10 hover:bg-white/[0.03]'"
           @click="category = cat.name"
         >
