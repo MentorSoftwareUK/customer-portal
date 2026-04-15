@@ -187,11 +187,11 @@ function openArticle(article: KnowledgeBaseArticleDto) {
         >
           <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-white/5">
             <svg class="h-5 w-5 text-white/60" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" :d="categoryMeta['All'].icon" />
+              <path stroke-linecap="round" stroke-linejoin="round" :d="categoryMeta['All']!.icon" />
             </svg>
           </div>
           <div class="text-sm font-semibold text-white">All articles</div>
-          <div class="mt-1 text-xs text-white/50">{{ baseFilteredArticles.length }} articles · {{ categoryMeta['All'].description }}</div>
+          <div class="mt-1 text-xs text-white/50">{{ baseFilteredArticles.length }} articles · {{ categoryMeta['All']!.description }}</div>
         </button>
 
         <!-- Per-category cards -->
@@ -207,7 +207,7 @@ function openArticle(article: KnowledgeBaseArticleDto) {
         >
           <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-white/5">
             <svg class="h-5 w-5 text-white/60" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" :d="categoryMeta[cat.name]?.icon ?? categoryMeta['Support'].icon" />
+              <path stroke-linecap="round" stroke-linejoin="round" :d="categoryMeta[cat.name]?.icon ?? categoryMeta['Support']!.icon" />
             </svg>
           </div>
           <div class="text-sm font-semibold text-white">{{ cat.name }}</div>
