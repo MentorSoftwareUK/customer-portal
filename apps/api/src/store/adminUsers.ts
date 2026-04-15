@@ -142,7 +142,7 @@ export async function getAllAdminLastLogins(): Promise<Map<string, string>> {
 
   const col = db.collection<AdminUserDoc>(COLLECTION)
   const docs = await col.find(
-    { lastLoginAt: { $exists: true, $ne: null } },
+    { lastLoginAt: { $exists: true, $ne: null as any } },
     { projection: { _id: 1, lastLoginAt: 1 } },
   ).toArray()
   for (const doc of docs) {

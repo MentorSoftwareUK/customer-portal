@@ -347,7 +347,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   })
 
   // Step 1: begin login by issuing a short-lived code.
-  app.post('/start', async (req, reply) => {
+  app.post('/start', { ...authRateLimit }, async (req, reply) => {
     const parsed = StartBodySchema.safeParse(req.body)
     if (!parsed.success) {
       return reply.status(400).send({ error: 'invalid_request', issues: parsed.error.issues })
@@ -377,7 +377,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   })
 
   // Step 2: verify the code and mint an access token.
-  app.post('/verify', async (req, reply) => {
+  app.post('/verify', { ...authRateLimit }, async (req, reply) => {
     const parsed = VerifyBodySchema.safeParse(req.body)
     if (!parsed.success) {
       return reply.status(400).send({ error: 'invalid_request', issues: parsed.error.issues })
@@ -396,7 +396,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   })
 
   // Email/password login (optional; mainly for live customers).
-  app.post('/login', async (req, reply) => {
+  app.post('/login', { ...authRateLimit }, async (req, reply) => {
     const parsed = LoginBodySchema.safeParse(req.body)
     if (!parsed.success) {
       return reply.status(400).send({ error: 'invalid_request', issues: parsed.error.issues })
@@ -474,7 +474,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
   // Phase 1: email-first lookup.
   // Later: determine "live customer" via a configured HubSpot property.
-  app.post('/lookup', async (req, reply) => {
+  app.post('/lookup', { ...authRateLimit }, async (req, reply) => {
     const parsed = LookupBodySchema.safeParse(req.body)
     if (!parsed.success) {
       return reply.status(400).send({
