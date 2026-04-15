@@ -954,6 +954,26 @@ export async function trackSessionEnd(sessionId: string) {
   }).catch(() => null)
 }
 
+/**
+ * Best-effort session end that survives tab close / navigation away.
+ * Uses fetch with keepalive:true so the browser completes the request
+ * even after the page starts unloading. Includes the Authorization
+ * header so no API changes are needed.
+ */
+export function trackSessionEndBeacon(sessionId: string) {
+  const url = `${getApiBaseUrl()}/activity/session/end`
+  const token = getUserAccessToken()
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
+  fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ sessionId }),
+    keepalive: true,
+  }).catch(() => null)
+}
+
 export async function trackPageView(path: string) {
   await apiFetch(`${getApiBaseUrl()}/activity/page-view`, {
     method: 'POST',

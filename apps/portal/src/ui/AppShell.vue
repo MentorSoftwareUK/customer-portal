@@ -13,7 +13,7 @@ import {
   listGlobalNotifications,
   listMeetings,
   trackPageView,
-  trackSessionEnd,
+  trackSessionEndBeacon,
   trackSessionStart,
   type AuthUser,
   type GlobalNotificationDto,
@@ -203,10 +203,26 @@ onMounted(async () => {
   sessionId.value = id
 })
 
-onUnmounted(() => {
+// End session reliably on tab close, navigation away, or app hide.
+function handleSessionEnd() {
   if (sessionId.value) {
-    trackSessionEnd(sessionId.value)
+    trackSessionEndBeacon(sessionId.value)
+    sessionId.value = null
   }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleSessionEnd)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      handleSessionEnd()
+    }
+  })
+})
+
+onUnmounted(() => {
+  handleSessionEnd()
+  window.removeEventListener('beforeunload', handleSessionEnd)
 })
 
 const isActive = (to: string) => {
