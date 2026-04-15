@@ -179,10 +179,10 @@ function openArticle(article: KnowledgeBaseArticleDto) {
         <!-- All articles card -->
         <button
           type="button"
-          class="rounded-xl border bg-[#14192d] p-5 text-left shadow-sm transition"
+          class="rounded-xl border bg-[#14192d] p-5 text-left shadow-sm transition cursor-pointer"
           :class="category === 'All'
             ? 'border-white/20'
-            : 'border-white/10 hover:border-white/15'"
+            : 'border-white/10 hover:bg-[#202538] hover:border-white/15'"
           @click="category = 'All'"
         >
           <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-white/5">
@@ -199,10 +199,10 @@ function openArticle(article: KnowledgeBaseArticleDto) {
           v-for="cat in categoryStats"
           :key="cat.name"
           type="button"
-          class="rounded-xl border bg-[#14192d] p-5 text-left shadow-sm transition"
+          class="rounded-xl border bg-[#14192d] p-5 text-left shadow-sm transition cursor-pointer"
           :class="category === cat.name
             ? 'border-white/20'
-            : 'border-white/10 hover:border-white/15'"
+            : 'border-white/10 hover:bg-[#202538] hover:border-white/15'"
           @click="category = cat.name"
         >
           <div class="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-white/5">
