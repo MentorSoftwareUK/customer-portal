@@ -128,9 +128,15 @@ const meetingTitle = (meeting: MeetingDto) => {
 }
 
 const upcomingEvents = computed(() => {
-  const now = new Date()
+  const now = Date.now()
   return events.value
-    .filter((e) => !e.completed && new Date(e.startAt) >= now)
+    .filter((e) => {
+      if (e.completed) return false
+      const status = e.status ?? 'upcoming'
+      if (status === 'cancelled' || status === 'completed') return false
+      const start = new Date(e.startAt).getTime()
+      return Number.isFinite(start) && start >= now
+    })
     .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
 })
 
@@ -165,6 +171,7 @@ const lifecycleStages = [
 ]
 
 const activeLifecycleStage = ref<'discovery' | 'demo' | 'contract' | 'training' | 'live'>('training')
+const lifecycleStageNote = 'Preview mode: this lifecycle step is currently placeholder data until CRM lifecycle sync is enabled.'
 
 // Show the stats grid only when there are enough feature-gated cards to justify the row.
 // Events + Meetings alone are not worth the row — they'll reappear when tickets/invoices
@@ -374,6 +381,7 @@ onMounted(async () => {
       title="Your onboarding journey"
       subtitle="Track your progress with Mentor"
     />
+    <p class="-mt-3 text-xs text-white/60">{{ lifecycleStageNote }}</p>
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

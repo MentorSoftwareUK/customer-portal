@@ -24,7 +24,15 @@ const filtered = computed(() => {
 })
 
 const upcomingSorted = computed(() => {
-  return [...filtered.value].sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+  const now = Date.now()
+  return [...filtered.value]
+    .filter((e) => {
+      if (e.completed) return false
+      if ((e.status ?? 'upcoming') === 'cancelled') return false
+      const start = new Date(e.startAt).getTime()
+      return Number.isFinite(start) && start >= now
+    })
+    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
 })
 
 const nextThree = computed<EventListItem[]>(() => {
@@ -173,7 +181,7 @@ onMounted(async () => {
 
       <div>
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-base font-semibold text-black">Next up</h3>
+          <h3 class="text-base font-semibold text-white">Next up</h3>
         </div>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -234,7 +242,7 @@ onMounted(async () => {
       </div>
 
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div class="lg:col-span-2 bg-[#14192d] border border-white/10 rounded-lg">
+        <div class="order-2 lg:col-span-2 bg-[#14192d] border border-white/10 rounded-lg">
           <div class="flex items-center justify-between p-4">
             <div>
               <h3 class="text-base font-semibold text-white">Further ahead</h3>
@@ -299,7 +307,7 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="bg-[#14192d] border border-white/10 rounded-lg">
+        <div class="order-1 bg-[#14192d] border border-white/10 rounded-lg">
           <div class="flex items-center justify-between p-4">
             <div>
               <h3 class="text-base font-semibold text-white">Your registrations</h3>

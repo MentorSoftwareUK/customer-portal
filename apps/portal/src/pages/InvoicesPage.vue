@@ -46,6 +46,12 @@ const headerMeta = computed(() => {
   return parts.join(' · ')
 })
 
+const quickbooksUnavailable = computed(() => {
+  if (loading.value || error.value) return false
+  const text = warning.value?.toLowerCase() ?? ''
+  return text.includes('quickbooks is not configured')
+})
+
 function statusPillClasses(status: InvoiceDto['status']) {
   if (status === 'Paid') return 'ui-pill-success'
   if (status === 'Overdue') return 'ui-pill-danger'
@@ -103,12 +109,25 @@ onMounted(async () => {
         {{ error }}
       </div>
 
-      <div v-else-if="warning" class="border-b border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <div v-else-if="warning && !quickbooksUnavailable" class="border-b border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
         {{ warning }}
       </div>
 
       <div
-        v-if="!loading && !error && overdueInvoices.length"
+        v-if="quickbooksUnavailable"
+        class="m-4 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950"
+      >
+        <div class="text-base font-semibold">Invoice sync is not available yet</div>
+        <p class="mt-2 text-sm text-amber-900/90">
+          Billing data is currently unavailable because QuickBooks is not connected for this environment.
+        </p>
+        <p class="mt-1 text-sm text-amber-900/90">
+          Contact Mentor support if you need invoices shared manually while integration is being configured.
+        </p>
+      </div>
+
+      <div
+        v-if="!quickbooksUnavailable && !loading && !error && overdueInvoices.length"
         class="border-b border-rose-200 bg-rose-100 p-4 text-sm text-rose-950 border-l-4 border-l-rose-600"
       >
         <div class="font-semibold">Action required: overdue invoice{{ overdueInvoices.length === 1 ? '' : 's' }}</div>
@@ -118,7 +137,7 @@ onMounted(async () => {
       </div>
 
       <div
-        v-else-if="!loading && !error && outstandingInvoices.length"
+        v-else-if="!quickbooksUnavailable && !loading && !error && outstandingInvoices.length"
         class="border-b border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
       >
         <div class="font-semibold">Payment outstanding</div>
@@ -127,7 +146,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
+      <div v-if="!quickbooksUnavailable" class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
         <div class="w-full md:w-1/2">
           <form class="flex items-center" @submit.prevent>
             <label for="invoice-search" class="sr-only">Search</label>
@@ -169,7 +188,7 @@ onMounted(async () => {
         </div>
       </div>
 
-        <div class="overflow-x-auto">
+        <div v-if="!quickbooksUnavailable" class="overflow-x-auto">
           <table class="ui-table">
             <thead>
               <tr>
@@ -181,18 +200,20 @@ onMounted(async () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="loading" v-for="i in 5" :key="i" class="border-b dark:border-gray-700">
-                <td class="px-4 py-3" colspan="5">
-                  <div role="status" class="flex items-center gap-3 animate-pulse">
-                    <div class="h-4 w-24 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                    <div class="h-4 w-20 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                    <div class="h-4 w-16 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                    <div class="h-4 w-20 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                    <div class="h-4 w-10 rounded-full bg-gray-200 dark:bg-gray-700"></div>
-                    <span class="sr-only">Loading...</span>
-                  </div>
-                </td>
-              </tr>
+              <template v-if="loading">
+                <tr v-for="i in 5" :key="i" class="border-b dark:border-gray-700">
+                  <td class="px-4 py-3" colspan="5">
+                    <div role="status" class="flex items-center gap-3 animate-pulse">
+                      <div class="h-4 w-24 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <div class="h-4 w-20 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <div class="h-4 w-16 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <div class="h-4 w-20 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <div class="h-4 w-10 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </td>
+                </tr>
+              </template>
 
               <tr v-else-if="!filteredInvoices.length" class="border-b dark:border-gray-700">
                 <td class="px-4 py-3" colspan="5">No invoices found.</td>
@@ -217,7 +238,7 @@ onMounted(async () => {
           </table>
         </div>
 
-        <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4" aria-label="Table navigation">
+        <nav v-if="!quickbooksUnavailable" class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4" aria-label="Table navigation">
           <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
             Showing
             <span class="font-semibold text-gray-900 dark:text-white">{{ filteredInvoices.length ? 1 : 0 }}-{{ filteredInvoices.length }}</span>

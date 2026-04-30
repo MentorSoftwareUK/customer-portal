@@ -327,7 +327,7 @@ async function onSubmit() {
               <div class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white/80">
                 <div class="font-medium text-white">Create your portal profile</div>
                 <div class="mt-1 text-white/70">
-                  We’ll create/update your HubSpot contact, then email you a sign-in code.
+                  We’ll set up your account and email you a sign-in code.
                 </div>
               </div>
 

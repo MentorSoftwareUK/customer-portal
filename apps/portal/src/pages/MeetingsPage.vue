@@ -72,6 +72,12 @@ const meetingHostName = (meeting: MeetingDto) => {
   return 'Hope Schindler'
 }
 
+const meetingTitle = (meeting: MeetingDto) => {
+  const t = meeting.title?.trim()
+  if (t) return t
+  return `Meeting with ${meetingHostName(meeting)}`
+}
+
 const parseMeetingDate = (label?: string | null) => {
   if (!label) return null
   const match = label.match(/\b(\d{1,2})\s+([A-Za-z]{3})\b/)
@@ -359,6 +365,42 @@ onMounted(refreshMeetings)
               list
             </button>
           </div>
+
+          <div class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 p-0.5 text-xs">
+            <button
+              type="button"
+              class="rounded-md px-2.5 py-1 font-semibold"
+              :class="teamFilter === 'all' ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white'"
+              @click="teamFilter = 'all'"
+            >
+              all teams
+            </button>
+            <button
+              type="button"
+              class="rounded-md px-2.5 py-1 font-semibold"
+              :class="teamFilter === 'Training' ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white'"
+              @click="teamFilter = 'Training'"
+            >
+              training
+            </button>
+            <button
+              type="button"
+              class="rounded-md px-2.5 py-1 font-semibold"
+              :class="teamFilter === 'Success Team' ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white'"
+              @click="teamFilter = 'Success Team'"
+            >
+              success
+            </button>
+            <button
+              type="button"
+              class="rounded-md px-2.5 py-1 font-semibold"
+              :class="teamFilter === 'Renewals' ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white'"
+              @click="teamFilter = 'Renewals'"
+            >
+              renewals
+            </button>
+          </div>
+
           <button
             type="button"
             class="inline-flex items-center rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-400"
@@ -384,6 +426,10 @@ onMounted(refreshMeetings)
 
     <div v-else-if="warning" class="rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-200">
       {{ warning }}
+    </div>
+
+    <div class="rounded-lg border border-cyan-500/20 bg-cyan-500/10 p-3 text-xs text-cyan-100">
+      Meeting availability and booking windows are managed in HubSpot calendars. Update availability in HubSpot, then refresh this page to sync the latest slots.
     </div>
 
     <div class="flex-1">
@@ -418,7 +464,7 @@ onMounted(refreshMeetings)
               @click="openMeetingDetails(item.meeting)"
             >
               <div class="min-w-0">
-                <div class="text-sm font-semibold text-white">Meeting with {{ meetingHostName(item.meeting) }}</div>
+                <div class="text-sm font-semibold text-white">{{ meetingTitle(item.meeting) }}</div>
                 <div class="text-xs text-white/50">{{ item.meeting.dateTimeLabel }}</div>
               </div>
               <div class="text-right">
@@ -448,7 +494,7 @@ onMounted(refreshMeetings)
               @click="openMeetingDetails(item.meeting)"
             >
               <div class="min-w-0">
-                <div class="text-sm font-semibold text-white">Meeting with {{ meetingHostName(item.meeting) }}</div>
+                <div class="text-sm font-semibold text-white">{{ meetingTitle(item.meeting) }}</div>
                 <div class="text-xs text-white/50">{{ item.meeting.dateTimeLabel }}</div>
               </div>
               <div class="text-right">
@@ -478,7 +524,7 @@ onMounted(refreshMeetings)
               @click="openMeetingDetails(item.meeting)"
             >
               <div class="min-w-0">
-                <div class="text-sm font-semibold text-white">Meeting with {{ meetingHostName(item.meeting) }}</div>
+                <div class="text-sm font-semibold text-white">{{ meetingTitle(item.meeting) }}</div>
                 <div class="text-xs text-white/50">{{ item.meeting.dateTimeLabel }}</div>
               </div>
               <div class="text-right">
@@ -642,7 +688,7 @@ onMounted(refreshMeetings)
               {{ selectedMeeting.team }}
             </span>
           </div>
-          <h2 class="mt-3 text-xl font-semibold text-white">Meeting with {{ meetingHostName(selectedMeeting) }}</h2>
+          <h2 class="mt-3 text-xl font-semibold text-white">{{ meetingTitle(selectedMeeting) }}</h2>
           <p class="mt-1 text-sm text-white/60">{{ selectedMeeting.dateTimeLabel }}</p>
         </div>
         <button

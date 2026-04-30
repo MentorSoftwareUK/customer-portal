@@ -458,8 +458,10 @@ async function updateAttendance(registration: AdminEventRegistrationDto, value: 
   try {
     const updated = await adminUpdateRegistration(registration.id, { attendanceStatus })
     registrations.value = registrations.value.map((r) => (r.id === updated.id ? { ...r, ...updated } : r))
-  } catch {
-    // ignore
+    toast.success('Attendance status updated')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to update attendance status'
+    toast.error(msg)
   } finally {
     attendanceUpdating.value = { ...attendanceUpdating.value, [registration.id]: false }
   }

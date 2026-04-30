@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DOMPurify from 'dompurify'
-import { getKnowledgeBaseArticle, listKnowledgeBaseArticles, type KnowledgeBaseArticleDto, getAdminSettings, getKnowledgeBaseArticleFeaturedImage, getKnowledgeBaseArticleSnippet, trackKbView } from '../lib/api'
+import { getKnowledgeBaseArticle, listKnowledgeBaseArticles, type KnowledgeBaseArticleDto, getKnowledgeBaseArticleFeaturedImage, getKnowledgeBaseArticleSnippet, trackKbView } from '../lib/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -66,11 +66,6 @@ onMounted(async () => {
   error.value = null
   
   try {
-    // Load settings for author info
-    const settingsData = await getAdminSettings()
-    authorName.value = settingsData.settings.contentGating.knowledgeBaseAuthorName || 'Shaun Ward'
-    authorTeam.value = settingsData.settings.contentGating.knowledgeBaseAuthorTeam || 'Training Team'
-    
     const data = await getKnowledgeBaseArticle(url)
     articleTitle.value = data.title
     articleHtml.value = data.html

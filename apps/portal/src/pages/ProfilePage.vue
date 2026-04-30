@@ -59,14 +59,20 @@ async function load() {
   }
 }
 
+async function refreshProfileState() {
+  const latest = await getProfile()
+  profile.value = latest
+  resetDraftsFromProfile(latest)
+}
+
 async function savePersonal() {
   if (!profile.value) return
   error.value = null
   success.value = null
   savingPersonal.value = true
   try {
-    const res = await updatePersonalProfile(personalDraft.value)
-    profile.value.personal = res.personal
+    await updatePersonalProfile(personalDraft.value)
+    await refreshProfileState()
     success.value = 'Personal details updated.'
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'Failed to update personal details'
@@ -89,7 +95,17 @@ async function saveCompany() {
       success.value = 'Company details updated.'
     }
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to update company details'
+    const msg = e instanceof Error ? e.message : 'Failed to update company details'
+    if (msg.includes('403')) {
+      try {
+        await refreshProfileState()
+      } catch {
+        // Keep original error if refresh fails.
+      }
+      error.value = 'Your permission to edit company details changed. The form has been refreshed.'
+    } else {
+      error.value = msg
+    }
   } finally {
     savingCompany.value = false
   }

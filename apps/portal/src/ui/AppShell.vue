@@ -256,6 +256,7 @@ const baseFindItems: QuickFindItem[] = [
   { label: 'Events', to: '/app/events', description: 'Register and view upcoming sessions', keywords: ['webinar', 'lunch', 'learn', 'podcast'] },
   { label: 'Meetings', to: '/app/meetings', description: 'Upcoming meetings and join links', keywords: ['calendar'] },
   { label: 'Tickets', to: '/app/tickets', description: 'Support requests and updates', keywords: ['help', 'issue', 'support'] },
+  { label: 'Org tickets', to: '/app/tickets/org', description: 'All tickets for your organisation', keywords: ['company tickets', 'organisation'] },
   { label: 'Knowledge base', to: '/app/knowledge-base', description: 'Guides and how-to articles', keywords: ['kb', 'policy', 'procedure', 'how to'] },
   { label: 'Documents', to: '/app/documents', description: 'Templates and downloadable resources', keywords: ['files', 'templates'] },
   { label: 'Videos', to: '/app/videos', description: 'Training and recordings', keywords: ['training', 'recording'] },
@@ -283,6 +284,7 @@ const quickLinks = computed(() =>
     { label: 'Documents', to: '/app/documents', enabled: featureFlags.value.documentsEnabled },
     { label: 'Videos', to: '/app/videos', enabled: featureFlags.value.videosEnabled },
     { label: 'Support tickets', to: '/app/tickets', enabled: featureFlags.value.ticketsEnabled },
+    { label: 'Org tickets', to: '/app/tickets/org', enabled: featureFlags.value.ticketsEnabled },
     { label: 'Invoices', to: '/app/invoices', enabled: featureFlags.value.invoicesEnabled },
     { label: 'Profile', to: '/app/profile', enabled: true },
   ].filter((link) => link.enabled),
@@ -805,6 +807,16 @@ onUnmounted(() => {
             </RouterLink>
           </li>
 
+          <li v-if="featureFlags.ticketsEnabled">
+            <RouterLink
+              to="/app/tickets/org"
+              class="group flex items-center rounded-lg p-2 pl-10 text-sm font-medium"
+              :class="isActive('/app/tickets/org') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'"
+            >
+              <span>Org tickets</span>
+            </RouterLink>
+          </li>
+
           <li v-if="featureFlags.knowledgeBaseEnabled || featureFlags.videosEnabled || featureFlags.documentsEnabled">
             <button
               type="button"
@@ -922,6 +934,29 @@ onUnmounted(() => {
                 <path d="M4 2a2 2 0 00-2 2v14l3-1.5L8 18l3-1.5L14 18l3-1.5L20 18V4a2 2 0 00-2-2H4z"></path>
               </svg>
               <span class="ml-3">Invoices</span>
+            </RouterLink>
+          </li>
+
+          <li>
+            <RouterLink
+              to="/app/profile"
+              class="group flex items-center rounded-lg p-2 text-base font-medium"
+              :class="isActive('/app/profile') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+            >
+              <svg
+                aria-hidden="true"
+                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 2a4 4 0 100 8 4 4 0 000-8zM4 14a6 6 0 1112 0v1a1 1 0 01-1 1H5a1 1 0 01-1-1v-1z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+              <span class="ml-3">Profile</span>
             </RouterLink>
           </li>
 

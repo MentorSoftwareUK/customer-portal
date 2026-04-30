@@ -36,6 +36,7 @@ const thankYouDelayHours = ref<number>(24)
 
 const selectedTemplateMeta = computed(() => templates.value.find((t) => t.key === selectedKey.value) ?? null)
 const effectiveSource = computed(() => preview.value?.effective.source ?? 'default')
+const effectiveSubject = computed(() => preview.value?.effective.subject ?? preview.value?.default.subject ?? '')
 const placeholderExample = '{{eventTitle}}'
 const placeholderListLabel = computed(() => {
   if (!selectedTemplateMeta.value) return ''
@@ -72,12 +73,16 @@ async function save() {
   saving.value = true
   error.value = null
   try {
-    await patchAdminSettings({
+    const settingsRes = await patchAdminSettings({
       eventEmails: {
         reminderLeadTimeHours: Number.isFinite(reminderLeadTimeHours.value) ? reminderLeadTimeHours.value : 48,
         thankYouDelayHours: Number.isFinite(thankYouDelayHours.value) ? thankYouDelayHours.value : 24,
       },
     })
+
+    settings.value = settingsRes.settings
+    reminderLeadTimeHours.value = settingsRes.settings.eventEmails.reminderLeadTimeHours
+    thankYouDelayHours.value = settingsRes.settings.eventEmails.thankYouDelayHours
 
     await upsertAdminEmailTemplate(selectedKey.value, {
       subject: draftSubject.value?.trim() ? draftSubject.value : null,
@@ -85,8 +90,12 @@ async function save() {
       text: draftText.value?.trim() ? draftText.value : null,
     })
 
+    const templatesRes = await listAdminEmailTemplates()
+    templates.value = templatesRes.templates
+
+    await loadPreview()
+
     toast.success('Email settings saved')
-    await load()
   } catch (e: any) {
     const detail = e?.message ? String(e.message) : 'Failed to save'
     error.value = detail
@@ -101,8 +110,10 @@ async function resetOverride() {
   error.value = null
   try {
     await deleteAdminEmailTemplate(selectedKey.value)
+    const templatesRes = await listAdminEmailTemplates()
+    templates.value = templatesRes.templates
+    await loadPreview()
     toast.success('Template override cleared')
-    await load()
   } catch (e: any) {
     error.value = e?.message ? String(e.message) : 'Failed to clear override'
     toast.error('Failed to clear override')
@@ -146,6 +157,11 @@ onMounted(load)
       <p class="text-xs uppercase tracking-[0.08em] text-gray-600">Email</p>
       <h2 class="text-2xl font-semibold text-gray-900">Email configuration</h2>
       <p class="text-sm text-gray-700">Configure reminder/thank-you timing and manage event email templates.</p>
+    </div>
+
+    <div class="rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+      This panel controls transactional event emails sent by the portal automation (invite, confirmation, reminder, thank you).
+      HubSpot campaign and marketing templates are still managed in HubSpot.
     </div>
 
     <div v-if="error" class="rounded-lg bg-red-50 p-4 text-sm text-red-800">
@@ -243,6 +259,10 @@ onMounted(load)
                 <span class="rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/80">
                   {{ effectiveSource === 'override' ? 'Using override' : 'Using default' }}
                 </span>
+              </div>
+              <div class="px-3 py-2 border-b border-white/10">
+                <div class="text-xs text-white/60">Effective subject</div>
+                <div class="mt-1 text-sm font-medium text-white">{{ effectiveSubject }}</div>
               </div>
               <iframe v-if="preview" class="h-[420px] w-full bg-white" :srcdoc="preview.effective.html" />
             </div>

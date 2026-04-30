@@ -1,0 +1,102 @@
+PORTAL TESTING - TRIAGED EXECUTION TRACKER
+Tester: LF - Mentor customer portal - Vue / Node.js / HubSpot
+Last updated: 2026-04-30
+
+Legend
+- TRIAGED-CONFIRMED: Confirmed code issue. Fix needed.
+- TRIAGED-CHECK: Needs runtime/data/config verification before or during fix.
+- TRIAGED-NOT-ISSUE: Not currently a code bug (or current behavior is intentional).
+- TRIAGED-DECISION: Product/architecture decision needed.
+- DONE-DECISION: Decision has been applied/documented in product or UI copy.
+
+Progress
+- [x] Triage completed for all 46 points.
+- [x] Fixes in progress.
+- [x] First implementation batch completed: 2, 7, 25, 37, 41.
+- [x] Second implementation batch completed: 4, 16, 17.
+- [x] Third implementation batch completed: 11, 13, 19, 39.
+- [x] Fourth implementation batch completed: 27, 28, 29, 45, 46.
+- [x] Fifth implementation batch completed: 6, 10, 20, 30, 31, 32.
+- [x] Sixth implementation batch completed: 21, 22.
+- [x] Seventh implementation batch completed: 43.
+- [x] Eighth implementation batch completed: 18, 44.
+- [x] Runtime verification batch completed: 1, 33, 34, 35, 36, 38.
+- [ ] Runtime checks completed.
+
+LOGIN
+1. [DONE-CONFIRMED] Login loop after code entry (L-04) | Done: Reproduced once, then fixed client 401 handling to clear session only when an authenticated request actually returned 401; runtime retest now lands in /app/onboarding without bouncing.
+2. [DONE-CONFIRMED] Long delay and "checking subscription" wording (L-02) | Done: Loading step copy changed to "Checking your account" and timing reduced.
+3. [TRIAGED-NOT-ISSUE] No back button on email step (L-03) | Note: "Use a different email" exists after step transition; optional UX discoverability tweak.
+4. [DONE-CONFIRMED] HubSpot CRM mention in onboarding copy (L-03) | Done: Replaced HubSpot/internal wording with customer-safe onboarding copy.
+5. [TRIAGED-NOT-ISSUE] Resend code countdown missing (L-06) | Note: 30s countdown exists in code; verify runtime styling/visibility only.
+
+DASHBOARD
+6. [DONE-CONFIRMED] Upcoming events count mismatch (D-03) | Done: Dashboard upcoming-event counting now matches future active-event filtering.
+7. [DONE-CONFIRMED] "Next up" heading low contrast (D-03) | Done: Heading text switched from black to white.
+8. [TRIAGED-CHECK] Contact Us form includes internal question (D-05) | Check: Verify current HubSpot form config and switch to customer-safe form if needed.
+9. [TRIAGED-CHECK] Apostrophe/backslash rendering issue in copy (D-05) | Check: Reproduce in UI and validate escaped string rendering path.
+10. [DONE-CONFIRMED] "Training underway" logic undocumented (D-02) | Done: Added explicit UI note that lifecycle stage is placeholder until CRM sync is enabled.
+
+EVENTS
+11. [DONE-CONFIRMED] Past events showing in "Next up" (E-08) | Done: Next up/Further ahead now filter to future active events only.
+12. [TRIAGED-CHECK] Registered events show message instead of Join (E-07) | Check: Validate joinUrl population in event data for registered users.
+13. [DONE-CONFIRMED] Section ordering (E-06) | Done: "Your registrations" now renders before "Further ahead".
+
+MEETINGS
+14. [TRIAGED-CHECK] Simone calendar availability incorrect (M-05) | Check: Validate HubSpot calendar settings (working hours, buffers, booking windows).
+15. [TRIAGED-NOT-ISSUE] Shaun/Hope invite-only links (M-05) | Note: Current behavior is intentional by design unless requirement changes.
+16. [DONE-CONFIRMED] Booked meetings have no title (M-05) | Done: Added meeting title to backend and frontend MeetingDto mapping and rendering.
+17. [DONE-CONFIRMED] Team filter missing in meetings UI (M-07) | Done: Added visible all/training/success/renewals filter controls.
+18. [DONE-DECISION] Calendar sync with HubSpot in production (M-02) | Done: Documented in meetings UI that availability is HubSpot-driven and managed in HubSpot calendars.
+
+TICKETS
+19. [DONE-CONFIRMED] Ticket create 500 (hs_pipeline_stage missing) (T-02) | Done: Ticket create now sets a default HubSpot stage ID before submission.
+20. [DONE-CONFIRMED] Garbled conversation thread (T-04) | Done: Ticket message sanitization now strips script/style noise, decodes entities, and omits empty note bodies.
+21. [DONE-CONFIRMED] Reply does not update last-updated label (T-05) | Done: Reply endpoint now returns an immediate "Just now" recency label.
+22. [DONE-CONFIRMED] Org Tickets tab not visible (T-06) | Done: Added explicit Org Tickets links in sidebar navigation, quick links, and quick-find index.
+23. [TRIAGED-CHECK] Only 2 tickets visible (T-01) | Check: Validate HubSpot associations and test data for the affected contact.
+24. [TRIAGED-NOT-ISSUE] Submit button not visually disabled (T-03) | Note: Disabled state exists in component + shared styles; verify runtime theme.
+
+KNOWLEDGE BASE
+25. [DONE-CONFIRMED] Article load fails and user logs out (K-04, K-05, K-06) | Done: Removed admin-only settings call from KB article page.
+
+DOCUMENTS
+26. [TRIAGED-CHECK] HubSpot documents failed to load (DOC-01, DOC-02, DOC-03) | Check: Validate HubSpot Files/Content API config and token permissions.
+27. [DONE-CONFIRMED] Upload button behavior unclear (DOC-03) | Done: Upload action is now explicitly marked as Mentor-managed and disabled in UI.
+
+VIDEOS
+28. [DONE-CONFIRMED] Video does not autoplay (V-03) | Done: Direct video playback now requests autoplay in the lightbox player.
+29. [DONE-CONFIRMED] Missing "Popular" section (V-04) | Done: Added a dedicated Popular videos section to the video library page.
+
+INVOICES
+30. [DONE-CONFIRMED] Invoices page non-functional with QuickBooks unconfigured (I-01+) | Done: Added explicit unavailable-state card when QuickBooks is not configured, instead of a misleading empty table.
+
+PROFILE
+31. [DONE-CONFIRMED] Company fields editable then 403 on save (P-03, P-04) | Done: Profile page now refreshes backend permissions after updates and resyncs UI on 403.
+32. [DONE-CONFIRMED] No sidebar profile/avatar link (P-01) | Done: Added explicit Profile link in the left sidebar navigation.
+
+NAVIGATION
+33. [TRIAGED-NOT-ISSUE] Cmd+K / Ctrl+K Quick Find not working (N-02) | Note: Runtime check passed; keyboard shortcut opens Quick Find modal and route results are visible.
+34. [TRIAGED-NOT-ISSUE] Dark/light mode appears reversed (N-05) | Note: Runtime check passed; toggle label/state matches localStorage theme and html dark class.
+35. [TRIAGED-NOT-ISSUE] Mobile hamburger only shows 3 items (N-06) | Note: Runtime check passed; mobile drawer rendered full navigation list (10 links in current run).
+36. [TRIAGED-NOT-ISSUE] Top nav overlaps content on mobile (N-06) | Note: Runtime check passed at target mobile viewport after reset to top; first heading sits below top nav.
+
+ADMIN - LOGIN
+37. [DONE-CONFIRMED] Invalid credentials message is wrong (AL-03) | Done: Admin login now parses backend auth errors and shows a clear invalid credentials message.
+38. [TRIAGED-NOT-ISSUE] Admin login works for only one email (AL-01) | Note: Runtime/API check confirms environment has a single allowed admin email; seeded admin login succeeds and alternate email is rejected by design.
+
+ADMIN - EVENTS
+39. [DONE-CONFIRMED] No "Save as draft" on create event (AE-03) | Done: Admin event create now supports Draft/Published status in UI + API.
+40. [TRIAGED-NOT-ISSUE] Events table appears empty before data loads (AE-01) | Note: Loading state exists; optional UX polish only.
+41. [DONE-CONFIRMED] No success toast on attendance status update (AE-07) | Done: Added success and error toast feedback to attendance updates.
+
+ADMIN - TICKETS
+42. [TRIAGED-NOT-ISSUE] Avg response time stat shows dash (AT-04) | Note: Dash is expected when HubSpot has no response-time data.
+
+ADMIN - EMAIL
+43. [DONE-CONFIRMED] Subject override saved but preview/field not updated (AEM-03) | Done: Save/reset now explicitly refresh template list + preview state, and effective subject is shown in the preview panel.
+44. [DONE-DECISION] Email config panel redundancy (AEM-01) | Done: Kept panel and added UI copy clarifying it manages portal transactional emails vs HubSpot marketing templates.
+
+ADMIN - CONTENT
+45. [DONE-CONFIRMED] Content source/file types not distinguished (AC-01) | Done: Source chip now differentiates YouTube vs file extension types (e.g. MP4 file).
+46. [DONE-CONFIRMED] Add Video category is free text (AC-02) | Done: Replaced free-text category input with controlled dropdown options.

@@ -129,6 +129,7 @@ const matchesFilters = (video: VideoDto) => {
 }
 
 const filteredRecentVideos = computed(() => recentVideos.value.filter(matchesFilters))
+const filteredPopularVideos = computed(() => popularVideos.value.filter(matchesFilters))
 const filteredFeaturedVideos = computed(() => featuredVideos.value.filter(matchesFilters))
 const filteredAllVideos = computed(() => allVideos.value.filter(matchesFilters))
 const isSearching = computed(() => query.value.trim().length > 0)
@@ -250,6 +251,71 @@ const isSearching = computed(() => query.value.trim().length > 0)
             <button
               v-for="video in filteredRecentVideos.slice(0, 8)"
               :key="`latest-${video.youtubeId}`"
+              type="button"
+              class="group w-72 shrink-0 snap-start text-left ui-surface-muted overflow-hidden hover:shadow-md"
+              @click="openLightbox(video)"
+            >
+              <div class="relative">
+                <img
+                  v-if="video.thumbnailUrl || (!video.videoUrl && video.youtubeId)"
+                  :src="videoThumb(video)"
+                  :alt="video.title"
+                  class="w-full h-40 object-cover"
+                  loading="lazy"
+                >
+                <div
+                  v-else
+                  class="w-full h-40 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900"
+                  aria-hidden="true"
+                >
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
+                    <svg class="h-6 w-6 translate-x-0.5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="absolute top-3 left-3">
+                  <span class="bg-gray-900/80 text-white text-xs font-medium px-2.5 py-1 rounded">
+                    {{ video.category }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="p-4 space-y-3">
+                <div class="text-sm font-semibold text-gray-900 dark:text-white group-hover:underline">
+                  {{ video.title }}
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <div class="shrink-0">
+                    <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                      <span class="text-xs font-semibold text-gray-600 dark:text-gray-300">{{ initials(video.authorName) }}</span>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-gray-900 truncate dark:text-white">{{ video.authorName }}</div>
+                    <div class="text-sm text-gray-500 truncate dark:text-gray-400">{{ video.timeAgo }}</div>
+                  </div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="!isSearching && filteredPopularVideos.length" class="ui-surface">
+        <div class="flex items-center justify-between p-4">
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Popular videos</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Most watched resources this week.</p>
+          </div>
+        </div>
+
+        <div class="px-4 pb-4">
+          <div class="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
+            <button
+              v-for="video in filteredPopularVideos.slice(0, 8)"
+              :key="`popular-${video.youtubeId}`"
               type="button"
               class="group w-72 shrink-0 snap-start text-left ui-surface-muted overflow-hidden hover:shadow-md"
               @click="openLightbox(video)"
@@ -472,6 +538,8 @@ const isSearching = computed(() => query.value.trim().length > 0)
               <video
                 v-if="activeVideo.videoUrl"
                 class="absolute inset-0 h-full w-full"
+                autoplay
+                playsinline
                 controls
                 preload="metadata"
               >

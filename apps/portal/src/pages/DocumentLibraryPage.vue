@@ -121,7 +121,12 @@ function dropdownId(docId: string) {
               </select>
             </div>
 
-            <button type="button" class="ui-btn-primary">
+            <button
+              type="button"
+              class="ui-btn-primary disabled:cursor-not-allowed disabled:opacity-60"
+              disabled
+              title="Uploads are currently managed by the Mentor team"
+            >
               <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path
                   clip-rule="evenodd"
@@ -129,7 +134,7 @@ function dropdownId(docId: string) {
                   d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
                 />
               </svg>
-              Upload
+              Upload (managed by Mentor)
             </button>
 
             <div class="flex items-center space-x-3 w-full md:w-auto">

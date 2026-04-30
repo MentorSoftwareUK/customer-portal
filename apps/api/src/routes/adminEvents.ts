@@ -57,6 +57,7 @@ const CreateEventSchema = z.object({
   title: z.string().trim().min(1),
   description: z.string().trim().default(''),
   type: z.enum(['Webinar', 'Lunch & Learn', 'Podcast', 'Other']).default('Webinar'),
+  status: z.enum(['draft', 'published', 'upcoming']).default('draft'),
   startAt: z.string().trim().min(1),
   timezoneLabel: z.string().trim().default('Europe/London'),
   eligibility: z.enum(['customer', 'non-customer', 'both']).default('customer'),
@@ -139,7 +140,7 @@ export const adminEventsRoutes: FastifyPluginAsync = async (app) => {
       hostName: d.hostName,
       hostTitle: d.hostTitle,
       joinUrl: d.joinUrl ?? null,
-      status: 'upcoming',
+      status: d.status,
     })
 
     return reply.status(201).send({ event })

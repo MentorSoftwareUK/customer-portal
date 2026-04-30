@@ -13,6 +13,7 @@ const filterOpen = ref(false)
 const router = useRouter()
 
 const statusFilter = ref<'all' | 'upcoming' | 'completed' | 'cancelled' | 'draft' | 'published'>('all')
+const statusOptions = ['all', 'upcoming', 'completed', 'cancelled', 'draft', 'published'] as const
 
 const filteredEvents = computed(() => {
   if (statusFilter.value === 'all') return events.value
@@ -69,6 +70,11 @@ function goToEvent(id: string) {
   router.push(`/admin/events/${id}`)
 }
 
+function setStatusFilter(value: (typeof statusOptions)[number]) {
+  statusFilter.value = value
+  filterOpen.value = false
+}
+
 // Create event modal
 const createModalOpen = ref(false)
 const createLoading = ref(false)
@@ -76,6 +82,7 @@ const createError = ref<string | null>(null)
 const createForm = ref({
   title: '',
   type: 'Webinar' as EventDto['type'],
+  status: 'draft' as 'draft' | 'published',
   startAt: '',
   durationMins: 60,
   platform: 'TBD' as 'Teams' | 'Riverside' | 'TBD',
@@ -88,18 +95,21 @@ const createForm = ref({
 })
 
 function openCreateModal() {
-  createForm.value = { title: '', type: 'Webinar', startAt: '', durationMins: 60, platform: 'TBD', eligibility: 'customer', provision: 'all', description: '', hostName: '', hostTitle: '', joinUrl: '' }
+  createForm.value = { title: '', type: 'Webinar', status: 'draft', startAt: '', durationMins: 60, platform: 'TBD', eligibility: 'customer', provision: 'all', description: '', hostName: '', hostTitle: '', joinUrl: '' }
   createError.value = null
   createModalOpen.value = true
 }
 
-async function submitCreate() {
+async function submitCreate(statusOverride?: 'draft' | 'published') {
+  if (createLoading.value) return
   createError.value = null
   createLoading.value = true
   try {
+    const status = statusOverride ?? createForm.value.status
     const event = await adminCreateEvent({
       title: createForm.value.title,
       type: createForm.value.type,
+      status,
       startAt: createForm.value.startAt,
       durationMins: createForm.value.durationMins,
       platform: createForm.value.platform,
@@ -117,6 +127,10 @@ async function submitCreate() {
   } finally {
     createLoading.value = false
   }
+}
+
+async function onCreateFormSubmit(_event: SubmitEvent) {
+  await submitCreate()
 }
 </script>
 
@@ -251,12 +265,12 @@ async function submitCreate() {
                 <div v-if="filterOpen" class="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-white/10 bg-[#1a2035] p-3 shadow-xl" @click.stop>
                   <h6 class="mb-3 text-sm font-medium text-white">Filter by status</h6>
                   <ul class="space-y-1 text-sm">
-                    <li v-for="opt in ['all','upcoming','completed','cancelled','draft','published']" :key="opt">
+                    <li v-for="opt in statusOptions" :key="opt">
                       <button
                         type="button"
                         class="w-full text-left rounded-lg px-3 py-2 capitalize transition"
                         :class="statusFilter === opt ? 'bg-primary-600/30 text-white font-medium' : 'text-white/70 hover:bg-white/10'"
-                        @click="statusFilter = opt as typeof statusFilter; filterOpen = false"
+                        @click="setStatusFilter(opt)"
                       >
                         {{ opt }}
                       </button>
@@ -386,7 +400,7 @@ async function submitCreate() {
             <button type="button" class="text-white/50 hover:text-white" @click="createModalOpen = false">✕</button>
           </div>
 
-          <form class="p-5 space-y-4" @submit.prevent="submitCreate">
+          <form class="p-5 space-y-4" @submit.prevent="onCreateFormSubmit">
             <div>
               <label class="block text-sm font-medium text-white/80 mb-1">Title *</label>
               <input v-model="createForm.title" type="text" required class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="e.g. Summer Webinar" />
@@ -443,6 +457,14 @@ async function submitCreate() {
               </div>
             </div>
 
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-1">Initial status</label>
+              <select v-model="createForm.status" class="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-white/80 mb-1">Host name</label>
@@ -470,7 +492,22 @@ async function submitCreate() {
 
             <div class="flex justify-end gap-3 pt-2">
               <button type="button" class="ui-btn-secondary" @click="createModalOpen = false">Cancel</button>
-              <button type="submit" class="ui-btn-primary" :disabled="createLoading">{{ createLoading ? 'Creating…' : 'Create event' }}</button>
+              <button
+                type="button"
+                class="ui-btn-secondary"
+                :disabled="createLoading"
+                @click="submitCreate('draft')"
+              >
+                {{ createLoading ? 'Saving…' : 'Save as draft' }}
+              </button>
+              <button
+                type="submit"
+                class="ui-btn-primary"
+                :disabled="createLoading"
+                @click.prevent="submitCreate('published')"
+              >
+                {{ createLoading ? 'Saving…' : 'Publish event' }}
+              </button>
             </div>
           </form>
         </div>

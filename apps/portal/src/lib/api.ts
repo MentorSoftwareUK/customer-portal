@@ -83,6 +83,7 @@ async function apiFetch(input: string, init?: RequestInit) {
   if (token) {
     headers.set('Authorization', `Bearer ${token}`)
   }
+  const hadAuthHeader = headers.has('Authorization')
 
   const res = await fetch(input, {
     ...init,
@@ -102,7 +103,7 @@ async function apiFetch(input: string, init?: RequestInit) {
       path === '/auth/onboard' ||
       path === '/admin-auth/login'
 
-    if (res.status === 401 && !isAuthEndpoint) {
+    if (res.status === 401 && !isAuthEndpoint && hadAuthHeader) {
       // Determine context from the current page only, not the API path.
       // An admin page may call non-admin endpoints (e.g. /videos) and a
       // portal page may probe admin endpoints (e.g. adminMe check in
@@ -297,12 +298,30 @@ export async function adminLogin(email: string, password: string): Promise<Admin
     body: JSON.stringify({ email, password }),
   })
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`Admin login failed: ${res.status}${text ? ` - ${text}` : ''}`)
+  const raw = await res.text().catch(() => '')
+  let body: any = null
+  if (raw) {
+    try {
+      body = JSON.parse(raw)
+    } catch {
+      body = null
+    }
   }
 
-  return (await res.json()) as AdminLoginResponse
+  if (!res.ok) {
+    const apiError = body?.error ? String(body.error) : ''
+    const apiMessage = body?.message ? String(body.message) : ''
+
+    if (res.status === 401 && apiError === 'invalid_credentials') {
+      throw new Error('Invalid email or password.')
+    }
+
+    const detail = apiMessage || apiError || raw
+    throw new Error(`Admin login failed: ${res.status}${detail ? ` - ${detail}` : ''}`)
+  }
+
+  if (!body) throw new Error('Admin login failed: empty response body')
+  return body as AdminLoginResponse
 }
 
 export async function adminMe(): Promise<{ admin: AdminUser }> {
@@ -1059,6 +1078,7 @@ export async function adminUpdateEvent(id: string, body: Partial<EventDto>): Pro
 export async function adminCreateEvent(body: {
   title: string
   type: 'Webinar' | 'Lunch & Learn' | 'Podcast' | 'Other'
+  status?: 'draft' | 'published' | 'upcoming'
   startAt: string
   durationMins: number
   platform: 'Teams' | 'Riverside' | 'TBD'
@@ -1707,6 +1727,7 @@ export type MeetingTeam = 'Training' | 'Success Team' | 'Renewals'
 export type MeetingDto = {
   id: string
   team: MeetingTeam
+  title?: string | null
   hostName?: string | null
   dateTimeLabel: string
   joinUrl: string | null

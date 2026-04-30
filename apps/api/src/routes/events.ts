@@ -124,7 +124,10 @@ type RegistrationResult =
 
 export const eventsRoutes: FastifyPluginAsync = async (app) => {
   app.get('/', async () => {
-    return { events: await listEventsStore() }
+    const events = await listEventsStore()
+    return {
+      events: events.filter((e) => (e.status ?? 'upcoming') !== 'draft'),
+    }
   })
 
   // Server-backed replacement for localStorage "registeredEventIds".

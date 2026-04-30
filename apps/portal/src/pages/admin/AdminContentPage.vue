@@ -147,6 +147,22 @@ watch(
 })
 
 const featureBadge = (video: VideoDto) => (video.keywords ?? []).some((k) => k.toLowerCase() === 'feature')
+
+function sourceLabel(video: VideoDto) {
+  if (!video.videoUrl) return 'YouTube'
+  try {
+    const url = new URL(video.videoUrl)
+    const path = url.pathname.toLowerCase()
+    const ext = path.split('.').pop()?.trim()
+    if (ext && ext.length <= 5) return `${ext.toUpperCase()} file`
+  } catch {
+    // Fallback for non-URL paths
+    const path = video.videoUrl.toLowerCase().split('?')[0] ?? ''
+    const ext = path.split('.').pop()?.trim()
+    if (ext && ext.length <= 5) return `${ext.toUpperCase()} file`
+  }
+  return 'File'
+}
 </script>
 
 <template>
@@ -218,7 +234,7 @@ const featureBadge = (video: VideoDto) => (video.keywords ?? []).some((k) => k.t
                 <td class="px-4 py-3 text-gray-700">{{ video.category }}</td>
                 <td class="px-4 py-3 text-gray-700">
                   <span class="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-800">
-                    {{ video.videoUrl ? 'File' : 'YouTube' }}
+                    {{ sourceLabel(video) }}
                   </span>
                 </td>
                 <td class="px-4 py-3 text-gray-700">{{ video.provision }}</td>
@@ -312,7 +328,13 @@ const featureBadge = (video: VideoDto) => (video.keywords ?? []).some((k) => k.t
             </div>
             <div>
               <label class="text-xs font-semibold text-gray-700">Category</label>
-              <input v-model="newVideo.category" class="ui-input mt-1" placeholder="Training" />
+              <select v-model="newVideo.category" class="ui-input mt-1">
+                <option value="Training">Training</option>
+                <option value="Onboarding">Onboarding</option>
+                <option value="Feature">Feature</option>
+                <option value="Compliance">Compliance</option>
+                <option value="Product update">Product update</option>
+              </select>
             </div>
             <div>
               <label class="text-xs font-semibold text-gray-700">Provision</label>

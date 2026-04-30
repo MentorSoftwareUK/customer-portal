@@ -9,6 +9,7 @@ export type MeetingTeam = 'Training' | 'Success Team' | 'Renewals'
 export type MeetingDto = {
   id: string
   team: MeetingTeam
+  title?: string | null
   hostName?: string | null
   dateTimeLabel: string
   joinUrl: string | null
@@ -59,6 +60,7 @@ export const meetingsRoutes: FastifyPluginAsync = async (app) => {
       const meetings: MeetingDto[] = hsMeetings.map((m) => ({
         id: m.id,
         team: m.team,
+        title: m.title,
         hostName: m.ownerName,
         dateTimeLabel: m.startTimeMs ? formatDateTimeLabel(m.startTimeMs) : 'TBC',
         joinUrl: m.joinUrl,

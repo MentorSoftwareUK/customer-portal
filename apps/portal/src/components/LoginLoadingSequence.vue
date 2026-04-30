@@ -12,7 +12,7 @@ const emit = defineEmits<{
 const steps = [
   'Verifying your email',
   'Checking customer status',
-  'Confirming subscription',
+  'Checking your account',
   'Preparing your portal',
 ]
 
@@ -22,7 +22,7 @@ let timer: ReturnType<typeof setTimeout> | null = null
 
 // Pacing: distribute time evenly so no single step feels stuck.
 // Steps 0-2 advance at ~1.8s each; step 3 waits for API completion.
-const STEP_INTERVAL = 1800
+const STEP_INTERVAL = 1200
 
 const progress = computed(() => {
   if (currentIdx.value >= steps.length - 1) return 100

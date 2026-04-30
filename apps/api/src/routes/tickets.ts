@@ -96,9 +96,48 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
     cache.clear()
   }
 
-  function stripHtml(input: string) {
+  function decodeHtmlEntities(input: string) {
+    const entityMap: Record<string, string> = {
+      amp: '&',
+      lt: '<',
+      gt: '>',
+      quot: '"',
+      apos: "'",
+      nbsp: ' ',
+    }
+
+    return input.replace(/&(#\d+|#x[\da-fA-F]+|[a-zA-Z]+);/g, (full, token: string) => {
+      if (token.startsWith('#x') || token.startsWith('#X')) {
+        const code = Number.parseInt(token.slice(2), 16)
+        return Number.isFinite(code) ? String.fromCodePoint(code) : full
+      }
+      if (token.startsWith('#')) {
+        const code = Number.parseInt(token.slice(1), 10)
+        return Number.isFinite(code) ? String.fromCodePoint(code) : full
+      }
+      return entityMap[token.toLowerCase()] ?? full
+    })
+  }
+
+  function sanitizeMessageBody(input: string) {
     const raw = input ?? ''
-    return raw.replace(/<[^>]*>/g, '').replace(/\s+\n/g, '\n').trim()
+    const withoutStyleOrScript = raw
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+
+    const withLineBreakHints = withoutStyleOrScript
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/(p|div|li|tr|h[1-6])>/gi, '\n')
+
+    const withoutTags = withLineBreakHints.replace(/<[^>]*>/g, ' ')
+    const decoded = decodeHtmlEntities(withoutTags)
+
+    return decoded
+      .replace(/\r/g, '')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/[ \t]{2,}/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
   }
 
   function formatDateLabel(iso: string | null | undefined): string {
@@ -355,13 +394,12 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
     const stage = p['hs_pipeline_stage']
     const status = (stage && stageMap.get(stage)) || 'Open'
     const subject = p['subject'] || p['hs_ticket_subject'] || '(No subject)'
-    const updated = p['hs_lastmodifieddate'] || p['createdate']
 
     const notes = await hubspotListTicketEngagementNotes(id)
     const messages: TicketMessageDto[] = (notes ?? [])
       .map((n) => {
         const bodyRaw = n.metadata?.body ?? ''
-        const body = stripHtml(bodyRaw)
+        const body = sanitizeMessageBody(bodyRaw)
         const ts = n.engagement?.timestamp ?? n.engagement?.createdAt
         const tsMs = typeof ts === 'number' ? ts : Number.NaN
         const timeIso = Number.isFinite(tsMs) ? new Date(tsMs).toISOString() : null
@@ -375,6 +413,7 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
           _tsMs: Number.isFinite(tsMs) ? tsMs : 0,
         } as TicketMessageDto & { _tsMs: number }
       })
+      .filter((m) => m.body.length > 0)
       .sort((a, b) => a._tsMs - b._tsMs)
       .map(({ _tsMs, ...rest }) => rest)
 
@@ -382,7 +421,7 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
       id: hsTicket.id,
       subject,
       status,
-      lastUpdatedLabel: formatRelativeLabel(updated),
+      lastUpdatedLabel: 'Just now',
       createdLabel: formatDateLabel(p['createdate']),
       category: p['hs_ticket_category'] ?? undefined,
       priority: mapPriority(p['hs_ticket_priority']) ?? undefined,
@@ -412,19 +451,24 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
     if (!contactId) return reply.status(400).send({ error: 'no_hubspot_contact' })
 
     const companyId = await hubspotGetPrimaryCompanyIdForContact(contactId)
+    const stageMap = await getStageStatusMap()
+    const defaultStageId =
+      [...stageMap.entries()].find(([, status]) => status === 'Open' || status === 'Pending')?.[0] ??
+      [...stageMap.keys()][0] ??
+      null
 
     const priorityMap: Record<string, string> = { Low: 'LOW', Normal: 'MEDIUM', High: 'HIGH' }
     const properties: Record<string, string | null> = {
       subject: parsed.data.subject,
       hs_ticket_category: parsed.data.category ?? null,
       hs_ticket_priority: parsed.data.priority ? (priorityMap[parsed.data.priority] ?? parsed.data.priority) : null,
+      hs_pipeline_stage: defaultStageId,
     }
 
     const created = await hubspotCreateTicket({ properties, contactId, companyId })
     await hubspotCreateNoteEngagementForTicket({ ticketId: created.id, body: parsed.data.description })
     invalidateAllTicketCaches()
 
-    const stageMap = await getStageStatusMap()
     const status = stageMap.get(created.properties?.hs_pipeline_stage ?? '') ?? 'Open'
 
     return {
@@ -483,7 +527,7 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
     const messages: TicketMessageDto[] = (notes ?? [])
       .map((n) => {
         const bodyRaw = n.metadata?.body ?? ''
-        const body = stripHtml(bodyRaw)
+        const body = sanitizeMessageBody(bodyRaw)
         const ts = n.engagement?.timestamp ?? n.engagement?.createdAt
         const tsMs = typeof ts === 'number' ? ts : Number.NaN
         const timeIso = Number.isFinite(tsMs) ? new Date(tsMs).toISOString() : null
@@ -497,6 +541,7 @@ export const ticketsRoutes: FastifyPluginAsync = async (app) => {
           _tsMs: Number.isFinite(tsMs) ? tsMs : 0,
         } as TicketMessageDto & { _tsMs: number }
       })
+      .filter((m) => m.body.length > 0)
       .sort((a, b) => a._tsMs - b._tsMs)
       .map(({ _tsMs, ...rest }) => rest)
 
