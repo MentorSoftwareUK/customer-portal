@@ -971,7 +971,7 @@ onUnmounted(() => {
     <main
       id="main-content"
       class="min-h-screen md:ml-64 text-gray-900"
-      :class="isMeetingsPage ? 'pt-0 bg-[#0f1428]' : isEventDetailPage ? 'pt-20 bg-[#14192d]' : isDark ? 'pt-20 bg-[#14192d]' : 'pt-20 bg-[#e2e2e2]'"
+      :class="isMeetingsPage ? 'pt-0 bg-[#0f1428]' : isEventDetailPage ? 'pt-20 bg-[#14192d]' : isDark ? 'pt-20 bg-[#14192d]' : 'pt-20 bg-[#e2e2e2] customer-light'"
     >
       <div
         class="w-full"
