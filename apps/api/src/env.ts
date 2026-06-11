@@ -158,6 +158,7 @@ const EnvSchema = z.object({
   SMTP_PASS: optionalString(),
   SMTP_FROM: optionalString(),
   SENDGRID_API_KEY: optionalString(),
+  BREVO_API_KEY: optionalString(),
   
   // Admin + background jobs
   // Companies House API (for provider scraper tool — free at https://developer.company-information.service.gov.uk)

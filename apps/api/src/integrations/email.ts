@@ -4,6 +4,7 @@ import crypto from 'node:crypto'
 import { env } from '../env'
 
 const SENDGRID_API_URL = 'https://api.sendgrid.com/v3/mail/send'
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email'
 
 export function isSmtpConfigured() {
   return Boolean(env.SMTP_HOST && env.SMTP_PORT && env.SMTP_FROM)
@@ -13,13 +14,17 @@ function isSendGridConfigured() {
   return Boolean(env.SENDGRID_API_KEY && env.SMTP_FROM)
 }
 
+function isBrevoConfigured() {
+  return Boolean(env.BREVO_API_KEY && env.SMTP_FROM)
+}
+
 function keyFingerprint(value: string | undefined) {
   if (!value) return 'missing'
   return crypto.createHash('sha256').update(value).digest('hex').slice(0, 8)
 }
 
 export function isEmailConfigured() {
-  return isSendGridConfigured() || isSmtpConfigured()
+  return isBrevoConfigured() || isSendGridConfigured() || isSmtpConfigured()
 }
 
 // Reuse a single transporter (connection pool) instead of creating one per email.
@@ -42,6 +47,43 @@ function getTransporter(): Transporter {
     })
   }
   return _transporter
+}
+
+async function sendViaBrevoHttp(params: { to: string; subject: string; text: string; html?: string }) {
+  const apiKey = env.BREVO_API_KEY
+  if (!apiKey) throw new Error('Brevo API key is missing')
+
+  const payload: Record<string, unknown> = {
+    sender: { email: env.SMTP_FROM },
+    to: [{ email: params.to }],
+    subject: params.subject,
+    textContent: params.text,
+  }
+  if (params.html) payload.htmlContent = params.html
+
+  console.log(
+    '[email] sending via brevo api to=%s subject=%s key=%s from=%s',
+    params.to,
+    params.subject,
+    keyFingerprint(apiKey),
+    env.SMTP_FROM,
+  )
+  const res = await fetch(BREVO_API_URL, {
+    method: 'POST',
+    headers: {
+      'api-key': apiKey,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(10_000),
+  })
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`Brevo API error ${res.status}: ${body || res.statusText}`)
+  }
+
+  console.log('[email] sent ok via brevo api status=%s', res.status)
 }
 
 async function sendViaSendGridHttp(params: { to: string; subject: string; text: string; html?: string }) {
@@ -91,6 +133,17 @@ export async function sendTextEmail(params: { to: string; subject: string; text:
       return
     }
     throw new Error('Email is not configured')
+  }
+
+  if (isBrevoConfigured()) {
+    try {
+      await sendViaBrevoHttp(params)
+      return
+    } catch (err) {
+      console.error('[email] brevo api failed:', err instanceof Error ? err.message : err)
+      if (!isSmtpConfigured()) throw err
+      console.log('[email] falling back to smtp')
+    }
   }
 
   if (isSendGridConfigured()) {
