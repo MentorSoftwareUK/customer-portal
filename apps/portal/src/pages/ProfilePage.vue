@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import PageHeader from '../components/PageHeader.vue'
 import {
   getProfile,
   updateCompanyProfile,
@@ -123,12 +124,7 @@ onMounted(load)
 
 <template>
   <div class="space-y-6">
-    <div class="bg-white rounded-lg p-6 sm:p-8 border border-gray-200">
-      <h2 class="text-2xl sm:text-2xl font-semibold tracking-tight text-black">Profile</h2>
-      <p class="mt-2 text-base text-gray-400">
-        Keep your contact and company details up to date.
-      </p>
-    </div>
+    <PageHeader title="Profile" subtitle="Keep your contact and company details up to date." />
 
     <div v-if="error" class="rounded-lg border border-rose-500/20 bg-rose-50 p-3 text-sm text-rose-600">
       {{ error }}
