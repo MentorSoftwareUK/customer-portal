@@ -147,7 +147,7 @@ const productVersionLabel = computed(() => {
 <template>
   <div class="mx-auto max-w-5xl space-y-6">
     <div class="rounded-2xl border border-gray-200 bg-gradient-to-br from-[#14192d] via-[#1f2745] to-[#14192d] p-8 text-gray-900 shadow-lg">
-      <p class="text-xs uppercase tracking-wide text-gray-500">Welcome</p>
+      <p class="text-xs text-gray-500">Welcome</p>
       <h1 class="mt-2 text-2xl font-semibold tracking-tight">Let’s confirm your details</h1>
       <p class="mt-2 max-w-3xl text-sm text-gray-600">
         We sync directly to HubSpot, so please confirm your name, phone number, and job title. This keeps your contact record clean

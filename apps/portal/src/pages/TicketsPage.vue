@@ -173,8 +173,8 @@ onMounted(async () => {
     <div v-else-if="!error" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <!-- Total -->
       <div class="bg-white rounded-lg p-5 border border-gray-200 sm:col-span-2 lg:col-span-1">
-        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Total</div>
-        <div class="text-4xl font-semibold text-gray-900">{{ stats.total }}</div>
+        <div class="text-xs text-gray-500 mb-2">Total</div>
+        <div class="text-3xl font-semibold tracking-tight text-gray-900">{{ stats.total }}</div>
         <div class="mt-3 flex gap-1 h-1.5">
           <div class="rounded-full bg-amber-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.open) + '%' : '0%' }" />
           <div class="rounded-full bg-blue-400 transition-all duration-700 ease-out delay-75" :style="{ width: barsReady ? pct(stats.pending) + '%' : '0%' }" />
@@ -188,8 +188,8 @@ onMounted(async () => {
       </div>
       <!-- Open -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
-        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Open</div>
-        <div class="text-4xl font-semibold text-amber-600">{{ stats.open }}</div>
+        <div class="text-xs text-gray-500 mb-2">Open</div>
+        <div class="text-3xl font-semibold tracking-tight text-gray-900">{{ stats.open }}</div>
         <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-amber-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.open) + '%' : '0%' }" />
         </div>
@@ -197,8 +197,8 @@ onMounted(async () => {
       </div>
       <!-- Pending -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
-        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Pending</div>
-        <div class="text-4xl font-semibold text-sky-600">{{ stats.pending }}</div>
+        <div class="text-xs text-gray-500 mb-2">Pending</div>
+        <div class="text-3xl font-semibold tracking-tight text-gray-900">{{ stats.pending }}</div>
         <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-blue-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.pending) + '%' : '0%' }" />
         </div>
@@ -206,8 +206,8 @@ onMounted(async () => {
       </div>
       <!-- Closed -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
-        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Closed</div>
-        <div class="text-4xl font-semibold text-emerald-600">{{ stats.closed }}</div>
+        <div class="text-xs text-gray-500 mb-2">Closed</div>
+        <div class="text-3xl font-semibold tracking-tight text-gray-900">{{ stats.closed }}</div>
         <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-emerald-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.closed) + '%' : '0%' }" />
         </div>
@@ -215,8 +215,8 @@ onMounted(async () => {
       </div>
       <!-- Avg Response -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
-        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Avg Response</div>
-        <div class="text-2xl font-semibold tracking-tight text-violet-600 leading-tight">
+        <div class="text-xs text-gray-500 mb-2">Avg response</div>
+        <div class="text-2xl font-semibold tracking-tight text-gray-900 leading-tight">
           {{ stats.avgResponseMs ? formatDuration(stats.avgResponseMs) : '—' }}
         </div>
         <div class="mt-3 flex items-center gap-1.5">
@@ -226,8 +226,8 @@ onMounted(async () => {
       </div>
       <!-- Avg Resolution -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
-        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Avg Resolution</div>
-        <div class="text-2xl font-semibold tracking-tight text-teal-300 leading-tight">
+        <div class="text-xs text-gray-500 mb-2">Avg resolution</div>
+        <div class="text-2xl font-semibold tracking-tight text-gray-900 leading-tight">
           {{ stats.avgResolutionMs ? formatDuration(stats.avgResolutionMs) : '—' }}
         </div>
         <div class="mt-3 flex items-center gap-1.5">
@@ -293,15 +293,15 @@ onMounted(async () => {
               <th class="px-4 py-3 w-10">
                 <input type="checkbox" class="rounded border-gray-300 bg-gray-50 text-primary-500 focus:ring-primary-500/50" :checked="selectedIds.size === tickets.length && tickets.length > 0" :indeterminate="selectedIds.size > 0 && selectedIds.size < tickets.length" @change="toggleAll" />
               </th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">ID</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Subject</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Priority</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Created</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">ID</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Subject</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Priority</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Created</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
               <th class="px-4 py-3 w-10" />
             </tr>
           </thead>
-          <tbody class="divide-y divide-white/5">
+          <tbody class="divide-y divide-gray-100">
             <!-- Loading skeleton -->
             <template v-if="loading">
               <tr v-for="i in 5" :key="i" class="animate-pulse">

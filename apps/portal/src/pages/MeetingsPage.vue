@@ -438,7 +438,7 @@ onMounted(refreshMeetings)
           <div
             v-for="day in weekDayLabels"
             :key="day"
-            class="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500"
+            class="px-3 py-2 text-xs font-semibold text-gray-500"
           >
             {{ day }}
           </div>
@@ -702,12 +702,12 @@ onMounted(refreshMeetings)
 
       <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <div class="text-xs font-semibold uppercase tracking-wide text-gray-400">Host</div>
+          <div class="text-xs font-semibold text-gray-400">Host</div>
           <div class="mt-2 text-sm font-semibold text-gray-900">{{ meetingHostName(selectedMeeting) }}</div>
           <div class="text-xs text-gray-400">{{ selectedMeeting.team }}</div>
         </div>
         <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <div class="text-xs font-semibold uppercase tracking-wide text-gray-400">When</div>
+          <div class="text-xs font-semibold text-gray-400">When</div>
           <div class="mt-2 text-sm font-semibold text-gray-900">{{ selectedMeeting.dateTimeLabel }}</div>
           <div class="text-xs text-gray-400">UK time</div>
         </div>

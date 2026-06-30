@@ -262,7 +262,7 @@ onMounted(async () => {
 
           <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
             <div class="ui-surface p-4">
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <div class="flex items-center gap-2 text-xs font-semibold text-gray-500">
                 <svg class="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M8 7h8M8 11h5M7 3v2M17 3v2M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
@@ -271,7 +271,7 @@ onMounted(async () => {
               <div class="mt-1 text-sm font-semibold text-gray-900">{{ event.title }}</div>
             </div>
             <div class="ui-surface p-4">
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <div class="flex items-center gap-2 text-xs font-semibold text-gray-500">
                 <svg class="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M12 6v6l4 2M12 22a10 10 0 100-20 10 10 0 000 20z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
@@ -281,7 +281,7 @@ onMounted(async () => {
               <div class="text-xs text-gray-500">{{ event.timezoneLabel }}</div>
             </div>
             <div class="ui-surface p-4">
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <div class="flex items-center gap-2 text-xs font-semibold text-gray-500">
                 <svg class="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M12 12a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.5" />
                   <path d="M4 20a8 8 0 0116 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -291,7 +291,7 @@ onMounted(async () => {
               <div class="mt-1 text-sm font-semibold text-gray-900">{{ event.hostName || 'Mentor team' }}</div>
             </div>
             <div class="ui-surface p-4">
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <div class="flex items-center gap-2 text-xs font-semibold text-gray-500">
                 <svg class="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M4 5h16v10H4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
                   <path d="M8 19h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />

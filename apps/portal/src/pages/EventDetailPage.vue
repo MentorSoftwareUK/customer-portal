@@ -190,13 +190,13 @@ const typeBadgeClass = computed(() => {
             <h2 class="text-base font-semibold tracking-tight text-black">Practical information</h2>
             <div class="mt-4 space-y-5">
               <div>
-                <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400">What you'll need</h3>
+                <h3 class="text-xs font-semibold text-gray-400">What you'll need</h3>
                 <p class="mt-2 text-[0.9375rem] leading-relaxed text-gray-500">
                   A laptop or desktop with internet access and {{ event.platform }}.
                 </p>
               </div>
               <div>
-                <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400">Accessibility</h3>
+                <h3 class="text-xs font-semibold text-gray-400">Accessibility</h3>
                 <p class="mt-2 text-[0.9375rem] leading-relaxed text-gray-500">
                   If you need adjustments — captions, materials in advance — let us know when registering.
                 </p>
@@ -231,7 +231,7 @@ const typeBadgeClass = computed(() => {
             <h2 class="text-base font-semibold tracking-tight text-black">Event resources</h2>
 
             <div v-if="event.webinarSlides && event.webinarSlides.length" class="mt-4">
-              <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400">Slides</h3>
+              <h3 class="text-xs font-semibold text-gray-400">Slides</h3>
               <ul class="mt-2 space-y-2">
                 <li v-for="slide in event.webinarSlides" :key="slide.url">
                   <a
@@ -250,7 +250,7 @@ const typeBadgeClass = computed(() => {
             </div>
 
             <div v-if="event.webinarRecordingUrl" class="mt-5">
-              <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-400">Recording</h3>
+              <h3 class="text-xs font-semibold text-gray-400">Recording</h3>
               <div v-if="youtubeEmbedUrl" class="mt-3 aspect-video overflow-hidden rounded-lg border border-gray-200">
                 <iframe
                   :src="youtubeEmbedUrl"
@@ -337,7 +337,7 @@ const typeBadgeClass = computed(() => {
 
           <!-- ── KEY DETAILS ── -->
           <div class="rounded-lg border border-gray-200 bg-gray-50 px-5 py-5 text-gray-900">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-900">Key details</h2>
+            <h2 class="text-sm font-semibold text-gray-900">Key details</h2>
             <dl class="mt-3 space-y-2.5 text-sm">
               <div class="flex items-start justify-between gap-4">
                 <dt class="text-gray-400">Date &amp; time</dt>

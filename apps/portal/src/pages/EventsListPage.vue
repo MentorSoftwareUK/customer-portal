@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { authMe, listEvents, listMyEventRegistrations, type Audience, type EventDto, type Provision, type EventRegistrationDto } from '../lib/api'
 import EventTypeChip from '../components/EventTypeChip.vue'
+import PageHeader from '../components/PageHeader.vue'
 
 const query = ref('')
 
@@ -148,36 +149,27 @@ onMounted(async () => {
         <span class="sr-only">Loading...</span>
       </div>
 
-      <div class="bg-white rounded-lg p-6 sm:p-8 border border-gray-200">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h2 class="text-2xl sm:text-2xl font-semibold tracking-tight text-black">Training & Events</h2>
-            <p class="mt-2 text-base text-gray-400">Find upcoming sessions, webinars, and recordings that support your team.</p>
-          </div>
-
-          <div class="w-full lg:w-96">
+      <PageHeader title="Training &amp; Events" subtitle="Upcoming sessions, webinars, and recordings for your team.">
+        <template #actions>
+          <div class="w-full lg:w-72">
             <label for="event-search" class="sr-only">Search events</label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg aria-hidden="true" class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    fill-rule="evenodd"
-                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                    clip-rule="evenodd"
-                  />
+                <svg aria-hidden="true" class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                 </svg>
               </div>
               <input
                 id="event-search"
                 v-model="query"
                 type="text"
-                class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 placeholder:text-gray-400"
+                class="bg-white border border-gray-200 text-gray-900 text-sm rounded focus:ring-primary-500 focus:border-primary-500 block w-full pl-9 p-2 placeholder:text-gray-400"
                 placeholder="Search events"
               >
             </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </PageHeader>
 
       <div>
         <div class="flex items-center justify-between mb-3">
@@ -228,7 +220,7 @@ onMounted(async () => {
               </RouterLink>
               <RouterLink
                 :to="`/app/events/${e.id}`"
-                class="w-full mt-2 inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-200 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200"
+                class="w-full mt-2 inline-flex items-center justify-center rounded px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200"
               >
                 Details
               </RouterLink>

@@ -145,7 +145,7 @@ function openArticle(article: KnowledgeBaseArticleDto) {
       <!-- Section 1 — Hero panel -->
       <div class="rounded-lg border border-gray-200 bg-white px-6 pt-8 pb-8 shadow-sm sm:px-8 sm:pt-10 sm:pb-10">
         <div class="mx-auto max-w-2xl text-center">
-          <div class="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Knowledge Base</div>
+          <div class="text-[11px] font-semibold text-gray-400 mb-3">Knowledge Base</div>
           <h1 class="text-2xl font-semibold tracking-tight text-black sm:text-3xl">How can we help?</h1>
           <p class="mt-2 text-sm text-gray-400">Search our guides, how-tos, and FAQs to find the answer you need.</p>
           <div class="relative mt-6">

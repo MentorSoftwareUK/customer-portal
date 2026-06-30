@@ -302,7 +302,7 @@ onMounted(async () => {
           </div>
         </div>
         <div class="text-2xl font-semibold tracking-tight text-black mb-1">2</div>
-        <div class="text-xs font-medium uppercase tracking-widest text-gray-500 mb-2">Active Support Tickets</div>
+        <div class="text-xs text-gray-500 mb-2">Active Support Tickets</div>
         <RouterLink to="/app/tickets" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
           View tickets
           <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -324,7 +324,7 @@ onMounted(async () => {
           <span v-if="!invoicesLoaded" class="inline-block h-9 w-16 rounded bg-gray-100 animate-pulse"></span>
           <span v-else>{{ outstandingInvoices.length }}</span>
         </div>
-        <div class="text-xs font-medium uppercase tracking-widest text-gray-500 mb-2">{{ overdueInvoices.length ? 'Overdue' : 'Outstanding' }} Invoices</div>
+        <div class="text-xs text-gray-500 mb-2">{{ overdueInvoices.length ? 'Overdue' : 'Outstanding' }} Invoices</div>
         <RouterLink to="/app/invoices" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
           View invoices
           <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -346,7 +346,7 @@ onMounted(async () => {
           <span v-if="!eventsLoaded" class="inline-block h-9 w-8 rounded bg-gray-100 animate-pulse"></span>
           <span v-else>{{ upcomingEventsCount }}</span>
         </div>
-        <div class="text-xs font-medium uppercase tracking-widest text-gray-500 mb-2">Upcoming Events</div>
+        <div class="text-xs text-gray-500 mb-2">Upcoming Events</div>
         <RouterLink to="/app/events" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
           Browse events
           <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -365,7 +365,7 @@ onMounted(async () => {
           </div>
         </div>
         <div class="text-2xl font-semibold tracking-tight text-black mb-1">{{ meetingsLoaded ? meetingsCount : '—' }}</div>
-        <div class="text-xs font-medium uppercase tracking-widest text-gray-500 mb-2">Scheduled Meetings</div>
+        <div class="text-xs text-gray-500 mb-2">Scheduled Meetings</div>
         <RouterLink to="/app/meetings" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
           View calendar
           <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
