@@ -77,7 +77,7 @@ onMounted(load)
         <span class="sr-only">Loading...</span>
       </div>
 
-      <div v-else-if="ticket" class="ui-surface relative shadow-md sm:rounded-lg overflow-hidden">
+      <div v-else-if="ticket" class="ui-surface relative shadow-sm sm:rounded-lg overflow-hidden">
         <div v-if="warning" class="border-b border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20   ">
           {{ warning }}
         </div>

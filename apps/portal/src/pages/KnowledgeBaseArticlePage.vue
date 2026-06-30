@@ -218,7 +218,7 @@ function openRelatedArticle(article: KnowledgeBaseArticleDto) {
             v-for="article in relatedArticles"
             :key="article.id"
             @click="openRelatedArticle(article)"
-            class="group flex flex-col overflow-hidden rounded-lg shadow-md transition-all hover:shadow-xl hover:scale-105 text-left bg-white"
+            class="group flex flex-col overflow-hidden rounded-lg shadow-sm border border-gray-200 text-left bg-white"
           >
             <!-- Featured Image / Placeholder -->
             <div class="relative h-48 w-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600">
@@ -226,7 +226,7 @@ function openRelatedArticle(article: KnowledgeBaseArticleDto) {
                 v-if="article.featuredImageUrl" 
                 :src="article.featuredImageUrl" 
                 :alt="article.title"
-                class="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-110"
+                class="absolute inset-0 h-full w-full object-cover"
               />
               <div v-if="!article.featuredImageUrl" class="absolute inset-0 flex items-center justify-center">
                 <svg class="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

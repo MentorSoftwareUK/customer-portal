@@ -8,7 +8,7 @@ defineProps<{
 
 <template>
   <!-- v3 page header pattern: white bar + magenta underline rule -->
-  <div class="bg-white border-b border-gray-200 -mx-4 px-4 sm:-mx-12 sm:px-12 mb-6">
+  <div class="bg-white border-b border-gray-200 -mx-4 px-4 sm:-mx-12 sm:px-12 mb-6 -mt-6">
     <div class="flex flex-col gap-2 py-4 md:flex-row md:items-center md:justify-between">
       <div class="min-w-0">
         <h1 class="text-2xl font-semibold tracking-tight text-black">{{ title }}</h1>

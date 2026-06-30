@@ -104,7 +104,7 @@ onMounted(async () => {
       </template>
     </PageHeader>
 
-    <div class="ui-surface relative shadow-md sm:rounded-lg overflow-hidden">
+    <div class="ui-surface relative shadow-sm sm:rounded-lg overflow-hidden">
       <div v-if="error" class="border-b border-red-200 bg-red-50 p-4 text-sm text-red-800">
         {{ error }}
       </div>

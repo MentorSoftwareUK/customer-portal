@@ -293,7 +293,7 @@ onMounted(async () => {
     <!-- Stats Grid - only shown when enough features are active to fill the row -->
     <div v-if="showStatsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- Tickets -->
-      <div v-if="featureFlags.ticketsEnabled" class="bg-white rounded-lg p-5 border border-gray-200 shadow-md">
+      <div v-if="featureFlags.ticketsEnabled" class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
         <div class="flex items-center justify-between mb-3">
           <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">
             <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -312,7 +312,7 @@ onMounted(async () => {
       </div>
 
       <!-- Invoices -->
-      <div v-if="featureFlags.invoicesEnabled" class="bg-white rounded-lg p-5 border border-gray-200 shadow-md">
+      <div v-if="featureFlags.invoicesEnabled" class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
         <div class="flex items-center justify-between mb-3">
           <div class="h-10 w-10 rounded-lg flex items-center justify-center" :class="overdueInvoices.length ? 'bg-rose-50' : 'bg-amber-50'">
             <svg class="h-5 w-5" :class="overdueInvoices.length ? 'text-rose-600' : 'text-amber-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -334,7 +334,7 @@ onMounted(async () => {
       </div>
 
       <!-- Events -->
-      <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-md">
+      <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
         <div class="flex items-center justify-between mb-3">
           <div class="h-10 w-10 rounded-lg bg-violet-50 flex items-center justify-center">
             <svg class="h-5 w-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -356,7 +356,7 @@ onMounted(async () => {
       </div>
 
       <!-- Meetings -->
-      <div v-if="featureFlags.meetingsEnabled" class="bg-white rounded-lg p-5 border border-gray-200 shadow-md">
+      <div v-if="featureFlags.meetingsEnabled" class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
         <div class="flex items-center justify-between mb-3">
           <div class="h-10 w-10 rounded-lg bg-emerald-50 flex items-center justify-center">
             <svg class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -388,7 +388,7 @@ onMounted(async () => {
       <!-- Left Column - Priority Items -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Action Required Section -->
-        <div v-if="featureFlags.ticketsEnabled || (featureFlags.invoicesEnabled && mostUrgentInvoice)" class="bg-white rounded-lg p-6 border border-gray-200 shadow-md">
+        <div v-if="featureFlags.ticketsEnabled || (featureFlags.invoicesEnabled && mostUrgentInvoice)" class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
           <div class="flex items-center justify-between mb-5">
             <h2 class="text-lg font-semibold tracking-tight text-black">Requires Your Attention</h2>
             <RouterLink v-if="featureFlags.ticketsEnabled" to="/app/tickets" class="text-xs font-medium text-primary-600 hover:text-primary-700">
@@ -438,7 +438,7 @@ onMounted(async () => {
         </div>
 
         <!-- Upcoming Events -->
-        <div class="bg-white rounded-lg p-6 border border-gray-200 shadow-md">
+        <div class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
           <div class="flex items-center justify-between mb-5">
             <h2 class="text-lg font-semibold tracking-tight text-black">Upcoming Events</h2>
             <RouterLink to="/app/events" class="text-xs font-medium text-primary-600 hover:text-primary-700">
@@ -486,7 +486,7 @@ onMounted(async () => {
       <!-- Right Column - Secondary Items -->
       <div class="space-y-6">
         <!-- Scheduled Meetings -->
-        <div v-if="featureFlags.meetingsEnabled" class="bg-white rounded-lg p-6 border border-gray-200 shadow-md">
+        <div v-if="featureFlags.meetingsEnabled" class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
           <div class="flex items-center justify-between mb-5">
             <h2 class="text-lg font-semibold tracking-tight text-black">Your Meetings</h2>
             <RouterLink to="/app/meetings" class="text-xs font-medium text-primary-600 hover:text-primary-700">
@@ -527,7 +527,7 @@ onMounted(async () => {
         </div>
 
         <!-- Latest Resources (only shown when at least one resource feature is on) -->
-        <div v-if="featureFlags.knowledgeBaseEnabled || featureFlags.videosEnabled || featureFlags.documentsEnabled" class="bg-white rounded-lg p-6 border border-gray-200 shadow-md">
+        <div v-if="featureFlags.knowledgeBaseEnabled || featureFlags.videosEnabled || featureFlags.documentsEnabled" class="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
           <div class="flex items-center justify-between mb-5">
             <h2 class="text-lg font-semibold tracking-tight text-black">Latest Resources</h2>
             <RouterLink
