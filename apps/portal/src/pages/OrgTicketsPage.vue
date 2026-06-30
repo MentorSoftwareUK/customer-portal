@@ -35,7 +35,7 @@ function pct(n: number) {
 
 function priorityBadgeClass(p?: string) {
   if (p === 'High') return 'bg-rose-500/20 text-rose-600 border border-rose-500/30'
-  if (p === 'Low') return 'bg-gray-50 text-gray-400 border border-gray-200'
+  if (p === 'Low') return 'bg-gray-100 text-gray-700 border border-gray-200'
   return 'bg-amber-500/20 text-amber-600 border border-amber-500/30'
 }
 
@@ -128,14 +128,14 @@ onMounted(async () => {
     <div v-else-if="!error" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <!-- Total -->
       <div class="bg-white rounded-lg p-5 border border-gray-200 sm:col-span-2 lg:col-span-1">
-        <div class="text-xs font-medium text-gray-400 mb-2">Total</div>
+        <div class="text-xs font-medium text-gray-600 mb-2">Total</div>
         <div class="text-4xl font-semibold text-gray-900">{{ stats.total }}</div>
         <div class="mt-3 flex gap-1 h-1.5">
           <div class="rounded-full bg-amber-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.open) + '%' : '0%' }" />
           <div class="rounded-full bg-blue-400 transition-all duration-700 ease-out delay-75" :style="{ width: barsReady ? pct(stats.pending) + '%' : '0%' }" />
           <div class="rounded-full bg-emerald-400 transition-all duration-700 ease-out delay-150" :style="{ width: barsReady ? pct(stats.closed) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 flex gap-3 text-xs text-gray-400">
+        <div class="mt-2 flex gap-3 text-xs text-gray-500">
           <span class="flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-amber-400 inline-block" />Open</span>
           <span class="flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-blue-400 inline-block" />Pending</span>
           <span class="flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />Closed</span>
@@ -143,57 +143,57 @@ onMounted(async () => {
       </div>
       <!-- Open -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
-        <div class="text-xs font-medium text-gray-400 mb-2">Open</div>
+        <div class="text-xs font-medium text-gray-600 mb-2">Open</div>
         <div class="text-4xl font-semibold text-amber-600">{{ stats.open }}</div>
         <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-amber-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.open) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 text-xs text-gray-400">{{ pct(stats.open) }}% of total</div>
+        <div class="mt-2 text-xs text-gray-500">{{ pct(stats.open) }}% of total</div>
       </div>
       <!-- Pending -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
-        <div class="text-xs font-medium text-gray-400 mb-2">Pending</div>
+        <div class="text-xs font-medium text-gray-600 mb-2">Pending</div>
         <div class="text-4xl font-semibold text-sky-600">{{ stats.pending }}</div>
         <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-blue-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.pending) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 text-xs text-gray-400">{{ pct(stats.pending) }}% of total</div>
+        <div class="mt-2 text-xs text-gray-500">{{ pct(stats.pending) }}% of total</div>
       </div>
       <!-- Closed -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
-        <div class="text-xs font-medium text-gray-400 mb-2">Closed</div>
+        <div class="text-xs font-medium text-gray-600 mb-2">Closed</div>
         <div class="text-4xl font-semibold text-emerald-600">{{ stats.closed }}</div>
         <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-emerald-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.closed) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 text-xs text-gray-400">{{ pct(stats.closed) }}% of total</div>
+        <div class="mt-2 text-xs text-gray-500">{{ pct(stats.closed) }}% of total</div>
       </div>
       <!-- Avg Response -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
-        <div class="text-xs font-medium text-gray-400 mb-2">Avg Response</div>
+        <div class="text-xs font-medium text-gray-600 mb-2">Avg Response</div>
         <div class="text-2xl font-semibold tracking-tight text-violet-600 leading-tight">
           {{ stats.avgResponseMs ? formatDuration(stats.avgResponseMs) : '—' }}
         </div>
         <div class="mt-3 flex items-center gap-1.5">
-          <svg class="h-3.5 w-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span class="text-xs text-gray-400">Time to first reply</span>
+          <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span class="text-xs text-gray-500">Time to first reply</span>
         </div>
       </div>
       <!-- Avg Resolution -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
-        <div class="text-xs font-medium text-gray-400 mb-2">Avg Resolution</div>
-        <div class="text-2xl font-semibold tracking-tight text-teal-300 leading-tight">
+        <div class="text-xs font-medium text-gray-600 mb-2">Avg Resolution</div>
+        <div class="text-2xl font-semibold tracking-tight text-teal-600 leading-tight">
           {{ stats.avgResolutionMs ? formatDuration(stats.avgResolutionMs) : '—' }}
         </div>
         <div class="mt-3 flex items-center gap-1.5">
-          <svg class="h-3.5 w-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span class="text-xs text-gray-400">Time to close</span>
+          <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span class="text-xs text-gray-500">Time to close</span>
         </div>
       </div>
     </div>
 
     <!-- Alerts -->
-    <div v-if="error" class="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">{{ error }}</div>
+    <div v-if="error" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">{{ error }}</div>
     <div v-else-if="warning" class="rounded-lg border border-amber-500/30 bg-amber-50 p-4 text-sm text-amber-600">{{ warning }}</div>
 
     <!-- Table -->
@@ -205,15 +205,15 @@ onMounted(async () => {
               <th class="px-4 py-3 w-10">
                 <input type="checkbox" class="rounded border-gray-300 bg-gray-50 text-primary-500 focus:ring-primary-500/50" :checked="selectedIds.size === tickets.length && tickets.length > 0" :indeterminate="selectedIds.size > 0 && selectedIds.size < tickets.length" @change="toggleAll" />
               </th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-400">ID</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-400">Subject</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-400">Priority</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-400">Created</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-400">Status</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">ID</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Subject</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Priority</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Created</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Status</th>
               <th class="px-4 py-3 w-10" />
             </tr>
           </thead>
-          <tbody class="divide-y divide-white/5">
+          <tbody class="divide-y divide-gray-100">
             <!-- Loading skeleton -->
             <template v-if="loading">
               <tr v-for="i in 5" :key="i" class="animate-pulse">
@@ -228,19 +228,19 @@ onMounted(async () => {
             </template>
             <!-- Empty -->
             <tr v-else-if="!tickets.length">
-              <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">No tickets found.</td>
+              <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500">No tickets found.</td>
             </tr>
             <!-- Rows -->
             <tr
               v-for="ticket in tickets"
               :key="ticket.id"
-              class="group hover:bg-white/[0.02] transition-colors cursor-pointer"
+              class="group hover:bg-gray-50 transition-colors cursor-pointer"
               @click.self="$router.push(`/app/tickets/${encodeURIComponent(ticket.id)}`)"
             >
               <td class="px-4 py-3.5" @click.stop>
                 <input type="checkbox" class="rounded border-gray-300 bg-gray-50 text-primary-500 focus:ring-primary-500/50" :checked="selectedIds.has(ticket.id)" @change="toggleSelect(ticket.id)" />
               </td>
-              <td class="px-4 py-3.5 font-mono text-xs text-gray-400">#{{ ticket.id }}</td>
+              <td class="px-4 py-3.5 font-mono text-xs text-gray-500">#{{ ticket.id }}</td>
               <td class="px-4 py-3.5 text-gray-900 font-medium max-w-xs">
                 <RouterLink :to="`/app/tickets/${encodeURIComponent(ticket.id)}`" class="hover:text-primary-700 transition-colors truncate block">
                   {{ ticket.subject }}
@@ -251,7 +251,7 @@ onMounted(async () => {
                   {{ ticket.priority ?? 'Normal' }}
                 </span>
               </td>
-              <td class="px-4 py-3.5 text-sm text-gray-400">{{ ticket.createdLabel }}</td>
+              <td class="px-4 py-3.5 text-sm text-gray-500">{{ ticket.createdLabel }}</td>
               <td class="px-4 py-3.5">
                 <span class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium" :class="statusBadgeClass(ticket.status)">
                   <svg v-if="ticket.status === 'Pending'" class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
@@ -261,7 +261,7 @@ onMounted(async () => {
                 </span>
               </td>
               <td class="px-4 py-3.5 text-right">
-                <RouterLink :to="`/app/tickets/${encodeURIComponent(ticket.id)}`" class="text-gray-300 hover:text-gray-500 transition-colors" @click.stop>
+                <RouterLink :to="`/app/tickets/${encodeURIComponent(ticket.id)}`" class="text-gray-400 hover:text-gray-600 transition-colors" @click.stop>
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                 </RouterLink>
               </td>

@@ -234,14 +234,14 @@ onMounted(async () => {
       </div>
 
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div class="order-2 lg:col-span-2 bg-white border border-gray-200 rounded-lg">
-          <div class="flex items-center justify-between p-4">
+        <div class="order-2 lg:col-span-2 bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div class="flex items-center justify-between border-b border-gray-100 p-4">
             <div>
               <h3 class="text-base font-semibold tracking-tight text-black">Further ahead</h3>
               <p class="mt-1 text-sm text-gray-500">Plan upcoming sessions beyond the next three.</p>
             </div>
           </div>
-          <div class="flow-root px-4 pb-4">
+          <div class="flow-root px-4 pb-4 pt-2">
             <ul role="list" class="divide-y divide-gray-200">
               <li v-for="e in furtherAhead" :key="e.id" class="py-4">
                 <div class="flex items-center justify-between gap-3">
@@ -292,21 +292,27 @@ onMounted(async () => {
                   </div>
                 </div>
               </li>
-              <li v-if="furtherAhead.length === 0" class="py-8 text-sm text-gray-500">
-                Nothing further ahead matches your search.
+              <li v-if="furtherAhead.length === 0" class="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p class="text-sm font-medium text-gray-700">Nothing further ahead</p>
+                <p class="text-sm text-gray-500">No additional sessions match your search.</p>
               </li>
             </ul>
           </div>
         </div>
 
-        <div class="order-1 bg-white border border-gray-200 rounded-lg">
-          <div class="flex items-center justify-between p-4">
+        <div class="order-1 bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div class="flex items-center justify-between border-b border-gray-100 p-4">
             <div>
               <h3 class="text-base font-semibold tracking-tight text-black">Your registrations</h3>
               <p class="mt-1 text-sm text-gray-500">Events you’re already registered for.</p>
             </div>
           </div>
-          <div class="flow-root px-4 pb-4">
+          <div class="flow-root px-4 pb-4 pt-2">
             <ul role="list" class="divide-y divide-gray-200">
               <li v-for="e in pendingPaymentEvents" :key="`pending_${e.id}`" class="py-4">
                 <div class="flex items-center justify-between gap-3">
@@ -352,8 +358,14 @@ onMounted(async () => {
                   </div>
                 </RouterLink>
               </li>
-              <li v-if="registeredEvents.length === 0 && pendingPaymentEvents.length === 0" class="py-8 text-sm text-gray-500">
-                You haven’t registered for any events yet.
+              <li v-if="registeredEvents.length === 0 && pendingPaymentEvents.length === 0" class="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p class="text-sm font-medium text-gray-700">No registrations yet</p>
+                <p class="text-sm text-gray-500">Register for a session and it’ll appear here.</p>
               </li>
             </ul>
           </div>

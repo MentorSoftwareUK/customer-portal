@@ -335,7 +335,7 @@ onMounted(refreshMeetings)
             <button
               type="button"
               class="rounded-md px-2.5 py-1 font-semibold"
-              :class="view === 'month' ? 'bg-gray-100 text-white' : 'text-gray-500 hover:text-gray-900'"
+            :class="view === 'month' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
               @click="view = 'month'"
             >
               month
@@ -343,7 +343,7 @@ onMounted(refreshMeetings)
             <button
               type="button"
               class="rounded-md px-2.5 py-1 font-semibold"
-              :class="view === 'week' ? 'bg-gray-100 text-white' : 'text-gray-500 hover:text-gray-900'"
+            :class="view === 'week' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
               @click="view = 'week'"
             >
               week
@@ -351,7 +351,7 @@ onMounted(refreshMeetings)
             <button
               type="button"
               class="rounded-md px-2.5 py-1 font-semibold"
-              :class="view === 'day' ? 'bg-gray-100 text-white' : 'text-gray-500 hover:text-gray-900'"
+            :class="view === 'day' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
               @click="view = 'day'"
             >
               day
@@ -359,7 +359,7 @@ onMounted(refreshMeetings)
             <button
               type="button"
               class="rounded-md px-2.5 py-1 font-semibold"
-              :class="view === 'list' ? 'bg-gray-100 text-white' : 'text-gray-500 hover:text-gray-900'"
+            :class="view === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
               @click="view = 'list'"
             >
               list
@@ -370,7 +370,7 @@ onMounted(refreshMeetings)
             <button
               type="button"
               class="rounded-md px-2.5 py-1 font-semibold"
-              :class="teamFilter === 'all' ? 'bg-gray-100 text-white' : 'text-gray-500 hover:text-gray-900'"
+            :class="teamFilter === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
               @click="teamFilter = 'all'"
             >
               all teams
@@ -378,7 +378,7 @@ onMounted(refreshMeetings)
             <button
               type="button"
               class="rounded-md px-2.5 py-1 font-semibold"
-              :class="teamFilter === 'Training' ? 'bg-gray-100 text-white' : 'text-gray-500 hover:text-gray-900'"
+            :class="teamFilter === 'Training' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
               @click="teamFilter = 'Training'"
             >
               training
@@ -386,7 +386,7 @@ onMounted(refreshMeetings)
             <button
               type="button"
               class="rounded-md px-2.5 py-1 font-semibold"
-              :class="teamFilter === 'Success Team' ? 'bg-gray-100 text-white' : 'text-gray-500 hover:text-gray-900'"
+            :class="teamFilter === 'Success Team' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
               @click="teamFilter = 'Success Team'"
             >
               success
@@ -394,7 +394,7 @@ onMounted(refreshMeetings)
             <button
               type="button"
               class="rounded-md px-2.5 py-1 font-semibold"
-              :class="teamFilter === 'Renewals' ? 'bg-gray-100 text-white' : 'text-gray-500 hover:text-gray-900'"
+            :class="teamFilter === 'Renewals' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'"
               @click="teamFilter = 'Renewals'"
             >
               renewals
@@ -403,7 +403,7 @@ onMounted(refreshMeetings)
 
           <button
             type="button"
-            class="inline-flex items-center rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-semibold text-gray-900 hover:bg-primary-400"
+            class="inline-flex items-center rounded-lg bg-primary-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-primary-500"
             @click="openNewMeeting()"
           >
             + New meeting
@@ -428,17 +428,17 @@ onMounted(refreshMeetings)
       {{ warning }}
     </div>
 
-    <div class="rounded-lg border border-cyan-500/20 bg-cyan-500/10 p-3 text-xs text-cyan-100">
+    <div class="rounded-lg border border-sky-200 bg-sky-50 p-3 text-xs text-sky-800">
       Meeting availability and booking windows are managed in HubSpot calendars. Update availability in HubSpot, then refresh this page to sync the latest slots.
     </div>
 
     <div class="flex-1">
       <div class="bg-white h-full flex flex-col">
-        <div class="grid grid-cols-7 border-b border-gray-200 bg-gray-50 px-4">
+        <div class="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
           <div
             v-for="day in weekDayLabels"
             :key="day"
-            class="px-3 py-2 text-xs font-semibold text-gray-500"
+            class="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500"
           >
             {{ day }}
           </div>
@@ -540,12 +540,12 @@ onMounted(refreshMeetings)
           </div>
         </div>
 
-        <div v-else class="grid flex-1 grid-cols-7 divide-x divide-y divide-white/5 px-4">
+        <div v-else class="grid flex-1 grid-cols-7 divide-x divide-y divide-gray-200 border-gray-200">
           <div
             v-for="day in calendarDays"
             :key="day.date.toISOString()"
-            class="min-h-[120px] bg-white p-2"
-            :class="day.isCurrentMonth ? 'text-white' : 'text-gray-300 bg-[#0b1024]'"
+            class="min-h-[120px] p-2"
+            :class="day.isCurrentMonth ? 'bg-white text-gray-900' : 'bg-gray-50 text-gray-400'"
           >
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold">
@@ -553,7 +553,7 @@ onMounted(refreshMeetings)
               </span>
               <span
                 v-if="day.isToday"
-                class="rounded-full bg-primary-500/20 px-2 py-0.5 text-[10px] font-semibold text-primary-200"
+                class="rounded-full bg-primary-600 px-2 py-0.5 text-[10px] font-semibold text-white"
               >
                 Today
               </span>
@@ -572,7 +572,7 @@ onMounted(refreshMeetings)
                 <span class="text-gray-500">·</span>
                 <span class="truncate">{{ meetingHostName(meeting) }}</span>
               </button>
-              <div v-if="day.meetings.length > 3" class="text-[11px] text-gray-400">
+              <div v-if="day.meetings.length > 3" class="text-[11px] font-medium text-gray-500">
                 +{{ day.meetings.length - 3 }} more
               </div>
             </div>

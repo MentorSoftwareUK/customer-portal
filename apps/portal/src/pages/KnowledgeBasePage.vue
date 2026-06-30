@@ -145,9 +145,9 @@ function openArticle(article: KnowledgeBaseArticleDto) {
       <!-- Section 1 — Hero panel -->
       <div class="rounded-lg border border-gray-200 bg-white px-6 pt-8 pb-8 shadow-sm sm:px-8 sm:pt-10 sm:pb-10">
         <div class="mx-auto max-w-2xl text-center">
-          <div class="text-[11px] font-semibold text-gray-400 mb-3">Knowledge Base</div>
+          <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-3">Knowledge Base</div>
           <h1 class="text-2xl font-semibold tracking-tight text-black sm:text-3xl">How can we help?</h1>
-          <p class="mt-2 text-sm text-gray-400">Search our guides, how-tos, and FAQs to find the answer you need.</p>
+          <p class="mt-2 text-sm text-gray-600">Search our guides, how-tos, and FAQs to find the answer you need.</p>
           <div class="relative mt-6">
             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
               <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -191,7 +191,7 @@ function openArticle(article: KnowledgeBaseArticleDto) {
             </svg>
           </div>
           <div class="text-sm font-semibold text-gray-900">All articles</div>
-          <div class="mt-1 text-xs text-gray-400">{{ baseFilteredArticles.length }} articles · {{ categoryMeta['All']!.description }}</div>
+          <div class="mt-1 text-xs text-gray-500">{{ baseFilteredArticles.length }} articles · {{ categoryMeta['All']!.description }}</div>
         </button>
 
         <!-- Per-category cards -->
@@ -211,7 +211,7 @@ function openArticle(article: KnowledgeBaseArticleDto) {
             </svg>
           </div>
           <div class="text-sm font-semibold text-gray-900">{{ cat.name }}</div>
-          <div class="mt-1 text-xs text-gray-400">{{ cat.count }} articles · {{ categoryMeta[cat.name]?.description }}</div>
+          <div class="mt-1 text-xs text-gray-500">{{ cat.count }} articles · {{ categoryMeta[cat.name]?.description }}</div>
         </button>
       </div>
 
@@ -221,7 +221,7 @@ function openArticle(article: KnowledgeBaseArticleDto) {
         <div class="flex flex-wrap items-center gap-3 border-b border-gray-200 px-5 py-3">
           <div class="flex flex-wrap items-center gap-3 flex-1">
             <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-400 shrink-0" for="kb-provision">Provision</label>
+              <label class="text-xs font-medium text-gray-600 shrink-0" for="kb-provision">Provision</label>
               <select
                 id="kb-provision"
                 v-model="provision"
@@ -234,7 +234,7 @@ function openArticle(article: KnowledgeBaseArticleDto) {
               </select>
             </div>
             <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-400 shrink-0" for="kb-product-version">Version</label>
+              <label class="text-xs font-medium text-gray-600 shrink-0" for="kb-product-version">Version</label>
               <select
                 id="kb-product-version"
                 v-model="productVersion"
@@ -246,12 +246,12 @@ function openArticle(article: KnowledgeBaseArticleDto) {
               </select>
             </div>
           </div>
-          <div class="text-xs text-gray-400 tabular-nums">{{ filteredArticles.length }} results</div>
+          <div class="text-xs font-medium text-gray-500 tabular-nums">{{ filteredArticles.length }} results</div>
         </div>
 
         <!-- Empty state -->
         <div v-if="!filteredArticles.length" class="flex flex-col items-center justify-center px-5 py-16 text-center">
-          <svg class="h-10 w-10 text-gray-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-10 w-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
           </svg>
           <p class="text-sm text-gray-400">No articles match your search and filters.</p>
@@ -284,10 +284,10 @@ function openArticle(article: KnowledgeBaseArticleDto) {
                   :class="categoryColor[article.category] ?? 'bg-gray-50 text-gray-500 ring-gray-200'"
                 >{{ article.category }}</span>
               </div>
-              <div class="mt-1 text-xs text-gray-400">{{ article.readMins }} min read</div>
+              <div class="mt-1 text-xs text-gray-500">{{ article.readMins }} min read</div>
             </div>
             <svg
-              class="h-4 w-4 shrink-0 text-gray-200 transition group-hover:text-gray-400 group-hover:translate-x-0.5"
+              class="h-4 w-4 shrink-0 text-gray-300 transition group-hover:text-gray-500 group-hover:translate-x-0.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

@@ -822,7 +822,7 @@ onUnmounted(() => {
           <div
             v-for="n in globalNotifications"
             :key="n.id"
-            class="flex items-start gap-3 rounded-base p-4 text-sm"
+            class="flex items-start gap-3 rounded-base border border-gray-200 p-4 text-sm shadow-sm"
             :class="notificationContainerClass(n.level)"
             role="alert"
           >

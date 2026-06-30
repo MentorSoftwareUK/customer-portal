@@ -49,15 +49,15 @@ export default defineComponent({
 
     const stepClasses = (index: number) => {
       const state = stepState(index)
-      if (state === 'complete') return 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40'
-      if (state === 'active') return 'bg-primary-500/20 text-primary-200 border-primary-400/40'
-      return 'bg-gray-50 text-gray-500 border-gray-200'
+      if (state === 'complete') return 'bg-emerald-500 text-white border-emerald-500'
+      if (state === 'active') return 'bg-primary-600 text-white border-primary-600'
+      return 'bg-gray-100 text-gray-500 border-gray-200'
     }
 
     const labelClasses = (index: number) => {
       const state = stepState(index)
-      if (state === 'complete') return 'text-emerald-100'
-      if (state === 'active') return 'text-white'
+      if (state === 'complete') return 'text-emerald-700'
+      if (state === 'active') return 'text-gray-900'
       return 'text-gray-500'
     }
 
@@ -79,13 +79,13 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,20,40,0.2)]">
+  <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div>
         <h3 class="text-lg font-semibold text-gray-900">{{ title }}</h3>
         <p v-if="subtitle" class="mt-1 text-sm text-gray-500">{{ subtitle }}</p>
       </div>
-      <div class="text-xs text-gray-400">{{ progressPercent }}% complete</div>
+      <div class="text-xs font-medium text-gray-500">{{ progressPercent }}% complete</div>
     </div>
 
     <div class="mt-6">
@@ -122,7 +122,7 @@ export default defineComponent({
                 <span v-else>{{ index + 1 }}</span>
               </span>
             </div>
-            <div v-if="stage.description" class="text-xs text-gray-400">
+            <div v-if="stage.description" class="text-xs text-gray-500">
               {{ stage.description }}
             </div>
 
