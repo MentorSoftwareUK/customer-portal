@@ -84,7 +84,7 @@ h1, h2, h3 { letter-spacing: -0.02em; }
 
   /* ── Surfaces ── */
   .ui-surface {
-    @apply rounded-lg bg-white border border-gray-200 shadow-md text-gray-900;
+    @apply rounded-lg bg-white border border-gray-200 shadow-sm text-gray-900;
   }
   .ui-surface-muted {
     @apply rounded-lg bg-gray-100 border border-gray-200 text-gray-900;
@@ -96,15 +96,15 @@ h1, h2, h3 { letter-spacing: -0.02em; }
   .ui-surface .ui-link:hover, .ui-surface-muted .ui-link:hover { @apply text-primary-700 underline; }
   .ui-surface .ui-btn-secondary,
   .ui-surface-muted .ui-btn-secondary { @apply text-gray-700 bg-white border-gray-200 hover:bg-gray-100; }
-  .ui-surface .ui-label,       .ui-surface-muted .ui-label      { @apply text-gray-600; }
+  .ui-surface .ui-label,       .ui-surface-muted .ui-label      { @apply text-gray-700; }
   .ui-surface .ui-input,       .ui-surface-muted .ui-input      { @apply bg-white border-gray-200 text-gray-900 placeholder:text-gray-400; }
 
   /* ── Table ── */
   .ui-table             { @apply w-full text-sm text-left text-gray-700; }
-  .ui-table thead       { @apply text-xs font-medium uppercase tracking-wide bg-gray-100 text-gray-500; }
+  .ui-table thead       { @apply text-xs font-medium bg-gray-50 text-gray-500; }
   .ui-table th          { @apply font-medium text-gray-500; }
-  .ui-table tbody tr    { @apply border-b border-gray-200; }
-  .ui-table tbody tr:hover { @apply bg-gray-100; }
+  .ui-table tbody tr    { @apply border-b border-gray-100; }
+  .ui-table tbody tr:hover { @apply bg-gray-50; }
 
   /* ── Status pills — v3 pattern: solid opaque bg + border, no rings ── */
   .ui-pill         { @apply inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-medium; }
@@ -112,11 +112,11 @@ h1, h2, h3 { letter-spacing: -0.02em; }
   .ui-pill-success { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
   .ui-pill-warning { @apply bg-amber-50 text-amber-700 border border-amber-200; }
   .ui-pill-danger  { @apply bg-red-50 text-red-700 border border-red-200; }
-  .ui-pill-neutral { @apply bg-gray-100 text-gray-500 border border-gray-200; }
+  .ui-pill-neutral { @apply bg-gray-100 text-gray-600 border border-gray-200; }
   .ui-pill-info    { @apply bg-blue-50 text-blue-700 border border-blue-200; }
 
   /* ── Cards ── */
-  .ui-card      { @apply rounded-lg bg-white border border-gray-200 shadow-md; }
+  .ui-card      { @apply rounded-lg bg-white border border-gray-200 shadow-sm; }
   .ui-card-muted { @apply rounded-lg bg-gray-100 border border-gray-200; }
 
   /* ── Buttons — v3: rounded (8px) ── */
@@ -136,10 +136,54 @@ h1, h2, h3 { letter-spacing: -0.02em; }
 
   /* ── Form elements ── */
   .ui-link  { @apply text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline; }
-  .ui-label { @apply block text-xs font-medium text-gray-500 mb-1; }
+  .ui-label { @apply block text-xs font-medium text-gray-700 mb-1; }
   .ui-input {
     @apply w-full px-3 py-2 border border-gray-200 rounded bg-white
            text-sm text-gray-900 placeholder:text-gray-400
            focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-shadow;
+  }
+
+  /* ── Sidebar navigation ───────────────────────────────────────────────────
+     Clear visual hierarchy: section eyebrows, top-level items, nested sub-items.
+     ───────────────────────────────────────────────────────────────────────── */
+  .nav-section {
+    @apply px-3 pt-5 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/35;
+  }
+  .nav-section:first-child { @apply pt-0; }
+
+  .nav-item {
+    @apply flex items-center gap-3 rounded px-3 py-2 text-sm font-medium
+           text-white/70 transition-colors hover:bg-white/10 hover:text-white;
+  }
+  .nav-item-active {
+    @apply bg-white/10 text-white font-semibold hover:bg-white/10;
+  }
+  .nav-item-icon {
+    @apply h-5 w-5 flex-shrink-0 text-white/45 transition-colors group-hover:text-white/80;
+  }
+  .nav-item-active .nav-item-icon {
+    @apply text-primary-500;
+  }
+
+  /* Nested sub-item — sits under a parent, clearly subordinate */
+  .nav-subitem {
+    @apply relative flex items-center rounded py-1.5 pl-11 pr-3 text-[13px] font-medium
+           text-white/55 transition-colors hover:bg-white/10 hover:text-white/90;
+  }
+  .nav-subitem-active {
+    @apply text-white;
+  }
+  /* connector guide rail for nested items */
+  .nav-subitem::before {
+    content: "";
+    position: absolute;
+    left: 1.4rem;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .nav-subitem-active::before {
+    background: rgba(231, 0, 126, 0.7);
   }
 }

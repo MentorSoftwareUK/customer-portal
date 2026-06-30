@@ -216,19 +216,6 @@ const isActive = (to: string) => {
   return currentPath.value === to || currentPath.value.startsWith(`${to}/`)
 }
 
-const resourcesOpen = ref(false)
-const resourcesRoutes = ['/app/knowledge-base', '/app/videos', '/app/documents']
-
-watch(
-  () => currentPath.value,
-  (path) => {
-    if (resourcesRoutes.some((r) => path === r || path.startsWith(`${r}/`))) {
-      resourcesOpen.value = true
-    }
-  },
-  { immediate: true },
-)
-
 const findOpen = ref(false)
 const findSeed = ref('')
 type QuickFindItem = {
@@ -684,251 +671,137 @@ onUnmounted(() => {
           </div>
         </form>
 
-        <ul class="space-y-2">
-          <li>
-            <RouterLink
-              to="/app/dashboard"
-              class="group flex items-center rounded-lg p-2 text-base font-medium"
-              :class="isActive('/app/dashboard') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
-            >
-              <svg
-                aria-hidden="true"
-                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
-                <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
-              </svg>
-              <span class="ml-3">Dashboard</span>
-            </RouterLink>
-          </li>
+        <nav class="flex flex-col gap-0.5">
+          <!-- Menu -->
+          <p class="nav-section">Menu</p>
 
-          <li>
-            <RouterLink
-              to="/app/events"
-              class="group flex items-center rounded-lg p-2 text-base font-medium"
-              :class="isActive('/app/events') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
-            >
-              <svg
-                aria-hidden="true"
-                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-              <span class="ml-3">Events</span>
-            </RouterLink>
-          </li>
+          <RouterLink
+            to="/app/dashboard"
+            class="nav-item group"
+            :class="{ 'nav-item-active': isActive('/app/dashboard') }"
+          >
+            <svg aria-hidden="true" class="nav-item-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
+              <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
+            </svg>
+            <span>Dashboard</span>
+          </RouterLink>
 
-          <li v-if="featureFlags.meetingsEnabled">
-            <RouterLink
-              to="/app/meetings"
-              class="group flex items-center rounded-lg p-2 text-base font-medium"
-              :class="isActive('/app/meetings') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
-            >
-              <svg
-                aria-hidden="true"
-                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.553.894l3 1.5a1 1 0 10.894-1.788L11 9.382V6z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-              <span class="ml-3">Scheduled Meetings</span>
-            </RouterLink>
-          </li>
+          <RouterLink
+            to="/app/events"
+            class="nav-item group"
+            :class="{ 'nav-item-active': isActive('/app/events') }"
+          >
+            <svg aria-hidden="true" class="nav-item-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+            </svg>
+            <span>Events</span>
+          </RouterLink>
 
-          <li>
+          <RouterLink
+            v-if="featureFlags.meetingsEnabled"
+            to="/app/meetings"
+            class="nav-item group"
+            :class="{ 'nav-item-active': isActive('/app/meetings') }"
+          >
+            <svg aria-hidden="true" class="nav-item-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.553.894l3 1.5a1 1 0 10.894-1.788L11 9.382V6z" clip-rule="evenodd"></path>
+            </svg>
+            <span>Scheduled Meetings</span>
+          </RouterLink>
+
+          <!-- Support -->
+          <template v-if="featureFlags.ticketsEnabled">
+            <p class="nav-section">Support</p>
+
             <RouterLink
               to="/app/tickets"
-              class="group flex items-center rounded-lg p-2 text-base font-medium"
-              v-if="featureFlags.ticketsEnabled"
-              :class="isActive('/app/tickets') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+              class="nav-item group"
+              :class="{ 'nav-item-active': isActive('/app/tickets') && !isActive('/app/tickets/org') }"
             >
-              <svg
-                aria-hidden="true"
-                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z"
-                  clip-rule="evenodd"
-                ></path>
+              <svg aria-hidden="true" class="nav-item-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clip-rule="evenodd"></path>
               </svg>
-              <span class="ml-3">Support Tickets</span>
+              <span>Support Tickets</span>
             </RouterLink>
-          </li>
 
-          <li v-if="featureFlags.ticketsEnabled">
             <RouterLink
               to="/app/tickets/org"
-              class="group flex items-center rounded-lg p-2 pl-10 text-sm font-medium"
-              :class="isActive('/app/tickets/org') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'"
+              class="nav-subitem group"
+              :class="{ 'nav-subitem-active': isActive('/app/tickets/org') }"
             >
-              <span>Org tickets</span>
+              <span>Organisation tickets</span>
             </RouterLink>
-          </li>
+          </template>
 
-          <li v-if="featureFlags.knowledgeBaseEnabled || featureFlags.videosEnabled || featureFlags.documentsEnabled">
-            <button
-              type="button"
-              class="group flex w-full items-center rounded-lg p-2 text-base font-medium text-white/80 transition duration-75 hover:bg-white/10 hover:text-white"
-              aria-controls="dropdown-resources"
-              :aria-expanded="resourcesOpen"
-              @click="resourcesOpen = !resourcesOpen"
-            >
-              <svg
-                aria-hidden="true"
-                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M4 3a2 2 0 012-2h8a2 2 0 012 2v14l-2-1-2 1-2-1-2 1-2-1-2 1V3zm3 3a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm0 4a1 1 0 011-1h6a1 1 0 110 2H8a1 1 0 01-1-1zm0 4a1 1 0 011-1h6a1 1 0 110 2H8a1 1 0 01-1-1z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-              <span class="ml-3 flex-1 whitespace-nowrap text-left">Resources</span>
-              <svg
-                aria-hidden="true"
-                class="h-6 w-6 transition-transform"
-                :class="resourcesOpen ? 'rotate-180' : ''"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </button>
-            <ul id="dropdown-resources" class="space-y-2 py-2" :class="resourcesOpen ? '' : 'hidden'">
-              <li v-if="featureFlags.knowledgeBaseEnabled">
-                <RouterLink
-                  to="/app/knowledge-base"
-                  class="group flex w-full items-center rounded-lg p-2 pl-11 text-base font-medium"
-                  :class="isActive('/app/knowledge-base') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="-ml-8 mr-2 h-5 w-5 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M4 3a2 2 0 012-2h8a2 2 0 012 2v13a1 1 0 01-1.447.894L14 15.618l-2.553 1.276a1 1 0 01-.894 0L8 15.618l-2.553 1.276A1 1 0 014 16V3z"></path>
-                  </svg>
-                  Knowledge Base
-                </RouterLink>
-              </li>
-              <li v-if="featureFlags.videosEnabled">
-                <RouterLink
-                  to="/app/videos"
-                  class="group flex w-full items-center rounded-lg p-2 pl-11 text-base font-medium"
-                  :class="isActive('/app/videos') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="-ml-8 mr-2 h-5 w-5 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M2 6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
-                    <path d="M14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path>
-                  </svg>
-                  Video Library
-                </RouterLink>
-              </li>
-              <li v-if="featureFlags.documentsEnabled">
-                <RouterLink
-                  to="/app/documents"
-                  class="group flex w-full items-center rounded-lg p-2 pl-11 text-base font-medium"
-                  :class="isActive('/app/documents') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="-ml-8 mr-2 h-5 w-5 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 7a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                  Document Library
-                </RouterLink>
-              </li>
-            </ul>
-          </li>
+          <!-- Resources -->
+          <template v-if="featureFlags.knowledgeBaseEnabled || featureFlags.videosEnabled || featureFlags.documentsEnabled">
+            <p class="nav-section">Resources</p>
 
-          <li>
             <RouterLink
-              to="/app/invoices"
-              class="group flex items-center rounded-lg p-2 text-base font-medium"
-              v-if="featureFlags.invoicesEnabled"
-              :class="isActive('/app/invoices') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+              v-if="featureFlags.knowledgeBaseEnabled"
+              to="/app/knowledge-base"
+              class="nav-item group"
+              :class="{ 'nav-item-active': isActive('/app/knowledge-base') }"
             >
-              <svg
-                aria-hidden="true"
-                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M4 2a2 2 0 00-2 2v14l3-1.5L8 18l3-1.5L14 18l3-1.5L20 18V4a2 2 0 00-2-2H4z"></path>
+              <svg aria-hidden="true" class="nav-item-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"></path>
               </svg>
-              <span class="ml-3">Invoices</span>
+              <span>Knowledge Base</span>
             </RouterLink>
-          </li>
 
-          <li>
             <RouterLink
-              to="/app/profile"
-              class="group flex items-center rounded-lg p-2 text-base font-medium"
-              :class="isActive('/app/profile') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'"
+              v-if="featureFlags.videosEnabled"
+              to="/app/videos"
+              class="nav-item group"
+              :class="{ 'nav-item-active': isActive('/app/videos') }"
             >
-              <svg
-                aria-hidden="true"
-                class="h-6 w-6 flex-shrink-0 text-white/50 transition duration-75 group-hover:text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 2a4 4 0 100 8 4 4 0 000-8zM4 14a6 6 0 1112 0v1a1 1 0 01-1 1H5a1 1 0 01-1-1v-1z"
-                  clip-rule="evenodd"
-                ></path>
+              <svg aria-hidden="true" class="nav-item-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
+                <path d="M14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path>
               </svg>
-              <span class="ml-3">Profile</span>
+              <span>Video Library</span>
             </RouterLink>
-          </li>
 
-        </ul>
+            <RouterLink
+              v-if="featureFlags.documentsEnabled"
+              to="/app/documents"
+              class="nav-item group"
+              :class="{ 'nav-item-active': isActive('/app/documents') }"
+            >
+              <svg aria-hidden="true" class="nav-item-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 7a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+              </svg>
+              <span>Document Library</span>
+            </RouterLink>
+          </template>
+
+          <!-- Account -->
+          <p class="nav-section">Account</p>
+
+          <RouterLink
+            v-if="featureFlags.invoicesEnabled"
+            to="/app/invoices"
+            class="nav-item group"
+            :class="{ 'nav-item-active': isActive('/app/invoices') }"
+          >
+            <svg aria-hidden="true" class="nav-item-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1.447.894L14 16.118l-1.553.776a1 1 0 01-.894 0L10 16.118l-1.553.776a1 1 0 01-.894 0L6 16.118l-1.553.776A1 1 0 013 16V4zm3 1a1 1 0 000 2h6a1 1 0 100-2H7zm0 4a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+            </svg>
+            <span>Invoices</span>
+          </RouterLink>
+
+          <RouterLink
+            to="/app/profile"
+            class="nav-item group"
+            :class="{ 'nav-item-active': isActive('/app/profile') }"
+          >
+            <svg aria-hidden="true" class="nav-item-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M10 2a4 4 0 100 8 4 4 0 000-8zM4 14a6 6 0 1112 0v1a1 1 0 01-1 1H5a1 1 0 01-1-1v-1z" clip-rule="evenodd"></path>
+            </svg>
+            <span>Profile</span>
+          </RouterLink>
+        </nav>
 
         <div class="mt-auto flex-shrink-0 pt-5 border-t border-white/10">
           <p class="px-2 text-xs text-white/25">&copy; Mentor Software 2026</p>
