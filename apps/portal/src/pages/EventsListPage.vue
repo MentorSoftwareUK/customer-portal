@@ -135,23 +135,23 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-6">
-      <div v-if="loadError" class="rounded-lg border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-200">
+      <div v-if="loadError" class="rounded-lg border border-rose-500/20 bg-rose-50 p-4 text-sm text-rose-600">
         {{ loadError }}
       </div>
 
-      <div v-else-if="loading" role="status" class="rounded-lg border border-white/10 bg-[#14192d] p-4 animate-pulse">
+      <div v-else-if="loading" role="status" class="rounded-lg border border-gray-200 bg-white p-4 animate-pulse">
         <div class="space-y-3">
-          <div class="h-3 w-32 rounded-full bg-white/10" />
-          <div class="h-2.5 w-80 rounded-full bg-white/10" />
-          <div class="h-2.5 w-64 rounded-full bg-white/10" />
+          <div class="h-3 w-32 rounded-full bg-gray-100" />
+          <div class="h-2.5 w-80 rounded-full bg-gray-100" />
+          <div class="h-2.5 w-64 rounded-full bg-gray-100" />
         </div>
         <span class="sr-only">Loading...</span>
       </div>
 
-      <div class="bg-[#14192d] rounded-lg p-6 sm:p-8 border border-white/10">
+      <div class="bg-white rounded-lg p-6 sm:p-8 border border-gray-200">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 class="text-2xl sm:text-3xl font-bold text-white">Training & Events</h2>
+            <h2 class="text-2xl sm:text-2xl font-semibold tracking-tight text-black">Training & Events</h2>
             <p class="mt-2 text-base text-gray-400">Find upcoming sessions, webinars, and recordings that support your team.</p>
           </div>
 
@@ -159,7 +159,7 @@ onMounted(async () => {
             <label for="event-search" class="sr-only">Search events</label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg aria-hidden="true" class="w-5 h-5 text-white/60" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <svg aria-hidden="true" class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path
                     fill-rule="evenodd"
                     d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
@@ -171,7 +171,7 @@ onMounted(async () => {
                 id="event-search"
                 v-model="query"
                 type="text"
-                class="bg-white/5 border border-white/10 text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 placeholder:text-white/40"
+                class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 placeholder:text-gray-400"
                 placeholder="Search events"
               >
             </div>
@@ -181,41 +181,41 @@ onMounted(async () => {
 
       <div>
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-base font-semibold text-white">Next up</h3>
+          <h3 class="text-base font-semibold tracking-tight text-black">Next up</h3>
         </div>
 
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div
             v-for="e in nextThree"
             :key="e.id"
-            class="w-full p-6 rounded-lg bg-[#14192d] border border-white/10"
+            class="w-full p-6 rounded-lg bg-white border border-gray-200"
           >
             <div class="flex items-center justify-between">
               <EventTypeChip :type="e.type" />
-              <span class="inline-flex items-center rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-medium text-white/80">
+              <span class="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
                 {{ provisionChipLabel(e) }}
               </span>
             </div>
 
             <div class="mt-5">
-              <h4 class="text-xl font-semibold leading-snug text-white">{{ displayEventTitle(e) }}</h4>
-              <p class="mt-3 text-sm text-white/70">{{ e.description && e.description.length > 180 ? e.description.slice(0, 180) + '\u2026' : e.description }}</p>
+              <h4 class="text-xl font-semibold tracking-tight leading-snug text-gray-900">{{ displayEventTitle(e) }}</h4>
+              <p class="mt-3 text-sm text-gray-500">{{ e.description && e.description.length > 180 ? e.description.slice(0, 180) + '\u2026' : e.description }}</p>
             </div>
 
             <div class="mt-6 flex items-center justify-between gap-3">
               <div class="flex items-center gap-3 min-w-0">
-                <div class="h-9 w-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
-                  <span class="text-xs font-semibold text-white">{{ initialsFromName(e.hostName || 'Mentor') }}</span>
+                <div class="h-9 w-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                  <span class="text-xs font-semibold text-gray-900">{{ initialsFromName(e.hostName || 'Mentor') }}</span>
                 </div>
                 <div class="min-w-0">
-                  <div class="text-sm font-medium text-white truncate">{{ e.hostName || 'Mentor' }}</div>
-                  <div class="text-xs text-white/60 truncate">{{ e.hostTitle || 'Host' }}</div>
+                  <div class="text-sm font-medium text-gray-900 truncate">{{ e.hostName || 'Mentor' }}</div>
+                  <div class="text-xs text-gray-500 truncate">{{ e.hostTitle || 'Host' }}</div>
                 </div>
               </div>
 
               <div class="text-right">
-                <div class="text-sm font-medium text-white">{{ e.dateLabel }}</div>
-                <div class="text-sm text-white/70">{{ formatDuration(e.durationMins) }} · {{ e.commentsCount }} comments</div>
+                <div class="text-sm font-medium text-gray-900">{{ e.dateLabel }}</div>
+                <div class="text-sm text-gray-500">{{ formatDuration(e.durationMins) }} · {{ e.commentsCount }} comments</div>
               </div>
             </div>
 
@@ -228,7 +228,7 @@ onMounted(async () => {
               </RouterLink>
               <RouterLink
                 :to="`/app/events/${e.id}`"
-                class="w-full mt-2 inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white bg-white/5 border border-white/10 hover:bg-white/10 focus:outline-none focus:ring-4 focus:ring-white/10"
+                class="w-full mt-2 inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-200 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200"
               >
                 Details
               </RouterLink>
@@ -236,26 +236,26 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div v-if="nextThree.length === 0" class="bg-[#14192d] border border-white/10 rounded-lg p-6">
-          <div class="text-sm text-white/80">No upcoming events are available for your account.</div>
+        <div v-if="nextThree.length === 0" class="bg-white border border-gray-200 rounded-lg p-6">
+          <div class="text-sm text-gray-600">No upcoming events are available for your account.</div>
         </div>
       </div>
 
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div class="order-2 lg:col-span-2 bg-[#14192d] border border-white/10 rounded-lg">
+        <div class="order-2 lg:col-span-2 bg-white border border-gray-200 rounded-lg">
           <div class="flex items-center justify-between p-4">
             <div>
-              <h3 class="text-base font-semibold text-white">Further ahead</h3>
-              <p class="mt-1 text-sm text-white/60">Plan upcoming sessions beyond the next three.</p>
+              <h3 class="text-base font-semibold tracking-tight text-black">Further ahead</h3>
+              <p class="mt-1 text-sm text-gray-500">Plan upcoming sessions beyond the next three.</p>
             </div>
           </div>
           <div class="flow-root px-4 pb-4">
-            <ul role="list" class="divide-y divide-white/10">
+            <ul role="list" class="divide-y divide-gray-200">
               <li v-for="e in furtherAhead" :key="e.id" class="py-4">
                 <div class="flex items-center justify-between gap-3">
                   <div class="min-w-0">
                     <div class="flex items-center gap-2">
-                      <span class="inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-medium text-white/80">
+                      <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
                         {{ e.type }}
                       </span>
                       <span
@@ -273,17 +273,17 @@ onMounted(async () => {
                         Payment pending
                       </span>
                     </div>
-                    <div class="mt-1 text-sm font-medium text-white truncate">
+                    <div class="mt-1 text-sm font-medium text-gray-900 truncate">
                       {{ displayEventTitle(e) }}
                     </div>
-                    <div class="mt-1 text-sm text-white/60 truncate">
+                    <div class="mt-1 text-sm text-gray-500 truncate">
                       {{ e.dateLabel }} · {{ provisionLabel(e.provision) }} · {{ eligibilityLabel(e.eligibility) }}
                     </div>
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
                     <RouterLink
                       :to="`/app/events/${e.id}`"
-                      class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white bg-white/5 border border-white/10 hover:bg-white/10 focus:outline-none focus:ring-4 focus:ring-white/10"
+                      class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-900 bg-gray-50 border border-gray-200 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200"
                     >
                       Details
                     </RouterLink>
@@ -300,32 +300,32 @@ onMounted(async () => {
                   </div>
                 </div>
               </li>
-              <li v-if="furtherAhead.length === 0" class="py-8 text-sm text-white/60">
+              <li v-if="furtherAhead.length === 0" class="py-8 text-sm text-gray-500">
                 Nothing further ahead matches your search.
               </li>
             </ul>
           </div>
         </div>
 
-        <div class="order-1 bg-[#14192d] border border-white/10 rounded-lg">
+        <div class="order-1 bg-white border border-gray-200 rounded-lg">
           <div class="flex items-center justify-between p-4">
             <div>
-              <h3 class="text-base font-semibold text-white">Your registrations</h3>
-              <p class="mt-1 text-sm text-white/60">Events you’re already registered for.</p>
+              <h3 class="text-base font-semibold tracking-tight text-black">Your registrations</h3>
+              <p class="mt-1 text-sm text-gray-500">Events you’re already registered for.</p>
             </div>
           </div>
           <div class="flow-root px-4 pb-4">
-            <ul role="list" class="divide-y divide-white/10">
+            <ul role="list" class="divide-y divide-gray-200">
               <li v-for="e in pendingPaymentEvents" :key="`pending_${e.id}`" class="py-4">
                 <div class="flex items-center justify-between gap-3">
                   <div class="min-w-0">
                     <div class="flex items-center gap-2">
-                      <span class="inline-flex items-center rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-medium text-amber-300">
+                      <span class="inline-flex items-center rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-medium text-amber-600">
                         Payment pending
                       </span>
                     </div>
-                    <div class="mt-1 text-sm font-medium text-white truncate">{{ displayEventTitle(e) }}</div>
-                    <div class="mt-1 text-sm text-white/60 truncate">{{ e.dateLabel }}</div>
+                    <div class="mt-1 text-sm font-medium text-gray-900 truncate">{{ displayEventTitle(e) }}</div>
+                    <div class="mt-1 text-sm text-gray-500 truncate">{{ e.dateLabel }}</div>
                   </div>
                   <RouterLink
                     :to="`/app/events/${e.id}/register`"
@@ -338,7 +338,7 @@ onMounted(async () => {
               <li v-for="e in registeredEvents" :key="e.id" class="py-4">
                 <RouterLink
                   :to="`/app/events/${e.id}`"
-                  class="block p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                  class="block p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
                   <div class="flex items-center gap-3">
                     <div class="shrink-0">
@@ -349,10 +349,10 @@ onMounted(async () => {
                       </div>
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-semibold text-white truncate">{{ displayEventTitle(e) }}</p>
-                      <p class="text-sm text-white/60 mt-0.5 truncate">{{ e.dateLabel }}</p>
+                      <p class="text-sm font-semibold text-gray-900 truncate">{{ displayEventTitle(e) }}</p>
+                      <p class="text-sm text-gray-500 mt-0.5 truncate">{{ e.dateLabel }}</p>
                     </div>
-                    <div class="shrink-0 text-primary-400">
+                    <div class="shrink-0 text-primary-600">
                       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                       </svg>
@@ -360,7 +360,7 @@ onMounted(async () => {
                   </div>
                 </RouterLink>
               </li>
-              <li v-if="registeredEvents.length === 0 && pendingPaymentEvents.length === 0" class="py-8 text-sm text-white/60">
+              <li v-if="registeredEvents.length === 0 && pendingPaymentEvents.length === 0" class="py-8 text-sm text-gray-500">
                 You haven’t registered for any events yet.
               </li>
             </ul>

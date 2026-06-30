@@ -142,15 +142,15 @@ const isSearching = computed(() => query.value.trim().length > 0)
       </div>
 
       <div v-else-if="loading" class="space-y-6 animate-pulse">
-        <div class="h-10 w-full rounded-xl bg-white/5 border border-white/10" />
+        <div class="h-10 w-full rounded-lg bg-gray-50 border border-gray-200" />
         <div>
-          <div class="h-3 w-24 rounded-full bg-white/10 mb-4" />
+          <div class="h-3 w-24 rounded-full bg-gray-100 mb-4" />
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div v-for="i in 6" :key="i" class="bg-[#14192d] border border-white/10 rounded-xl overflow-hidden">
-              <div class="aspect-video bg-white/5" />
+            <div v-for="i in 6" :key="i" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <div class="aspect-video bg-gray-50" />
               <div class="p-3 space-y-2">
-                <div class="h-3 w-3/4 rounded-full bg-white/10" />
-                <div class="h-2.5 w-1/2 rounded-full bg-white/10" />
+                <div class="h-3 w-3/4 rounded-full bg-gray-100" />
+                <div class="h-2.5 w-1/2 rounded-full bg-gray-100" />
               </div>
             </div>
           </div>
@@ -160,16 +160,16 @@ const isSearching = computed(() => query.value.trim().length > 0)
 
       <div v-if="!loading && !loadError" class="flex flex-col gap-3">
         <div>
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Video library</h2>
+          <h2 class="text-xl font-semibold tracking-tight text-black dark:text-gray-900">Video library</h2>
         </div>
 
-        <div class="rounded-xl border border-slate-900/10 bg-[#14192d] p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="rounded-lg border border-slate-900/10 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div class="w-full flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div class="w-full md:flex-1">
               <label for="video-search" class="sr-only">Search videos</label>
               <div class="relative">
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <svg aria-hidden="true" class="w-5 h-5 text-white/70" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <svg aria-hidden="true" class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path
                       fill-rule="evenodd"
                       d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
@@ -180,7 +180,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
                 <button
                   v-if="query"
                   type="button"
-                  class="absolute inset-y-0 right-0 flex items-center pr-3 text-white/70 hover:text-white"
+                  class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-900"
                   aria-label="Clear search"
                   @click="query = ''"
                 >
@@ -196,7 +196,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
                   id="video-search"
                   v-model="query"
                   type="text"
-                  class="bg-white/10 border border-white/10 text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 pr-10 p-2.5 placeholder:text-white/60"
+                  class="bg-gray-100 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 pr-10 p-2.5 placeholder:text-gray-500"
                   placeholder="Search videos"
                 >
               </div>
@@ -208,7 +208,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
                 <select
                   id="video-provision"
                   v-model="provision"
-                  class="bg-white/10 border border-white/10 text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
+                  class="bg-gray-100 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
                 >
                   <option value="all">{{ provisionFilterLabel('all') }}</option>
                   <option value="supported-accommodation">{{ provisionFilterLabel('supported-accommodation') }}</option>
@@ -222,7 +222,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
                 <select
                   id="video-product-version"
                   v-model="productVersion"
-                  class="bg-white/10 border border-white/10 text-white text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
+                  class="bg-gray-100 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5"
                 >
                   <option value="all">{{ productVersionLabel('all') }}</option>
                   <option value="v2">{{ productVersionLabel('v2') }}</option>
@@ -234,14 +234,14 @@ const isSearching = computed(() => query.value.trim().length > 0)
         </div>
       </div>
 
-      <div v-if="!loading && !loadError && warning" class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-200">
+      <div v-if="!loading && !loadError && warning" class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-600">
         {{ warning }}
       </div>
 
       <div v-if="!isSearching" class="ui-surface">
         <div class="flex items-center justify-between p-4">
           <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Latest videos</h3>
+            <h3 class="text-base font-semibold tracking-tight text-black dark:text-gray-900">Latest videos</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Newest additions to the library.</p>
           </div>
         </div>
@@ -268,21 +268,21 @@ const isSearching = computed(() => query.value.trim().length > 0)
                   class="w-full h-40 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900"
                   aria-hidden="true"
                 >
-                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
-                    <svg class="h-6 w-6 translate-x-0.5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 ring-1 ring-white/20">
+                    <svg class="h-6 w-6 translate-x-0.5 text-gray-900" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                     </svg>
                   </div>
                 </div>
                 <div class="absolute top-3 left-3">
-                  <span class="bg-gray-900/80 text-white text-xs font-medium px-2.5 py-1 rounded">
+                  <span class="bg-gray-900/80 text-gray-900 text-xs font-medium px-2.5 py-1 rounded">
                     {{ video.category }}
                   </span>
                 </div>
               </div>
 
               <div class="p-4 space-y-3">
-                <div class="text-sm font-semibold text-gray-900 dark:text-white group-hover:underline">
+                <div class="text-sm font-semibold text-gray-900 dark:text-gray-900 group-hover:underline">
                   {{ video.title }}
                 </div>
 
@@ -293,7 +293,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate dark:text-white">{{ video.authorName }}</div>
+                    <div class="text-sm font-medium text-gray-900 truncate dark:text-gray-900">{{ video.authorName }}</div>
                     <div class="text-sm text-gray-500 truncate dark:text-gray-400">{{ video.timeAgo }}</div>
                   </div>
                 </div>
@@ -306,7 +306,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
       <div v-if="!isSearching && filteredPopularVideos.length" class="ui-surface">
         <div class="flex items-center justify-between p-4">
           <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Popular videos</h3>
+            <h3 class="text-base font-semibold tracking-tight text-black dark:text-gray-900">Popular videos</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Most watched resources this week.</p>
           </div>
         </div>
@@ -333,21 +333,21 @@ const isSearching = computed(() => query.value.trim().length > 0)
                   class="w-full h-40 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900"
                   aria-hidden="true"
                 >
-                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
-                    <svg class="h-6 w-6 translate-x-0.5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 ring-1 ring-white/20">
+                    <svg class="h-6 w-6 translate-x-0.5 text-gray-900" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                     </svg>
                   </div>
                 </div>
                 <div class="absolute top-3 left-3">
-                  <span class="bg-gray-900/80 text-white text-xs font-medium px-2.5 py-1 rounded">
+                  <span class="bg-gray-900/80 text-gray-900 text-xs font-medium px-2.5 py-1 rounded">
                     {{ video.category }}
                   </span>
                 </div>
               </div>
 
               <div class="p-4 space-y-3">
-                <div class="text-sm font-semibold text-gray-900 dark:text-white group-hover:underline">
+                <div class="text-sm font-semibold text-gray-900 dark:text-gray-900 group-hover:underline">
                   {{ video.title }}
                 </div>
 
@@ -358,7 +358,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate dark:text-white">{{ video.authorName }}</div>
+                    <div class="text-sm font-medium text-gray-900 truncate dark:text-gray-900">{{ video.authorName }}</div>
                     <div class="text-sm text-gray-500 truncate dark:text-gray-400">{{ video.timeAgo }}</div>
                   </div>
                 </div>
@@ -371,7 +371,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
       <div v-if="!isSearching && filteredFeaturedVideos.length" class="ui-surface">
         <div class="flex items-center justify-between p-4">
           <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Featured videos</h3>
+            <h3 class="text-base font-semibold tracking-tight text-black dark:text-gray-900">Featured videos</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Tagged as featured in HubSpot.</p>
           </div>
         </div>
@@ -398,21 +398,21 @@ const isSearching = computed(() => query.value.trim().length > 0)
                   class="w-full h-40 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900"
                   aria-hidden="true"
                 >
-                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
-                    <svg class="h-6 w-6 translate-x-0.5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 ring-1 ring-white/20">
+                    <svg class="h-6 w-6 translate-x-0.5 text-gray-900" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                     </svg>
                   </div>
                 </div>
                 <div class="absolute top-3 left-3">
-                  <span class="bg-gray-900/80 text-white text-xs font-medium px-2.5 py-1 rounded">
+                  <span class="bg-gray-900/80 text-gray-900 text-xs font-medium px-2.5 py-1 rounded">
                     {{ video.category }}
                   </span>
                 </div>
               </div>
 
               <div class="p-4 space-y-3">
-                <div class="text-sm font-semibold text-gray-900 dark:text-white group-hover:underline">
+                <div class="text-sm font-semibold text-gray-900 dark:text-gray-900 group-hover:underline">
                   {{ video.title }}
                 </div>
 
@@ -423,7 +423,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate dark:text-white">{{ video.authorName }}</div>
+                    <div class="text-sm font-medium text-gray-900 truncate dark:text-gray-900">{{ video.authorName }}</div>
                     <div class="text-sm text-gray-500 truncate dark:text-gray-400">{{ video.timeAgo }}</div>
                   </div>
                 </div>
@@ -436,7 +436,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
       <div class="ui-surface">
         <div class="flex items-center justify-between p-4">
           <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">All videos</h3>
+            <h3 class="text-base font-semibold tracking-tight text-black dark:text-gray-900">All videos</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Browse the full library.</p>
           </div>
         </div>
@@ -463,21 +463,21 @@ const isSearching = computed(() => query.value.trim().length > 0)
                   class="w-full h-40 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900"
                   aria-hidden="true"
                 >
-                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
-                    <svg class="h-6 w-6 translate-x-0.5 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 ring-1 ring-white/20">
+                    <svg class="h-6 w-6 translate-x-0.5 text-gray-900" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                       <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                     </svg>
                   </div>
                 </div>
                 <div class="absolute top-3 left-3">
-                  <span class="bg-gray-900/80 text-white text-xs font-medium px-2.5 py-1 rounded">
+                  <span class="bg-gray-900/80 text-gray-900 text-xs font-medium px-2.5 py-1 rounded">
                     {{ video.category }}
                   </span>
                 </div>
               </div>
 
               <div class="p-4 space-y-3">
-                <div class="text-sm font-semibold text-gray-900 dark:text-white group-hover:underline">
+                <div class="text-sm font-semibold text-gray-900 dark:text-gray-900 group-hover:underline">
                   {{ video.title }}
                 </div>
 
@@ -488,7 +488,7 @@ const isSearching = computed(() => query.value.trim().length > 0)
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate dark:text-white">{{ video.authorName }}</div>
+                    <div class="text-sm font-medium text-gray-900 truncate dark:text-gray-900">{{ video.authorName }}</div>
                     <div class="text-sm text-gray-500 truncate dark:text-gray-400">{{ video.timeAgo }}</div>
                   </div>
                 </div>
@@ -514,12 +514,12 @@ const isSearching = computed(() => query.value.trim().length > 0)
         <div class="relative w-full max-w-5xl rounded-lg bg-white shadow dark:bg-gray-800">
           <div class="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
             <div class="min-w-0">
-              <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ activeVideo.title }}</div>
+              <div class="text-sm font-semibold text-gray-900 dark:text-gray-900 truncate">{{ activeVideo.title }}</div>
               <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ activeVideo.category }}</div>
             </div>
             <button
               type="button"
-              class="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+              class="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-900"
               aria-label="Close"
               @click="closeLightbox"
             >

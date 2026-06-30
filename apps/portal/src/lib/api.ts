@@ -1967,9 +1967,17 @@ export async function getHubSpotOAuthStatus(): Promise<HubSpotOAuthStatus> {
   return (await res.json()) as HubSpotOAuthStatus
 }
 
-export function initiateHubSpotOAuth() {
-  // Redirect to OAuth authorization endpoint
-  window.location.href = `${getApiBaseUrl()}/api/hubspot/oauth/authorize`
+export async function initiateHubSpotOAuth(): Promise<void> {
+  // Fetch the auth URL via an authenticated API call, then redirect.
+  // The endpoint requires admin auth — a direct browser navigation can't carry
+  // an Authorization header, so we use adminApiFetch and redirect afterwards.
+  const res = await adminApiFetch(`${getApiBaseUrl()}/api/hubspot/oauth/authorize`)
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Failed to initiate HubSpot OAuth: ${res.status}${text ? ` - ${text}` : ''}`)
+  }
+  const { url } = (await res.json()) as { url: string }
+  window.location.href = url
 }
 
 export async function disconnectHubSpotOAuth(): Promise<void> {

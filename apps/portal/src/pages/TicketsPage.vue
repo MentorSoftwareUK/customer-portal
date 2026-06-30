@@ -57,15 +57,15 @@ function pct(n: number) {
 }
 
 function priorityBadgeClass(p?: string) {
-  if (p === 'High') return 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-  if (p === 'Low') return 'bg-white/5 text-white/50 border border-white/10'
-  return 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+  if (p === 'High') return 'bg-rose-500/20 text-rose-600 border border-rose-500/30'
+  if (p === 'Low') return 'bg-gray-50 text-gray-400 border border-gray-200'
+  return 'bg-amber-500/20 text-amber-600 border border-amber-500/30'
 }
 
 function statusBadgeClass(s: TicketDto['status']) {
-  if (s === 'Closed') return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-  if (s === 'Open') return 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-  return 'bg-blue-500/15 text-blue-300 border border-blue-500/30'
+  if (s === 'Closed') return 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30'
+  if (s === 'Open') return 'bg-amber-500/15 text-amber-600 border border-amber-500/30'
+  return 'bg-blue-500/15 text-sky-600 border border-blue-500/30'
 }
 
 function toggleSelect(id: string) {
@@ -157,90 +157,90 @@ onMounted(async () => {
 
     <!-- Stat card skeletons -->
     <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
-      <div class="bg-[#14192d] rounded-xl p-5 border border-white/10 sm:col-span-2 lg:col-span-1">
-        <div class="h-2.5 w-10 rounded-full bg-white/10 mb-3" />
-        <div class="h-9 w-16 rounded-lg bg-white/10" />
-        <div class="mt-3 h-1.5 rounded-full bg-white/10" />
+      <div class="bg-white rounded-lg p-5 border border-gray-200 sm:col-span-2 lg:col-span-1">
+        <div class="h-2.5 w-10 rounded-full bg-gray-100 mb-3" />
+        <div class="h-9 w-16 rounded-lg bg-gray-100" />
+        <div class="mt-3 h-1.5 rounded-full bg-gray-100" />
       </div>
-      <div v-for="i in 5" :key="i" class="bg-[#14192d] rounded-xl p-5 border border-white/10">
-        <div class="h-2.5 w-12 rounded-full bg-white/10 mb-3" />
-        <div class="h-8 w-14 rounded-lg bg-white/10" />
-        <div class="mt-3 h-1.5 rounded-full bg-white/10" />
+      <div v-for="i in 5" :key="i" class="bg-white rounded-lg p-5 border border-gray-200">
+        <div class="h-2.5 w-12 rounded-full bg-gray-100 mb-3" />
+        <div class="h-8 w-14 rounded-lg bg-gray-100" />
+        <div class="mt-3 h-1.5 rounded-full bg-gray-100" />
       </div>
     </div>
 
     <!-- Stat cards with animated fill bars -->
     <div v-else-if="!error" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <!-- Total -->
-      <div class="bg-[#14192d] rounded-xl p-5 border border-white/10 sm:col-span-2 lg:col-span-1">
-        <div class="text-xs font-medium uppercase tracking-wider text-white/40 mb-2">Total</div>
-        <div class="text-4xl font-bold text-white">{{ stats.total }}</div>
+      <div class="bg-white rounded-lg p-5 border border-gray-200 sm:col-span-2 lg:col-span-1">
+        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Total</div>
+        <div class="text-4xl font-semibold text-gray-900">{{ stats.total }}</div>
         <div class="mt-3 flex gap-1 h-1.5">
           <div class="rounded-full bg-amber-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.open) + '%' : '0%' }" />
           <div class="rounded-full bg-blue-400 transition-all duration-700 ease-out delay-75" :style="{ width: barsReady ? pct(stats.pending) + '%' : '0%' }" />
           <div class="rounded-full bg-emerald-400 transition-all duration-700 ease-out delay-150" :style="{ width: barsReady ? pct(stats.closed) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 flex gap-3 text-xs text-white/40">
+        <div class="mt-2 flex gap-3 text-xs text-gray-400">
           <span class="flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-amber-400 inline-block" />Open</span>
           <span class="flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-blue-400 inline-block" />Pending</span>
           <span class="flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />Closed</span>
         </div>
       </div>
       <!-- Open -->
-      <div class="bg-[#14192d] rounded-xl p-5 border border-white/10">
-        <div class="text-xs font-medium uppercase tracking-wider text-white/40 mb-2">Open</div>
-        <div class="text-4xl font-bold text-amber-300">{{ stats.open }}</div>
-        <div class="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
+      <div class="bg-white rounded-lg p-5 border border-gray-200">
+        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Open</div>
+        <div class="text-4xl font-semibold text-amber-600">{{ stats.open }}</div>
+        <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-amber-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.open) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 text-xs text-white/40">{{ pct(stats.open) }}% of total</div>
+        <div class="mt-2 text-xs text-gray-400">{{ pct(stats.open) }}% of total</div>
       </div>
       <!-- Pending -->
-      <div class="bg-[#14192d] rounded-xl p-5 border border-white/10">
-        <div class="text-xs font-medium uppercase tracking-wider text-white/40 mb-2">Pending</div>
-        <div class="text-4xl font-bold text-blue-300">{{ stats.pending }}</div>
-        <div class="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
+      <div class="bg-white rounded-lg p-5 border border-gray-200">
+        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Pending</div>
+        <div class="text-4xl font-semibold text-sky-600">{{ stats.pending }}</div>
+        <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-blue-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.pending) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 text-xs text-white/40">{{ pct(stats.pending) }}% of total</div>
+        <div class="mt-2 text-xs text-gray-400">{{ pct(stats.pending) }}% of total</div>
       </div>
       <!-- Closed -->
-      <div class="bg-[#14192d] rounded-xl p-5 border border-white/10">
-        <div class="text-xs font-medium uppercase tracking-wider text-white/40 mb-2">Closed</div>
-        <div class="text-4xl font-bold text-emerald-300">{{ stats.closed }}</div>
-        <div class="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
+      <div class="bg-white rounded-lg p-5 border border-gray-200">
+        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Closed</div>
+        <div class="text-4xl font-semibold text-emerald-600">{{ stats.closed }}</div>
+        <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-emerald-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.closed) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 text-xs text-white/40">{{ pct(stats.closed) }}% of total</div>
+        <div class="mt-2 text-xs text-gray-400">{{ pct(stats.closed) }}% of total</div>
       </div>
       <!-- Avg Response -->
-      <div class="bg-[#14192d] rounded-xl p-5 border border-white/10">
-        <div class="text-xs font-medium uppercase tracking-wider text-white/40 mb-2">Avg Response</div>
-        <div class="text-2xl font-bold text-violet-300 leading-tight">
+      <div class="bg-white rounded-lg p-5 border border-gray-200">
+        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Avg Response</div>
+        <div class="text-2xl font-semibold tracking-tight text-violet-600 leading-tight">
           {{ stats.avgResponseMs ? formatDuration(stats.avgResponseMs) : '—' }}
         </div>
         <div class="mt-3 flex items-center gap-1.5">
-          <svg class="h-3.5 w-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span class="text-xs text-white/40">Time to first reply</span>
+          <svg class="h-3.5 w-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span class="text-xs text-gray-400">Time to first reply</span>
         </div>
       </div>
       <!-- Avg Resolution -->
-      <div class="bg-[#14192d] rounded-xl p-5 border border-white/10">
-        <div class="text-xs font-medium uppercase tracking-wider text-white/40 mb-2">Avg Resolution</div>
-        <div class="text-2xl font-bold text-teal-300 leading-tight">
+      <div class="bg-white rounded-lg p-5 border border-gray-200">
+        <div class="text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Avg Resolution</div>
+        <div class="text-2xl font-semibold tracking-tight text-teal-300 leading-tight">
           {{ stats.avgResolutionMs ? formatDuration(stats.avgResolutionMs) : '—' }}
         </div>
         <div class="mt-3 flex items-center gap-1.5">
-          <svg class="h-3.5 w-3.5 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span class="text-xs text-white/40">Time to close</span>
+          <svg class="h-3.5 w-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span class="text-xs text-gray-400">Time to close</span>
         </div>
       </div>
     </div>
 
     <!-- New ticket panel -->
-    <div v-if="showNewTicket" class="bg-[#14192d] rounded-xl border border-white/10 p-5">
-      <h3 class="text-base font-semibold text-white mb-1">Create a new support ticket</h3>
-      <p class="text-sm text-white/50 mb-4">Fields are provisional and will be updated once Support confirms criteria.</p>
+    <div v-if="showNewTicket" class="bg-white rounded-lg border border-gray-200 p-5">
+      <h3 class="text-base font-semibold tracking-tight text-black mb-1">Create a new support ticket</h3>
+      <p class="text-sm text-gray-400 mb-4">Fields are provisional and will be updated once Support confirms criteria.</p>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div class="md:col-span-2">
           <label class="ui-label">Subject</label>
@@ -282,22 +282,22 @@ onMounted(async () => {
 
     <!-- Alerts -->
     <div v-if="error" class="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">{{ error }}</div>
-    <div v-else-if="warning" class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-300">{{ warning }}</div>
+    <div v-else-if="warning" class="rounded-lg border border-amber-500/30 bg-amber-50 p-4 text-sm text-amber-600">{{ warning }}</div>
 
     <!-- Table -->
-    <div class="bg-[#14192d] rounded-xl border border-white/10 overflow-hidden">
+    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
           <thead>
-            <tr class="border-b border-white/10 bg-white/[0.03]">
+            <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-4 py-3 w-10">
-                <input type="checkbox" class="rounded border-white/20 bg-white/5 text-primary-500 focus:ring-primary-500/50" :checked="selectedIds.size === tickets.length && tickets.length > 0" :indeterminate="selectedIds.size > 0 && selectedIds.size < tickets.length" @change="toggleAll" />
+                <input type="checkbox" class="rounded border-gray-300 bg-gray-50 text-primary-500 focus:ring-primary-500/50" :checked="selectedIds.size === tickets.length && tickets.length > 0" :indeterminate="selectedIds.size > 0 && selectedIds.size < tickets.length" @change="toggleAll" />
               </th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40">ID</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40">Subject</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40">Priority</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40">Created</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white/40">Status</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">ID</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Subject</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Priority</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Created</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
               <th class="px-4 py-3 w-10" />
             </tr>
           </thead>
@@ -305,18 +305,18 @@ onMounted(async () => {
             <!-- Loading skeleton -->
             <template v-if="loading">
               <tr v-for="i in 5" :key="i" class="animate-pulse">
-                <td class="px-4 py-3.5"><div class="h-4 w-4 rounded bg-white/10" /></td>
-                <td class="px-4 py-3.5"><div class="h-3 w-20 rounded-full bg-white/10" /></td>
-                <td class="px-4 py-3.5"><div class="h-3 w-64 rounded-full bg-white/10" /></td>
-                <td class="px-4 py-3.5"><div class="h-5 w-14 rounded-full bg-white/10" /></td>
-                <td class="px-4 py-3.5"><div class="h-3 w-24 rounded-full bg-white/10" /></td>
-                <td class="px-4 py-3.5"><div class="h-5 w-16 rounded-full bg-white/10" /></td>
+                <td class="px-4 py-3.5"><div class="h-4 w-4 rounded bg-gray-100" /></td>
+                <td class="px-4 py-3.5"><div class="h-3 w-20 rounded-full bg-gray-100" /></td>
+                <td class="px-4 py-3.5"><div class="h-3 w-64 rounded-full bg-gray-100" /></td>
+                <td class="px-4 py-3.5"><div class="h-5 w-14 rounded-full bg-gray-100" /></td>
+                <td class="px-4 py-3.5"><div class="h-3 w-24 rounded-full bg-gray-100" /></td>
+                <td class="px-4 py-3.5"><div class="h-5 w-16 rounded-full bg-gray-100" /></td>
                 <td class="px-4 py-3.5" />
               </tr>
             </template>
             <!-- Empty -->
             <tr v-else-if="!tickets.length">
-              <td colspan="7" class="px-4 py-8 text-center text-sm text-white/40">No tickets found.</td>
+              <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">No tickets found.</td>
             </tr>
             <!-- Rows -->
             <tr
@@ -326,11 +326,11 @@ onMounted(async () => {
               @click.self="$router.push(`/app/tickets/${encodeURIComponent(ticket.id)}`)"
             >
               <td class="px-4 py-3.5" @click.stop>
-                <input type="checkbox" class="rounded border-white/20 bg-white/5 text-primary-500 focus:ring-primary-500/50" :checked="selectedIds.has(ticket.id)" @change="toggleSelect(ticket.id)" />
+                <input type="checkbox" class="rounded border-gray-300 bg-gray-50 text-primary-500 focus:ring-primary-500/50" :checked="selectedIds.has(ticket.id)" @change="toggleSelect(ticket.id)" />
               </td>
-              <td class="px-4 py-3.5 font-mono text-xs text-white/50">#{{ ticket.id }}</td>
-              <td class="px-4 py-3.5 text-white font-medium max-w-xs">
-                <RouterLink :to="`/app/tickets/${encodeURIComponent(ticket.id)}`" class="hover:text-primary-300 transition-colors truncate block">
+              <td class="px-4 py-3.5 font-mono text-xs text-gray-400">#{{ ticket.id }}</td>
+              <td class="px-4 py-3.5 text-gray-900 font-medium max-w-xs">
+                <RouterLink :to="`/app/tickets/${encodeURIComponent(ticket.id)}`" class="hover:text-primary-700 transition-colors truncate block">
                   {{ ticket.subject }}
                 </RouterLink>
               </td>
@@ -339,7 +339,7 @@ onMounted(async () => {
                   {{ ticket.priority ?? 'Normal' }}
                 </span>
               </td>
-              <td class="px-4 py-3.5 text-sm text-white/50">{{ ticket.createdLabel }}</td>
+              <td class="px-4 py-3.5 text-sm text-gray-400">{{ ticket.createdLabel }}</td>
               <td class="px-4 py-3.5">
                 <span class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium" :class="statusBadgeClass(ticket.status)">
                   <!-- Hourglass for Pending -->
@@ -352,7 +352,7 @@ onMounted(async () => {
                 </span>
               </td>
               <td class="px-4 py-3.5 text-right">
-                <RouterLink :to="`/app/tickets/${encodeURIComponent(ticket.id)}`" class="text-white/30 hover:text-white/70 transition-colors" @click.stop>
+                <RouterLink :to="`/app/tickets/${encodeURIComponent(ticket.id)}`" class="text-gray-300 hover:text-gray-500 transition-colors" @click.stop>
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                 </RouterLink>
               </td>

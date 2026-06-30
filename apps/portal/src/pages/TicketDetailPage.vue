@@ -64,7 +64,7 @@ onMounted(load)
 
 <template>
   <div class="space-y-6">
-      <div v-if="loadError" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-200">
+      <div v-if="loadError" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/30 dark:bg-red-900/20   ">
         {{ loadError }}
       </div>
 
@@ -78,16 +78,16 @@ onMounted(load)
       </div>
 
       <div v-else-if="ticket" class="ui-surface relative shadow-md sm:rounded-lg overflow-hidden">
-        <div v-if="warning" class="border-b border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-200">
+        <div v-if="warning" class="border-b border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20   ">
           {{ warning }}
         </div>
 
         <div class="border-b border-gray-200 dark:border-gray-700 p-4">
           <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">#{{ ticket.id }} · {{ ticket.subject }}</h2>
-              <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Status: <span class="font-medium text-gray-900 dark:text-white">{{ ticket.status }}</span> · Last updated: {{ ticket.lastUpdatedLabel }}
+              <h2 class="text-lg font-semibold tracking-tight text-black   ">#{{ ticket.id }} · {{ ticket.subject }}</h2>
+              <div class="mt-1 text-sm text-gray-500   ">
+                Status: <span class="font-medium text-gray-900   ">{{ ticket.status }}</span> · Last updated: {{ ticket.lastUpdatedLabel }}
               </div>
             </div>
             <RouterLink
@@ -100,7 +100,7 @@ onMounted(load)
         </div>
 
         <div class="p-4 space-y-3">
-          <div class="text-sm font-semibold text-gray-900 dark:text-white">Conversation</div>
+          <div class="text-sm font-semibold text-gray-900   ">Conversation</div>
 
           <div class="space-y-3">
             <div
@@ -112,26 +112,26 @@ onMounted(load)
               <div
                 class="max-w-2xl rounded-lg border px-3 py-2"
                 :class="m.direction === 'customer'
-                  ? 'bg-primary-50 border-primary-200 text-gray-900 dark:bg-primary-900/20 dark:border-primary-900/30 dark:text-gray-100'
-                  : 'bg-gray-50 border-gray-200 text-gray-900 dark:bg-gray-900/20 dark:border-gray-700 dark:text-gray-100'"
+                  ? 'bg-primary-50 border-primary-200 text-gray-900 dark:bg-primary-900/20 dark:border-primary-900/30   '
+                  : 'bg-gray-50 border-gray-200 text-gray-900 dark:bg-gray-900/20 dark:border-gray-700   '"
               >
-                <div class="text-xs text-gray-500 dark:text-gray-400">{{ m.direction === 'customer' ? 'You' : 'Support' }} · {{ m.timeLabel }}</div>
+                <div class="text-xs text-gray-500   ">{{ m.direction === 'customer' ? 'You' : 'Support' }} · {{ m.timeLabel }}</div>
                 <div class="mt-1 text-sm whitespace-pre-wrap">{{ m.body }}</div>
               </div>
             </div>
           </div>
 
           <div class="mt-4 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-            <div class="text-sm font-semibold text-gray-900 dark:text-white">Reply</div>
+            <div class="text-sm font-semibold text-gray-900   ">Reply</div>
 
             <div
               v-if="ticket.canReply === false"
-              class="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900/20 dark:text-gray-200"
+              class="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900/20   "
             >
               Replies can only be sent by the person who opened this ticket.
             </div>
 
-            <div v-if="replyError" class="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-200">
+            <div v-if="replyError" class="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/30 dark:bg-red-900/20   ">
               {{ replyError }}
             </div>
 

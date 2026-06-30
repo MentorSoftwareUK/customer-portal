@@ -119,15 +119,15 @@ onUnmounted(() => {
     />
 
     <div class="relative w-full max-w-2xl">
-      <div class="rounded-2xl border border-white/10 bg-[#14192d] shadow-xl">
-        <div class="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+      <div class="rounded-2xl border border-gray-200 bg-white shadow-xl">
+        <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
           <div>
-            <div class="text-sm font-semibold text-white">{{ title ?? 'Find' }}</div>
+            <div class="text-sm font-semibold text-gray-900">{{ title ?? 'Find' }}</div>
             <div class="text-xs text-gray-400">Type to filter. Use ↑ ↓ and Enter.</div>
           </div>
           <button
             type="button"
-            class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-medium text-gray-300 hover:bg-white/10"
+            class="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-300 hover:bg-gray-100"
             @click="close"
           >
             Esc
@@ -141,27 +141,27 @@ onUnmounted(() => {
             ref="inputEl"
             v-model="q"
             type="text"
-            class="block w-full rounded-lg border border-white/10 bg-white/5 p-2.5 text-sm text-white placeholder:text-gray-400 focus:border-primary-500 focus:ring-primary-500"
+            class="block w-full rounded-lg border border-gray-200 bg-gray-50 p-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary-500 focus:ring-primary-500"
             placeholder="Find events, tickets, documents…"
             autocomplete="off"
           >
 
-          <div class="mt-3 overflow-hidden rounded-lg border border-white/10">
-            <ul v-if="filtered.length" class="max-h-[55vh] divide-y divide-white/10 overflow-auto">
+          <div class="mt-3 overflow-hidden rounded-lg border border-gray-200">
+            <ul v-if="filtered.length" class="max-h-[55vh] divide-y divide-gray-200 overflow-auto">
               <li
                 v-for="(item, i) in filtered"
                 :key="item.to"
               >
                 <button
                   type="button"
-                  class="w-full px-4 py-3 text-left hover:bg-white/5"
-                  :class="i === activeIndex ? 'bg-white/5' : ''"
+                  class="w-full px-4 py-3 text-left hover:bg-gray-50"
+                  :class="i === activeIndex ? 'bg-gray-50' : ''"
                   @mouseenter="activeIndex = i"
                   @click="go(item)"
                 >
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
-                      <div class="text-sm font-semibold text-white">{{ item.label }}</div>
+                      <div class="text-sm font-semibold text-gray-900">{{ item.label }}</div>
                       <div v-if="item.description" class="mt-0.5 text-xs text-gray-400">
                         {{ item.description }}
                       </div>

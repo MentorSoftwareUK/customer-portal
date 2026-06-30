@@ -51,14 +51,14 @@ export default defineComponent({
       const state = stepState(index)
       if (state === 'complete') return 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40'
       if (state === 'active') return 'bg-primary-500/20 text-primary-200 border-primary-400/40'
-      return 'bg-white/5 text-white/60 border-white/10'
+      return 'bg-gray-50 text-gray-500 border-gray-200'
     }
 
     const labelClasses = (index: number) => {
       const state = stepState(index)
       if (state === 'complete') return 'text-emerald-100'
       if (state === 'active') return 'text-white'
-      return 'text-white/70'
+      return 'text-gray-500'
     }
 
 
@@ -79,17 +79,17 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="rounded-2xl border border-white/10 bg-[#14192d] p-6 shadow-[0_18px_40px_rgba(15,20,40,0.2)]">
+  <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,20,40,0.2)]">
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div>
-        <h3 class="text-lg font-semibold text-white">{{ title }}</h3>
-        <p v-if="subtitle" class="mt-1 text-sm text-white/60">{{ subtitle }}</p>
+        <h3 class="text-lg font-semibold text-gray-900">{{ title }}</h3>
+        <p v-if="subtitle" class="mt-1 text-sm text-gray-500">{{ subtitle }}</p>
       </div>
-      <div class="text-xs text-white/50">{{ progressPercent }}% complete</div>
+      <div class="text-xs text-gray-400">{{ progressPercent }}% complete</div>
     </div>
 
     <div class="mt-6">
-      <div class="relative h-2 rounded-full bg-white/10">
+      <div class="relative h-2 rounded-full bg-gray-100">
         <div
           class="absolute left-0 top-0 h-2 rounded-full bg-gradient-to-r from-emerald-400 via-emerald-300 to-primary-300 transition-all duration-500 ease-out"
           :style="{ width: `${progressPercent}%` }"
@@ -106,8 +106,8 @@ export default defineComponent({
             v-for="(stage, index) in stages"
             :key="stage.id"
             type="button"
-            class="group relative flex min-w-[140px] flex-1 flex-col items-start gap-2 rounded-xl border px-3 py-3 text-left transition hover:border-white/30 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60"
-            :class="stepState(index) === 'active' ? 'border-primary-400/40 bg-white/5' : 'border-white/10'"
+            class="group relative flex min-w-[140px] flex-1 flex-col items-start gap-2 rounded-xl border px-3 py-3 text-left transition hover:border-gray-300 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60"
+            :class="stepState(index) === 'active' ? 'border-primary-400/40 bg-gray-50' : 'border-gray-200'"
             @click="onSelect(stage, index)"
           >
             <div class="flex items-center justify-between gap-2 w-full">
@@ -122,13 +122,13 @@ export default defineComponent({
                 <span v-else>{{ index + 1 }}</span>
               </span>
             </div>
-            <div v-if="stage.description" class="text-xs text-white/50">
+            <div v-if="stage.description" class="text-xs text-gray-400">
               {{ stage.description }}
             </div>
 
             <div
               v-if="stage.description"
-              class="pointer-events-none absolute right-3 top-11 max-w-[200px] rounded-lg border border-white/10 bg-[#0f1428]/95 px-3 py-2 text-xs text-white/80 opacity-0 shadow-lg transition group-hover:opacity-100"
+              class="pointer-events-none absolute right-3 top-11 max-w-[200px] rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600 opacity-0 shadow-lg transition group-hover:opacity-100"
             >
               {{ stage.description }}
             </div>
@@ -137,7 +137,7 @@ export default defineComponent({
         </div>
       </div>
 
-      <div class="mt-2 text-xs text-white/50">Tap a stage to view details (coming soon).</div>
+      <div class="mt-2 text-xs text-gray-400">Tap a stage to view details (coming soon).</div>
     </div>
   </div>
 </template>

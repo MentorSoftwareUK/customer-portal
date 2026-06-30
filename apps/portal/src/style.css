@@ -8,718 +8,138 @@ body,
   height: 100%;
 }
 
+/* ─── Base ───────────────────────────────────────────────────────────────────
+   Matches mentor-ux-v3 body spec. Nav chrome (sidebar + topbar) stays brand
+   navy — it uses bg-brand-primary directly and is not affected by these styles.
+   ─────────────────────────────────────────────────────────────────────────── */
 body {
   margin: 0;
   font-family: Poppins, ui-sans-serif, system-ui;
-  background-color: #14192d;
-  color: #ffffff;
+  background-color: #F5F5F4;
+  color: #0A0A0A;
+  letter-spacing: -0.011em;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
+/* Branded selection */
+::selection { background: rgba(20,25,45,0.12); color: #0A0A0A; }
+
+/* Premium scrollbars */
+* { scrollbar-width: thin; scrollbar-color: #D4D2CF transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #D4D2CF;
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: #A8A29E; background-clip: content-box; }
+
+/* Headings — tighter optical tracking */
+h1, h2, h3 { letter-spacing: -0.02em; }
+
+/* Focus ring — navy */
+:focus-visible { outline: 2px solid #14192d; outline-offset: 2px; }
+
+/* ─── Semantic utility tokens ─────────────────────────────────────────────── */
 @layer utilities {
-  .rounded-base {
-    @apply rounded-lg;
-  }
-
-  .shadow-xs {
-    @apply shadow-sm;
-  }
-
-  .text-body {
-    @apply text-white/80;
-  }
-
-  .text-heading {
-    @apply text-white;
-  }
-
-  .text-fg-brand {
-    @apply text-brand-accent;
-  }
-
-  .text-primary-400 {
-    @apply text-primary-600;
-  }
-
-  .bg-neutral-primary-soft {
-    @apply bg-brand-secondary;
-  }
-
-  .bg-neutral-secondary-medium {
-    @apply bg-white/5;
-  }
-
-  .border-default {
-    @apply border-white/10;
-  }
-
-  .border-default-medium {
-    @apply border-white/20;
-  }
-
-  .text-fg-brand-strong {
-    @apply text-primary-700 dark:text-primary-300;
-  }
-
-  .bg-brand-softer {
-    @apply bg-primary-50 dark:bg-primary-950/30;
-  }
-
-  .bg-brand-soft {
-    @apply bg-primary-100 dark:bg-primary-900/30;
-  }
-
-  .focus\:ring-brand-medium {
-    @apply focus:ring-primary-300 dark:focus:ring-primary-800;
-  }
-
-  .text-fg-danger-strong {
-    @apply text-rose-800 dark:text-rose-200;
-  }
-
-  .bg-danger-soft {
-    @apply bg-rose-50 dark:bg-rose-900/20;
-  }
-
-  .bg-danger-medium {
-    @apply bg-rose-100 dark:bg-rose-900/35;
-  }
-
-  .focus\:ring-danger-medium {
-    @apply focus:ring-rose-200 dark:focus:ring-rose-800;
-  }
-
-  .text-fg-success-strong {
-    @apply text-emerald-800 dark:text-emerald-200;
-  }
-
-  .bg-success-soft {
-    @apply bg-emerald-50 dark:bg-emerald-900/20;
-  }
-
-  .bg-success-medium {
-    @apply bg-emerald-100 dark:bg-emerald-900/35;
-  }
-
-  .focus\:ring-success-medium {
-    @apply focus:ring-emerald-200 dark:focus:ring-emerald-800;
-  }
-
-  .text-fg-warning {
-    @apply text-amber-900 dark:text-amber-200;
-  }
-
-  .bg-warning-soft {
-    @apply bg-amber-50 dark:bg-amber-900/20;
-  }
-
-  .bg-warning-medium {
-    @apply bg-amber-100 dark:bg-amber-900/35;
-  }
-
-  .focus\:ring-warning-medium {
-    @apply focus:ring-amber-200 dark:focus:ring-amber-800;
-  }
-
-  .focus\:ring-neutral-tertiary {
-    @apply focus:ring-gray-200 dark:focus:ring-gray-600;
-  }
-
-  .hover\:bg-neutral-tertiary-medium {
-    @apply hover:bg-gray-100 dark:hover:bg-white/10;
-  }
+  .rounded-base                      { @apply rounded-lg; }
+  .shadow-xs                         { @apply shadow-sm; }
+  .text-body                         { @apply text-gray-700; }
+  .text-heading                      { @apply text-black; }
+  .text-fg-brand                     { @apply text-primary-600; }
+  .text-fg-brand-strong              { @apply text-primary-700; }
+  .text-primary-400                  { @apply text-primary-600; }
+  .bg-neutral-primary-soft           { @apply bg-gray-100; }
+  .bg-neutral-secondary-medium       { @apply bg-gray-100; }
+  .bg-brand-softer                   { @apply bg-primary-50; }
+  .bg-brand-soft                     { @apply bg-primary-100; }
+  .border-default                    { @apply border-gray-200; }
+  .border-default-medium             { @apply border-gray-300; }
+  .text-fg-danger-strong             { @apply text-red-700; }
+  .bg-danger-soft                    { @apply bg-red-50; }
+  .bg-danger-medium                  { @apply bg-red-100; }
+  .focus\:ring-danger-medium         { @apply focus:ring-red-200; }
+  .text-fg-success-strong            { @apply text-emerald-700; }
+  .bg-success-soft                   { @apply bg-emerald-50; }
+  .bg-success-medium                 { @apply bg-emerald-100; }
+  .focus\:ring-success-medium        { @apply focus:ring-emerald-200; }
+  .text-fg-warning                   { @apply text-amber-700; }
+  .bg-warning-soft                   { @apply bg-amber-50; }
+  .bg-warning-medium                 { @apply bg-amber-100; }
+  .focus\:ring-warning-medium        { @apply focus:ring-amber-200; }
+  .focus\:ring-brand-medium          { @apply focus:ring-primary-200; }
+  .focus\:ring-neutral-tertiary      { @apply focus:ring-gray-200; }
+  .hover\:bg-neutral-tertiary-medium { @apply hover:bg-gray-100; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
 }
 
+/* ─── Component classes ───────────────────────────────────────────────────── */
 @layer components {
+
+  /* ── Surfaces ── */
   .ui-surface {
-    @apply rounded-lg bg-brand-primary border border-white/10 shadow-sm text-white;
+    @apply rounded-lg bg-white border border-gray-200 shadow-md text-gray-900;
   }
-
   .ui-surface-muted {
-    @apply rounded-lg bg-white/5 border border-white/10 shadow-sm text-white;
+    @apply rounded-lg bg-gray-100 border border-gray-200 text-gray-900;
   }
-
-  .ui-surface .ui-link,
-  .ui-surface-muted .ui-link {
-    @apply text-primary-300;
-  }
-
-  .ui-surface .ui-link:hover,
-  .ui-surface-muted .ui-link:hover {
-    @apply text-primary-200;
-  }
-
-  .ui-surface .ui-btn-secondary,
-  .ui-surface-muted .ui-btn-secondary {
-    @apply text-white bg-white/10 border border-white/10 hover:bg-white/15 hover:text-white focus:outline-none focus:ring-4 focus:ring-white/10;
-  }
-
   .ui-surface-title {
-    @apply text-sm text-white;
+    @apply text-base font-semibold tracking-tight text-black;
   }
+  .ui-surface .ui-link,       .ui-surface-muted .ui-link       { @apply text-primary-600; }
+  .ui-surface .ui-link:hover, .ui-surface-muted .ui-link:hover { @apply text-primary-700 underline; }
+  .ui-surface .ui-btn-secondary,
+  .ui-surface-muted .ui-btn-secondary { @apply text-gray-700 bg-white border-gray-200 hover:bg-gray-100; }
+  .ui-surface .ui-label,       .ui-surface-muted .ui-label      { @apply text-gray-600; }
+  .ui-surface .ui-input,       .ui-surface-muted .ui-input      { @apply bg-white border-gray-200 text-gray-900 placeholder:text-gray-400; }
 
-  .ui-surface .text-gray-900,
-  .ui-surface .text-gray-800,
-  .ui-surface .text-gray-700,
-  .ui-surface-muted .text-gray-900,
-  .ui-surface-muted .text-gray-800,
-  .ui-surface-muted .text-gray-700 {
-    @apply text-white;
-  }
+  /* ── Table ── */
+  .ui-table             { @apply w-full text-sm text-left text-gray-700; }
+  .ui-table thead       { @apply text-xs font-medium uppercase tracking-wide bg-gray-100 text-gray-500; }
+  .ui-table th          { @apply font-medium text-gray-500; }
+  .ui-table tbody tr    { @apply border-b border-gray-200; }
+  .ui-table tbody tr:hover { @apply bg-gray-100; }
 
-  .ui-surface .text-gray-600,
-  .ui-surface .text-gray-500,
-  .ui-surface .text-gray-400,
-  .ui-surface-muted .text-gray-600,
-  .ui-surface-muted .text-gray-500,
-  .ui-surface-muted .text-gray-400 {
-    @apply text-white/60;
-  }
+  /* ── Status pills — v3 pattern: solid opaque bg + border, no rings ── */
+  .ui-pill         { @apply inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-medium; }
+  .ui-pill-dot     { @apply inline-block size-1.5 rounded-full bg-current; }
+  .ui-pill-success { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
+  .ui-pill-warning { @apply bg-amber-50 text-amber-700 border border-amber-200; }
+  .ui-pill-danger  { @apply bg-red-50 text-red-700 border border-red-200; }
+  .ui-pill-neutral { @apply bg-gray-100 text-gray-500 border border-gray-200; }
+  .ui-pill-info    { @apply bg-blue-50 text-blue-700 border border-blue-200; }
 
-  .ui-surface .border-gray-200,
-  .ui-surface .border-gray-300,
-  .ui-surface-muted .border-gray-200,
-  .ui-surface-muted .border-gray-300 {
-    @apply border-white/10;
-  }
+  /* ── Cards ── */
+  .ui-card      { @apply rounded-lg bg-white border border-gray-200 shadow-md; }
+  .ui-card-muted { @apply rounded-lg bg-gray-100 border border-gray-200; }
 
-  .ui-surface .bg-white,
-  .ui-surface .bg-gray-50,
-  .ui-surface .bg-gray-100,
-  .ui-surface-muted .bg-white,
-  .ui-surface-muted .bg-gray-50,
-  .ui-surface-muted .bg-gray-100 {
-    @apply bg-white/10;
-  }
-
-  .ui-surface .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
-  .ui-surface-muted .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
-    border-color: rgb(255 255 255 / 0.1);
-  }
-
-  .ui-table {
-    @apply w-full text-sm text-left text-white/70;
-  }
-
-  .ui-table thead {
-    @apply text-xs uppercase bg-white/5 text-white/70;
-  }
-
-  .ui-table th {
-    @apply font-medium text-white/80;
-  }
-
-  .ui-table tbody tr {
-    @apply border-b border-white/10;
-  }
-
-  .ui-table tbody tr:hover {
-    @apply bg-white/5;
-  }
-
-  .ui-pill {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset;
-  }
-
-  .ui-pill-dot {
-    @apply inline-block size-1.5 rounded-full bg-current opacity-80;
-  }
-
-  .ui-pill-success {
-    @apply bg-emerald-400/15 text-emerald-300 ring-emerald-400/30;
-  }
-
-  .ui-pill-warning {
-    @apply bg-amber-400/15 text-amber-300 ring-amber-400/30;
-  }
-
-  .ui-pill-danger {
-    @apply bg-rose-400/15 text-rose-300 ring-rose-400/30;
-  }
-
-  .ui-pill-neutral {
-    @apply bg-white/5 text-white/70 ring-white/10;
-  }
-
-  .ui-card {
-    @apply rounded-lg bg-white border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700;
-  }
-
-  .ui-card-muted {
-    @apply rounded-lg bg-gray-50 border border-gray-200 dark:bg-gray-700/40 dark:border-gray-700;
-  }
-
+  /* ── Buttons — v3: rounded (8px) ── */
   .ui-btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800;
+    @apply inline-flex items-center justify-center rounded px-4 py-2 text-sm font-semibold
+           text-white bg-primary-600 hover:bg-primary-700
+           focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-1
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
-
   .ui-btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 border border-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-700 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center rounded px-4 py-2 text-sm font-semibold
+           text-gray-700 bg-white border border-gray-200 hover:bg-gray-100
+           focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-1
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
+  .ui-btn-xs { @apply px-2.5 py-1 text-xs rounded; }
 
-  .ui-btn-xs {
-    @apply px-3 py-1.5 text-xs rounded-md;
-  }
-
-  .ui-link {
-    @apply text-sm font-medium text-primary-600 hover:underline dark:text-primary-500;
-  }
-
-  .ui-label {
-    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
-  }
-
+  /* ── Form elements ── */
+  .ui-link  { @apply text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline; }
+  .ui-label { @apply block text-xs font-medium text-gray-500 mb-1; }
   .ui-input {
-    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-primary-300 focus:border-transparent;
+    @apply w-full px-3 py-2 border border-gray-200 rounded bg-white
+           text-sm text-gray-900 placeholder:text-gray-400
+           focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-shadow;
   }
-}
-
-@layer utilities {
-  .ui-surface .text-gray-900,
-  .ui-surface .text-gray-800,
-  .ui-surface .text-gray-700,
-  .ui-surface-muted .text-gray-900,
-  .ui-surface-muted .text-gray-800,
-  .ui-surface-muted .text-gray-700 {
-    @apply text-white;
-  }
-
-  .ui-surface .text-gray-600,
-  .ui-surface .text-gray-500,
-  .ui-surface .text-gray-400,
-  .ui-surface-muted .text-gray-600,
-  .ui-surface-muted .text-gray-500,
-  .ui-surface-muted .text-gray-400 {
-    @apply text-white/60;
-  }
-
-  .ui-surface .border-gray-200,
-  .ui-surface .border-gray-300,
-  .ui-surface-muted .border-gray-200,
-  .ui-surface-muted .border-gray-300 {
-    @apply border-white/10;
-  }
-
-  .ui-surface .bg-white,
-  .ui-surface .bg-gray-50,
-  .ui-surface .bg-gray-100,
-  .ui-surface-muted .bg-white,
-  .ui-surface-muted .bg-gray-50,
-  .ui-surface-muted .bg-gray-100 {
-    @apply bg-white/10;
-  }
-
-  .ui-surface .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
-  .ui-surface-muted .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
-    border-color: rgb(255 255 255 / 0.1);
-  }
-
-  .ui-surface .ui-label,
-  .ui-surface-muted .ui-label {
-    @apply text-white/70;
-  }
-
-  .ui-surface .ui-input,
-  .ui-surface-muted .ui-input {
-    @apply bg-white/10 border-white/10 text-white placeholder:text-white/50;
-  }
-}
-
-/* ================================================================
-   Admin light-mode overrides
-   Applied when .admin-light is on the <main> content area.
-   Sidebar & topbar remain dark; only card surfaces change.
-   ================================================================ */
-
-/* ---- Section containers (dark navy → white) ---- */
-.admin-light .bg-\[\#0f1428\],
-.admin-light .bg-\[\#14192d\],
-.admin-light .bg-\[\#0f1530\] {
-  background-color: #ffffff;
-  color: #111827;
-}
-
-/* Heavy dark shadow → soft light shadow */
-.admin-light [class*="shadow-\[0_18px"] {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-}
-
-/* ---- KPI / sub-cards ---- */
-.admin-light .bg-white\/\[0\.03\],
-.admin-light .bg-white\/\[0\.02\] {
-  background-color: #f9fafb;
-}
-.admin-light .bg-white\/5 {
-  background-color: #f3f4f6;
-}
-.admin-light .bg-white\/10 {
-  background-color: #e5e7eb;
-}
-.admin-light .bg-white\/\[0\.06\] {
-  background-color: #f3f4f6;
-}
-
-/* ---- Dropdown / option backgrounds ---- */
-.admin-light .bg-\[\#1a1f3a\],
-.admin-light .bg-\[\#1a2035\] {
-  background-color: #ffffff;
-  color: #111827;
-}
-
-/* ---- Borders ---- */
-.admin-light .border-white\/10,
-.admin-light .border-white\/\[0\.06\],
-.admin-light .border-white\/\[0\.04\] {
-  border-color: #e5e7eb;
-}
-.admin-light .border-white\/20 {
-  border-color: #d1d5db;
-}
-
-/* ---- Text hierarchy ---- */
-.admin-light .text-white {
-  color: #111827;
-}
-.admin-light .text-white\/80 {
-  color: #374151;
-}
-.admin-light .text-white\/70 {
-  color: #4b5563;
-}
-.admin-light .text-white\/60 {
-  color: #6b7280;
-}
-.admin-light .text-white\/50 {
-  color: #9ca3af;
-}
-.admin-light .text-white\/40 {
-  color: #9ca3af;
-}
-.admin-light .text-white\/30 {
-  color: #d1d5db;
-}
-
-/* ---- Colored accent text (readable on white) ---- */
-.admin-light .text-emerald-200,
-.admin-light .text-emerald-300 {
-  color: #059669;
-}
-.admin-light .text-rose-200,
-.admin-light .text-rose-300 {
-  color: #e11d48;
-}
-.admin-light .text-amber-200,
-.admin-light .text-amber-300 {
-  color: #d97706;
-}
-.admin-light .text-sky-200,
-.admin-light .text-sky-300 {
-  color: #0284c7;
-}
-.admin-light .text-indigo-200,
-.admin-light .text-indigo-300 {
-  color: #4f46e5;
-}
-.admin-light .text-cyan-300,
-.admin-light .text-cyan-400\/80 {
-  color: #0891b2;
-}
-.admin-light .text-teal-300,
-.admin-light .text-teal-400\/80 {
-  color: #0d9488;
-}
-.admin-light .text-violet-300 {
-  color: #7c3aed;
-}
-.admin-light .text-rose-400 {
-  color: #e11d48;
-}
-.admin-light .text-amber-400 {
-  color: #d97706;
-}
-.admin-light .text-emerald-400 {
-  color: #059669;
-}
-
-/* ---- Status backgrounds (translucent → solid pastel) ---- */
-.admin-light .bg-rose-500\/10,
-.admin-light .bg-rose-500\/15 {
-  background-color: #fff1f2;
-}
-.admin-light .bg-emerald-500\/10,
-.admin-light .bg-emerald-500\/\[0\.05\],
-.admin-light .bg-emerald-400\/15 {
-  background-color: #ecfdf5;
-}
-.admin-light .bg-amber-500\/10,
-.admin-light .bg-amber-500\/15,
-.admin-light .bg-amber-500\/\[0\.05\],
-.admin-light .bg-amber-400\/15 {
-  background-color: #fffbeb;
-}
-.admin-light .bg-sky-500\/\[0\.05\],
-.admin-light .bg-sky-500\/15 {
-  background-color: #f0f9ff;
-}
-.admin-light .bg-indigo-500\/10 {
-  background-color: #eef2ff;
-}
-.admin-light .bg-white\/\[0\.05\] {
-  background-color: #f3f4f6;
-}
-
-/* ---- Status borders ---- */
-.admin-light .border-rose-500\/30 {
-  border-color: #fecdd3;
-}
-.admin-light .border-emerald-500\/30 {
-  border-color: #a7f3d0;
-}
-.admin-light .border-amber-500\/30 {
-  border-color: #fde68a;
-}
-
-/* ---- Status pill ring colors ---- */
-.admin-light .ring-emerald-400\/30 {
-  --tw-ring-color: #a7f3d0;
-}
-.admin-light .ring-amber-400\/30 {
-  --tw-ring-color: #fde68a;
-}
-.admin-light .ring-rose-400\/30 {
-  --tw-ring-color: #fecdd3;
-}
-.admin-light .ring-white\/10 {
-  --tw-ring-color: #e5e7eb;
-}
-
-/* ---- Hover states ---- */
-.admin-light .hover\:bg-white\/\[0\.05\]:hover,
-.admin-light .hover\:bg-white\/\[0\.03\]:hover,
-.admin-light .hover\:bg-white\/\[0\.04\]:hover {
-  background-color: #f3f4f6;
-}
-.admin-light .hover\:bg-white\/10:hover {
-  background-color: #e5e7eb;
-}
-.admin-light .hover\:bg-white\/15:hover {
-  background-color: #d1d5db;
-}
-.admin-light .hover\:text-white:hover {
-  color: #111827;
-}
-.admin-light .hover\:text-white\/80:hover {
-  color: #374151;
-}
-.admin-light .hover\:text-white\/60:hover {
-  color: #6b7280;
-}
-.admin-light .hover\:border-amber-500\/20:hover {
-  border-color: #fde68a;
-}
-
-/* ---- Focus rings ---- */
-.admin-light .focus\:ring-white\/20:focus {
-  --tw-ring-color: rgb(0 0 0 / 0.1);
-}
-.admin-light .focus\:ring-white\/15:focus {
-  --tw-ring-color: rgb(0 0 0 / 0.08);
-}
-
-/* ---- Dividers ---- */
-.admin-light .divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #e5e7eb;
-}
-
-/* ---- UI component overrides ---- */
-.admin-light .ui-surface {
-  background-color: #ffffff;
-  border-color: #e5e7eb;
-  color: #111827;
-}
-.admin-light .ui-surface-muted {
-  background-color: #f9fafb;
-  border-color: #e5e7eb;
-  color: #111827;
-}
-
-/* ---- Pill overrides ---- */
-.admin-light .ui-pill-success {
-  background-color: #ecfdf5;
-  color: #059669;
-  --tw-ring-color: #a7f3d0;
-}
-.admin-light .ui-pill-warning {
-  background-color: #fffbeb;
-  color: #d97706;
-  --tw-ring-color: #fde68a;
-}
-.admin-light .ui-pill-danger {
-  background-color: #fff1f2;
-  color: #e11d48;
-  --tw-ring-color: #fecdd3;
-}
-.admin-light .ui-pill-neutral {
-  background-color: #f3f4f6;
-  color: #6b7280;
-  --tw-ring-color: #e5e7eb;
-}
-
-/* ---- Table overrides ---- */
-.admin-light .ui-table {
-  color: #4b5563;
-}
-.admin-light .ui-table thead {
-  background-color: #f9fafb;
-  color: #4b5563;
-}
-.admin-light .ui-table th {
-  color: #374151;
-}
-.admin-light .ui-table tbody tr {
-  border-color: #e5e7eb;
-}
-.admin-light .ui-table tbody tr:hover {
-  background-color: #f9fafb;
-}
-
-/* ---- Input overrides inside surfaces ---- */
-.admin-light .ui-surface .ui-input,
-.admin-light .ui-surface-muted .ui-input {
-  background-color: #ffffff;
-  border-color: #d1d5db;
-  color: #111827;
-}
-.admin-light .ui-surface .ui-label,
-.admin-light .ui-surface-muted .ui-label {
-  color: #4b5563;
-}
-
-/* ================================================================
-   Customer portal light-mode overrides
-   Applied when .customer-light is on the <main> content area.
-   Sidebar & topbar remain dark; only the content area changes.
-   ================================================================ */
-
-/* ---- Section containers (dark navy → white) ---- */
-.customer-light .bg-\[\#14192d\],
-.customer-light .bg-\[\#0f1428\],
-.customer-light .bg-\[\#0f1530\] {
-  background-color: #ffffff;
-  color: #111827;
-}
-
-/* ---- Sub-cards and muted surfaces ---- */
-.customer-light .bg-white\/5 { background-color: #f3f4f6; }
-.customer-light .bg-white\/10 { background-color: #e5e7eb; }
-.customer-light .bg-white\/15 { background-color: #d1d5db; }
-.customer-light .bg-white\/\[0\.03\],
-.customer-light .bg-white\/\[0\.02\] { background-color: #f9fafb; }
-.customer-light .bg-white\/\[0\.06\] { background-color: #f3f4f6; }
-
-/* ---- Borders ---- */
-.customer-light .border-white\/10,
-.customer-light .border-white\/\[0\.06\],
-.customer-light .border-white\/\[0\.04\] { border-color: #e5e7eb; }
-.customer-light .border-white\/20 { border-color: #d1d5db; }
-
-/* ---- Text hierarchy ---- */
-.customer-light .text-white { color: #111827; }
-.customer-light .text-white\/80 { color: #374151; }
-.customer-light .text-white\/70 { color: #4b5563; }
-.customer-light .text-white\/60 { color: #6b7280; }
-.customer-light .text-white\/50 { color: #9ca3af; }
-.customer-light .text-white\/40 { color: #9ca3af; }
-.customer-light .text-white\/30 { color: #d1d5db; }
-
-/* ---- Placeholder text ---- */
-.customer-light .placeholder\:text-white\/50::placeholder,
-.customer-light .placeholder\:text-white\/40::placeholder { color: #9ca3af; }
-
-/* ---- Coloured accent text ---- */
-.customer-light .text-emerald-200, .customer-light .text-emerald-300 { color: #059669; }
-.customer-light .text-rose-200,    .customer-light .text-rose-300    { color: #e11d48; }
-.customer-light .text-amber-200,   .customer-light .text-amber-300   { color: #d97706; }
-.customer-light .text-sky-200,     .customer-light .text-sky-300     { color: #0284c7; }
-
-/* ---- Status backgrounds ---- */
-.customer-light .bg-emerald-400\/15 { background-color: #ecfdf5; }
-.customer-light .bg-amber-400\/15   { background-color: #fffbeb; }
-.customer-light .bg-rose-400\/15    { background-color: #fff1f2; }
-
-/* ---- Status pill rings ---- */
-.customer-light .ring-emerald-400\/30 { --tw-ring-color: #a7f3d0; }
-.customer-light .ring-amber-400\/30   { --tw-ring-color: #fde68a; }
-.customer-light .ring-rose-400\/30    { --tw-ring-color: #fecdd3; }
-.customer-light .ring-white\/10       { --tw-ring-color: #e5e7eb; }
-
-/* ---- Hover states ---- */
-.customer-light .hover\:bg-white\/10:hover  { background-color: #e5e7eb; }
-.customer-light .hover\:bg-white\/15:hover  { background-color: #d1d5db; }
-.customer-light .hover\:text-white:hover    { color: #111827; }
-.customer-light .hover\:bg-white\/\[0\.05\]:hover,
-.customer-light .hover\:bg-white\/\[0\.03\]:hover { background-color: #f3f4f6; }
-
-/* ---- Focus rings ---- */
-.customer-light .focus\:ring-white\/10:focus { --tw-ring-color: rgb(0 0 0 / 0.08); }
-
-/* ---- Dividers ---- */
-.customer-light .divide-white\/10 > :not([hidden]) ~ :not([hidden]) { border-color: #e5e7eb; }
-
-/* ---- ui-surface & ui-surface-muted ---- */
-.customer-light .ui-surface {
-  background-color: #ffffff;
-  border-color: #e5e7eb;
-  color: #111827;
-}
-.customer-light .ui-surface-muted {
-  background-color: #f9fafb;
-  border-color: #e5e7eb;
-  color: #111827;
-}
-
-/* ---- ui-surface inner text ---- */
-.customer-light .ui-surface .text-gray-900,
-.customer-light .ui-surface .text-gray-800,
-.customer-light .ui-surface .text-gray-700,
-.customer-light .ui-surface-muted .text-gray-900,
-.customer-light .ui-surface-muted .text-gray-800,
-.customer-light .ui-surface-muted .text-gray-700 { color: #111827; }
-.customer-light .ui-surface .text-gray-600,
-.customer-light .ui-surface .text-gray-500,
-.customer-light .ui-surface .text-gray-400,
-.customer-light .ui-surface-muted .text-gray-600,
-.customer-light .ui-surface-muted .text-gray-500,
-.customer-light .ui-surface-muted .text-gray-400 { color: #6b7280; }
-
-/* ---- Pill overrides ---- */
-.customer-light .ui-pill-success { background-color: #ecfdf5; color: #059669; --tw-ring-color: #a7f3d0; }
-.customer-light .ui-pill-warning { background-color: #fffbeb; color: #d97706; --tw-ring-color: #fde68a; }
-.customer-light .ui-pill-danger  { background-color: #fff1f2; color: #e11d48; --tw-ring-color: #fecdd3; }
-.customer-light .ui-pill-neutral { background-color: #f3f4f6; color: #6b7280; --tw-ring-color: #e5e7eb; }
-
-/* ---- Table overrides ---- */
-.customer-light .ui-table              { color: #4b5563; }
-.customer-light .ui-table thead        { background-color: #f9fafb; color: #4b5563; }
-.customer-light .ui-table th           { color: #374151; }
-.customer-light .ui-table tbody tr     { border-color: #e5e7eb; }
-.customer-light .ui-table tbody tr:hover { background-color: #f9fafb; }
-
-/* ---- Input/label overrides inside surfaces ---- */
-.customer-light .ui-surface .ui-input,
-.customer-light .ui-surface-muted .ui-input {
-  background-color: #ffffff;
-  border-color: #d1d5db;
-  color: #111827;
-}
-.customer-light .ui-surface .ui-label,
-.customer-light .ui-surface-muted .ui-label { color: #4b5563; }
-
-/* ---- Standalone inputs (Profile, Tickets form, KB search etc.) ---- */
-.customer-light input.bg-white\/5,
-.customer-light input.bg-white\/10,
-.customer-light textarea.bg-white\/5,
-.customer-light textarea.bg-white\/10 {
-  background-color: #ffffff;
-  border-color: #d1d5db;
-  color: #111827;
 }

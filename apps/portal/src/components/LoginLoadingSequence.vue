@@ -86,7 +86,7 @@ onUnmounted(() => {
 <template>
   <div class="py-8 flex flex-col items-center">
     <!-- Progress bar -->
-    <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-8">
+    <div class="w-full h-1 bg-gray-100 rounded-full overflow-hidden mb-8">
       <div
         class="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full transition-all duration-700 ease-out"
         :style="{ width: `${progress}%` }"
@@ -113,7 +113,7 @@ onUnmounted(() => {
           </svg>
 
           <!-- Step label -->
-          <p class="text-sm font-medium text-white/90 tracking-wide">
+          <p class="text-sm font-medium text-gray-700 tracking-wide">
             {{ currentLabel }}
             <span class="inline-flex ml-0.5">
               <span class="dot" style="animation-delay: 0ms">.</span>

@@ -146,23 +146,23 @@ const productVersionLabel = computed(() => {
 
 <template>
   <div class="mx-auto max-w-5xl space-y-6">
-    <div class="rounded-2xl border border-white/10 bg-gradient-to-br from-[#14192d] via-[#1f2745] to-[#14192d] p-8 text-white shadow-lg">
-      <p class="text-xs uppercase tracking-wide text-white/70">Welcome</p>
-      <h1 class="mt-2 text-2xl font-semibold">Let’s confirm your details</h1>
-      <p class="mt-2 max-w-3xl text-sm text-white/80">
+    <div class="rounded-2xl border border-gray-200 bg-gradient-to-br from-[#14192d] via-[#1f2745] to-[#14192d] p-8 text-gray-900 shadow-lg">
+      <p class="text-xs uppercase tracking-wide text-gray-500">Welcome</p>
+      <h1 class="mt-2 text-2xl font-semibold tracking-tight">Let’s confirm your details</h1>
+      <p class="mt-2 max-w-3xl text-sm text-gray-600">
         We sync directly to HubSpot, so please confirm your name, phone number, and job title. This keeps your contact record clean
         for onboarding and support.
       </p>
-      <div class="mt-3 flex flex-wrap gap-2 text-xs text-white/80">
-        <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1">
+      <div class="mt-3 flex flex-wrap gap-2 text-xs text-gray-600">
+        <span class="rounded-full border border-gray-300 bg-gray-100 px-3 py-1">
           Provision: {{ provisionLabel }}
         </span>
-        <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1">
+        <span class="rounded-full border border-gray-300 bg-gray-100 px-3 py-1">
           Product version: {{ productVersionLabel }}
         </span>
       </div>
       <div v-if="missingFieldLabels.length" class="mt-4 flex flex-wrap gap-2 text-xs">
-        <span class="rounded-full bg-white/15 px-3 py-1 text-white/90" v-for="field in missingFieldLabels" :key="field">
+        <span class="rounded-full bg-gray-200 px-3 py-1 text-gray-700" v-for="field in missingFieldLabels" :key="field">
           Missing: {{ field }}
         </span>
       </div>
@@ -171,12 +171,12 @@ const productVersionLabel = computed(() => {
     <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800" id="main-content">
       <div class="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Your contact details</h2>
+          <h2 class="text-lg font-semibold tracking-tight text-black dark:text-gray-900">Your contact details</h2>
           <p class="text-sm text-gray-600 dark:text-gray-300">These sync to HubSpot and power onboarding emails.</p>
         </div>
         <button
           v-if="!needsOnboarding && !loading"
-          class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900"
+          class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900"
           type="button"
           @click="goToProfile"
         >
@@ -235,7 +235,7 @@ const productVersionLabel = computed(() => {
           </div>
           <button
             type="submit"
-            class="rounded-lg bg-[#14192d] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f1530] disabled:opacity-60"
+            class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-100 disabled:opacity-60"
             :disabled="saving"
           >
             <span v-if="saving">Saving…</span>

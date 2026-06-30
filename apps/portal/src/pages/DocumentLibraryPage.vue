@@ -64,7 +64,7 @@ function dropdownId(docId: string) {
       </div>
 
       <div class="ui-surface relative shadow-md sm:rounded-lg overflow-hidden">
-        <div v-if="!loading && !loadError && warning" class="m-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-200">
+        <div v-if="!loading && !loadError && warning" class="m-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-600">
           {{ warning }}
         </div>
 
@@ -86,7 +86,7 @@ function dropdownId(docId: string) {
                   id="simple-search"
                   v-model="query"
                   type="text"
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-900 dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   placeholder="Search"
                 >
               </div>
@@ -99,7 +99,7 @@ function dropdownId(docId: string) {
               <select
                 id="doc-provision"
                 v-model="provision"
-                class="w-full md:w-auto bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                class="w-full md:w-auto bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-900"
               >
                 <option value="all">{{ provisionFilterLabel('all') }}</option>
                 <option value="supported-accommodation">{{ provisionFilterLabel('supported-accommodation') }}</option>
@@ -113,7 +113,7 @@ function dropdownId(docId: string) {
               <select
                 id="doc-product-version"
                 v-model="productVersion"
-                class="w-full md:w-auto bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                class="w-full md:w-auto bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-900"
               >
                 <option value="all">{{ productVersionLabel('all') }}</option>
                 <option value="v2">{{ productVersionLabel('v2') }}</option>
@@ -156,11 +156,11 @@ function dropdownId(docId: string) {
               <div id="actionsDropdown" class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
                 <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="actionsDropdownButton">
                   <li>
-                    <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Mass Edit</a>
+                    <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-gray-900">Mass Edit</a>
                   </li>
                 </ul>
                 <div class="py-1">
-                  <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete all</a>
+                  <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-gray-900">Delete all</a>
                 </div>
               </div>
 
@@ -187,7 +187,7 @@ function dropdownId(docId: string) {
                 </svg>
               </button>
               <div id="filterDropdown" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
-                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose category</h6>
+                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-gray-900">Choose category</h6>
                 <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
                   <li
                     class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-600 dark:bg-gray-800"
@@ -240,7 +240,7 @@ function dropdownId(docId: string) {
             </thead>
             <tbody>
               <tr v-for="doc in filteredDocuments" :key="doc.id" class="border-b dark:border-gray-700">
-                <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ doc.title }}</th>
+                <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-gray-900">{{ doc.title }}</th>
                 <td class="px-4 py-3">{{ doc.category }}</td>
                 <td class="px-4 py-3">{{ doc.version }}</td>
                 <td class="px-4 py-3">
@@ -267,14 +267,14 @@ function dropdownId(docId: string) {
                   <div :id="dropdownId(doc.id)" class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
                     <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" :aria-labelledby="dropdownButtonId(doc.id)">
                       <li>
-                        <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Show</a>
+                        <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-gray-900">Show</a>
                       </li>
                       <li>
-                        <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Download</a>
+                        <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-gray-900">Download</a>
                       </li>
                     </ul>
                     <div class="py-1">
-                      <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete</a>
+                      <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-gray-900">Delete</a>
                     </div>
                   </div>
                 </td>
@@ -286,15 +286,15 @@ function dropdownId(docId: string) {
         <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4" aria-label="Table navigation">
           <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
             Showing
-            <span class="font-semibold text-gray-900 dark:text-white">{{ filteredDocuments.length ? 1 : 0 }}-{{ filteredDocuments.length }}</span>
+            <span class="font-semibold text-gray-900 dark:text-gray-900">{{ filteredDocuments.length ? 1 : 0 }}-{{ filteredDocuments.length }}</span>
             of
-            <span class="font-semibold text-gray-900 dark:text-white">{{ filteredDocuments.length }}</span>
+            <span class="font-semibold text-gray-900 dark:text-gray-900">{{ filteredDocuments.length }}</span>
           </span>
           <ul class="inline-flex items-stretch -space-x-px">
             <li>
               <a
                 href="#"
-                class="flex items-center justify-center h-full py-1.5 px-3 ml-0 rounded-l-lg border border-white/10 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white focus:outline-none focus:ring-4 focus:ring-white/10"
+                class="flex items-center justify-center h-full py-1.5 px-3 ml-0 rounded-l-lg border border-gray-200 bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-200"
               >
                 <span class="sr-only">Previous</span>
                 <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -306,7 +306,7 @@ function dropdownId(docId: string) {
               <a
                 href="#"
                 aria-current="page"
-                class="flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight rounded border border-white/10 bg-white/10 text-white font-semibold hover:bg-white/15 focus:outline-none focus:ring-4 focus:ring-white/10"
+                class="flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight rounded border border-gray-200 bg-gray-100 text-gray-900 font-semibold hover:bg-gray-200 focus:outline-none focus:ring-4 focus:ring-gray-200"
               >
                 1
               </a>
@@ -314,7 +314,7 @@ function dropdownId(docId: string) {
             <li>
               <a
                 href="#"
-                class="flex items-center justify-center h-full py-1.5 px-3 rounded-r-lg border border-white/10 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white focus:outline-none focus:ring-4 focus:ring-white/10"
+                class="flex items-center justify-center h-full py-1.5 px-3 rounded-r-lg border border-gray-200 bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-200"
               >
                 <span class="sr-only">Next</span>
                 <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

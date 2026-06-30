@@ -29,19 +29,6 @@ const route = useRoute()
 const router = useRouter()
 const currentPath = computed(() => route.path)
 const isMeetingsPage = computed(() => currentPath.value === '/app/meetings' || currentPath.value.startsWith('/app/meetings/'))
-const isEventDetailPage = computed(() => /^\/app\/events\/.+/.test(currentPath.value))
-const isDark = ref(false)
-
-function toggleDark() {
-  isDark.value = !isDark.value
-  if (isDark.value) {
-    document.documentElement.classList.add('dark')
-    localStorage.setItem('mentor-theme', 'dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-    localStorage.setItem('mentor-theme', 'light')
-  }
-}
 
 const sessionId = ref<string | null>(null)
 
@@ -397,13 +384,9 @@ watch(
 )
 
 onMounted(() => {
-  const saved = localStorage.getItem('mentor-theme')
-  // Default to dark mode — only opt out if user explicitly chose light
-  if (saved !== 'light') {
-    isDark.value = true
-    document.documentElement.classList.add('dark')
-    if (!saved) localStorage.setItem('mentor-theme', 'dark')
-  }
+  // Always light mode — clear any stale dark-mode class from localStorage migration
+  document.documentElement.classList.remove('dark')
+  localStorage.removeItem('mentor-theme')
 })
 
 onMounted(() => {
@@ -425,10 +408,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="antialiased bg-[#e2e2e2] text-gray-900">
+  <div class="antialiased bg-page text-gray-900">
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[200] focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-gray-900 focus:shadow dark:focus:bg-gray-800 dark:focus:text-white"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[200] focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-gray-900 focus:shadow"
     >
       Skip to content
     </a>
@@ -546,23 +529,23 @@ onUnmounted(() => {
 
           <div
             id="notification-dropdown"
-            class="z-50 my-4 hidden w-80 list-none overflow-hidden rounded-xl border border-white/10 bg-[#14192d] text-base shadow-2xl"
+            class="z-50 my-4 hidden w-80 list-none overflow-hidden rounded-xl border border-gray-200 bg-white text-base shadow-xl"
           >
-            <div class="bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-white/80">
+            <div class="bg-gray-50 px-4 py-2.5 text-center text-sm font-semibold text-gray-700">
               Notifications
             </div>
-            <div v-if="notifications.length === 0" class="px-4 py-4 text-center text-sm text-white/40">
+            <div v-if="notifications.length === 0" class="px-4 py-4 text-center text-sm text-gray-400">
               No upcoming events or meetings in the next 7 days.
             </div>
             <RouterLink
               v-for="n in notifications"
               :key="n.id"
               :to="n.href"
-              class="flex items-start gap-3 border-t border-white/10 px-4 py-3 transition hover:bg-white/5"
+              class="flex items-start gap-3 border-t border-gray-100 px-4 py-3 transition hover:bg-gray-50"
             >
               <span
                 class="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full"
-                :class="n.type === 'event' ? 'bg-violet-500/20 text-violet-300' : 'bg-[#e7007e]/15 text-[#e7007e]'"
+                :class="n.type === 'event' ? 'bg-violet-100 text-violet-600' : 'bg-primary-50 text-primary-600'"
               >
                 <svg v-if="n.type === 'event'" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
@@ -572,27 +555,12 @@ onUnmounted(() => {
                 </svg>
               </span>
               <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-white/90">{{ n.title }}</p>
-                <p class="mt-0.5 truncate text-xs text-white/50">{{ n.subtitle }}</p>
+                <p class="truncate text-sm font-medium text-gray-900">{{ n.title }}</p>
+                <p class="mt-0.5 truncate text-xs text-gray-400">{{ n.subtitle }}</p>
               </div>
             </RouterLink>
           </div>
 
-          <button
-            type="button"
-            @click="toggleDark"
-            class="mr-1 rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white focus:ring-4 focus:ring-white/15"
-            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-          >
-            <!-- Sun: shown when dark (click to go light) -->
-            <svg v-if="isDark" aria-hidden="true" class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
-            </svg>
-            <!-- Moon: shown when light (click to go dark) -->
-            <svg v-else aria-hidden="true" class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-            </svg>
-          </button>
 
           <button
             type="button"
@@ -614,15 +582,15 @@ onUnmounted(() => {
 
           <div
             id="apps-dropdown"
-            class="z-50 my-4 hidden w-80 list-none divide-y divide-white/10 overflow-hidden rounded-xl border border-white/10 bg-brand-secondary text-base shadow-lg"
+            class="z-50 my-4 hidden w-80 list-none divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white text-base shadow-xl"
           >
-            <div class="bg-white/5 px-4 py-2 text-center text-sm font-semibold text-white">Quick links</div>
+            <div class="bg-gray-50 px-4 py-2 text-center text-sm font-semibold text-gray-700">Quick links</div>
             <div class="grid grid-cols-2 gap-2 p-3">
               <RouterLink
                 v-for="link in quickLinks"
                 :key="link.to"
                 :to="link.to"
-                class="rounded-lg bg-white/5 px-3 py-2 text-center text-sm font-medium text-white/90 hover:bg-white/10"
+                class="rounded-lg bg-gray-50 px-3 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
               >
                 {{ link.label }}
               </RouterLink>
@@ -632,7 +600,7 @@ onUnmounted(() => {
           <button
             id="user-menu-button"
             type="button"
-            class="mx-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white focus:ring-4 focus:ring-white/15"
+            class="mx-3 flex h-9 w-9 items-center justify-center rounded-full bg-primary-600 text-sm font-semibold text-white focus:ring-4 focus:ring-primary-200"
             aria-expanded="false"
             data-dropdown-toggle="dropdown"
           >
@@ -642,17 +610,17 @@ onUnmounted(() => {
 
           <div
             id="dropdown"
-            class="z-50 my-4 hidden w-56 list-none divide-y divide-white/10 rounded-xl border border-white/10 bg-brand-secondary text-base shadow"
+            class="z-50 my-4 hidden w-56 list-none divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white text-base shadow-xl"
           >
             <div class="px-4 py-3">
-              <span class="block text-sm font-semibold">Signed in</span>
-              <span class="block truncate text-sm text-white/70">{{ user?.email ?? '—' }}</span>
+              <span class="block text-sm font-semibold text-gray-900">Signed in</span>
+              <span class="block truncate text-sm text-gray-500">{{ user?.email ?? '—' }}</span>
             </div>
-            <ul class="py-1 text-white/80" aria-labelledby="dropdown">
+            <ul class="py-1 text-gray-700" aria-labelledby="dropdown">
               <li>
                 <RouterLink
                   to="/app/profile"
-                  class="block px-4 py-2 text-sm hover:bg-white/10"
+                  class="block px-4 py-2 text-sm hover:bg-gray-50"
                 >
                   My profile
                 </RouterLink>
@@ -660,17 +628,17 @@ onUnmounted(() => {
               <li>
                 <RouterLink
                   to="/app/profile"
-                  class="block px-4 py-2 text-sm hover:bg-white/10"
+                  class="block px-4 py-2 text-sm hover:bg-gray-50"
                 >
                   Account settings
                 </RouterLink>
               </li>
             </ul>
-            <ul class="py-1 text-white/80" aria-labelledby="dropdown">
+            <ul class="py-1 text-gray-700" aria-labelledby="dropdown">
               <li>
                 <button
                   type="button"
-                  class="block w-full px-4 py-2 text-left text-sm hover:bg-white/10"
+                  class="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
                   @click="logout"
                 >
                   Sign out
@@ -971,11 +939,11 @@ onUnmounted(() => {
     <main
       id="main-content"
       class="min-h-screen md:ml-64 text-gray-900"
-      :class="isMeetingsPage ? 'pt-0 bg-[#0f1428]' : isEventDetailPage ? 'pt-20 bg-[#14192d]' : isDark ? 'pt-20 bg-[#14192d]' : 'pt-20 bg-[#e2e2e2] customer-light'"
+      :class="isMeetingsPage ? 'pt-0 bg-page' : 'pt-20 bg-page'"
     >
       <div
         class="w-full"
-        :class="isMeetingsPage ? 'max-w-none' : 'mx-auto max-w-screen-xl px-4 py-3 sm:py-5 lg:px-12'"
+        :class="isMeetingsPage ? 'max-w-none' : 'mx-auto max-w-screen-xl px-6 py-6 lg:px-12'"
       >
         <div v-if="globalNotifications.length" class="mb-4 space-y-3">
           <div

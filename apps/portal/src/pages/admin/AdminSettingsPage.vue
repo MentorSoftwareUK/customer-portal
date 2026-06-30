@@ -91,7 +91,7 @@ async function loadHubSpotOAuthStatus() {
 async function connectHubSpot() {
   hubspotOAuthLoading.value = true
   try {
-    initiateHubSpotOAuth()
+    await initiateHubSpotOAuth()
   } catch (e: any) {
     error.value = e?.message ? String(e.message) : 'Failed to initiate OAuth'
     hubspotOAuthLoading.value = false

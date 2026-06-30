@@ -164,7 +164,7 @@ onMounted(async () => {
                 id="invoice-search"
                 v-model="query"
                 type="text"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-900 dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Search invoices"
               >
             </div>
@@ -177,7 +177,7 @@ onMounted(async () => {
             <select
               id="invoice-status"
               v-model="statusFilter"
-              class="w-full md:w-auto bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+              class="w-full md:w-auto bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-900"
             >
               <option value="all">All</option>
               <option value="outstanding">Outstanding</option>
@@ -220,7 +220,7 @@ onMounted(async () => {
               </tr>
 
               <tr v-for="invoice in filteredInvoices" :key="invoice.id" class="border-b dark:border-gray-700">
-                <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ invoice.number }}</th>
+                <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-gray-900">{{ invoice.number }}</th>
                 <td class="px-4 py-3">{{ invoice.date }}</td>
                 <td class="px-4 py-3">
                   <span class="ui-pill" :class="statusPillClasses(invoice.status)">
@@ -241,15 +241,15 @@ onMounted(async () => {
         <nav v-if="!quickbooksUnavailable" class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4" aria-label="Table navigation">
           <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
             Showing
-            <span class="font-semibold text-gray-900 dark:text-white">{{ filteredInvoices.length ? 1 : 0 }}-{{ filteredInvoices.length }}</span>
+            <span class="font-semibold text-gray-900 dark:text-gray-900">{{ filteredInvoices.length ? 1 : 0 }}-{{ filteredInvoices.length }}</span>
             of
-            <span class="font-semibold text-gray-900 dark:text-white">{{ filteredInvoices.length }}</span>
+            <span class="font-semibold text-gray-900 dark:text-gray-900">{{ filteredInvoices.length }}</span>
           </span>
           <ul class="inline-flex items-stretch -space-x-px">
             <li>
               <a
                 href="#"
-                class="flex items-center justify-center h-full py-1.5 px-3 ml-0 rounded-l-lg border border-white/10 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white focus:outline-none focus:ring-4 focus:ring-white/10"
+                class="flex items-center justify-center h-full py-1.5 px-3 ml-0 rounded-l-lg border border-gray-200 bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-200"
               >
                 <span class="sr-only">Previous</span>
                 <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -261,7 +261,7 @@ onMounted(async () => {
               <a
                 href="#"
                 aria-current="page"
-                class="flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight rounded border border-white/10 bg-white/10 text-white font-semibold hover:bg-white/15 focus:outline-none focus:ring-4 focus:ring-white/10"
+                class="flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight rounded border border-gray-200 bg-gray-100 text-gray-900 font-semibold hover:bg-gray-200 focus:outline-none focus:ring-4 focus:ring-gray-200"
               >
                 1
               </a>
@@ -269,7 +269,7 @@ onMounted(async () => {
             <li>
               <a
                 href="#"
-                class="flex items-center justify-center h-full py-1.5 px-3 rounded-r-lg border border-white/10 bg-white/10 text-white/70 hover:bg-white/15 hover:text-white focus:outline-none focus:ring-4 focus:ring-white/10"
+                class="flex items-center justify-center h-full py-1.5 px-3 rounded-r-lg border border-gray-200 bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-200"
               >
                 <span class="sr-only">Next</span>
                 <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

@@ -11,13 +11,13 @@ const klass = computed(() => {
 
   switch (props.type) {
     case 'Webinar':
-      return `${base} bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200`
+      return `${base} bg-blue-100 text-blue-800 dark:bg-blue-900/30   `
     case 'Lunch & Learn':
-      return `${base} bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200`
+      return `${base} bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30   `
     case 'Podcast':
-      return `${base} bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200`
+      return `${base} bg-purple-100 text-purple-800 dark:bg-purple-900/30   `
     default:
-      return `${base} bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200`
+      return `${base} bg-gray-100 text-gray-800 dark:bg-gray-800   `
   }
 })
 </script>

@@ -283,73 +283,73 @@ async function onSubmit() {
       </div>
       <div class="ui-surface w-full md:mt-0 sm:max-w-md xl:p-0">
         <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-          <h1 class="ui-surface-title text-xl font-bold leading-tight tracking-tight md:text-2xl">
+          <h1 class="ui-surface-title text-xl font-semibold tracking-tight leading-tight tracking-tight md:text-2xl">
             Sign in to Mentor Portal
           </h1>
 
           <LoginLoadingSequence v-if="showLoadingSequence" :done="apiDone" @complete="onAnimationComplete" />
 
           <template v-else>
-          <p class="text-sm text-white/70">
+          <p class="text-sm text-gray-500">
             Enter your work email to continue.
           </p>
 
           <form class="space-y-4 md:space-y-6" @submit.prevent="onSubmit">
             <div>
-              <label for="email" class="block mb-2 text-sm font-medium text-white/80">Your email</label>
+              <label for="email" class="block mb-2 text-sm font-medium text-gray-600">Your email</label>
               <input
                 id="email"
                 v-model="email"
                 type="email"
                 name="email"
                 autocomplete="email"
-                class="bg-white/10 border border-white/10 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-white/50"
+                class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
                 placeholder="name@company.com"
                 required
                 :disabled="step !== 'email'"
               >
-              <p v-if="step === 'email'" class="mt-2 text-xs text-white/60">
+              <p v-if="step === 'email'" class="mt-2 text-xs text-gray-500">
                 We’ll check HubSpot to tailor your portal experience.
               </p>
             </div>
 
-            <div v-if="viewerPill && step !== 'email'" class="rounded-lg border border-white/10 bg-white/5 p-3">
+            <div v-if="viewerPill && step !== 'email'" class="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <div class="flex items-center justify-between">
                 <span :class="viewerPill.class">{{ viewerPill.label }}</span>
                 <span v-if="response?.provisionType" class="ui-pill ui-pill-neutral">{{ response.provisionType }}</span>
               </div>
-              <p v-if="viewerBlurb" class="mt-2 text-sm text-white/70">
+              <p v-if="viewerBlurb" class="mt-2 text-sm text-gray-500">
                 {{ viewerBlurb }}
               </p>
             </div>
 
             <div v-if="step === 'onboard'" class="space-y-4">
-              <div class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white/80">
-                <div class="font-medium text-white">Create your portal profile</div>
-                <div class="mt-1 text-white/70">
+              <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
+                <div class="font-medium text-gray-900">Create your portal profile</div>
+                <div class="mt-1 text-gray-500">
                   We’ll set up your account and email you a sign-in code.
                 </div>
               </div>
 
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label class="block mb-2 text-sm font-medium text-white/80">First name</label>
+                  <label class="block mb-2 text-sm font-medium text-gray-600">First name</label>
                   <input
                     v-model="onboard.firstName"
                     type="text"
                     autocomplete="given-name"
-                    class="bg-white/10 border border-white/10 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-white/50"
+                    class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
                     placeholder="Jane"
                     required
                   >
                 </div>
                 <div>
-                  <label class="block mb-2 text-sm font-medium text-white/80">Last name</label>
+                  <label class="block mb-2 text-sm font-medium text-gray-600">Last name</label>
                   <input
                     v-model="onboard.lastName"
                     type="text"
                     autocomplete="family-name"
-                    class="bg-white/10 border border-white/10 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-white/50"
+                    class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
                     placeholder="Doe"
                     required
                   >
@@ -357,40 +357,40 @@ async function onSubmit() {
               </div>
 
               <div>
-                <label class="block mb-2 text-sm font-medium text-white/80">Company (optional)</label>
+                <label class="block mb-2 text-sm font-medium text-gray-600">Company (optional)</label>
                 <input
                   v-model="onboard.company"
                   type="text"
                   autocomplete="organization"
-                  class="bg-white/10 border border-white/10 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-white/50"
+                  class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
                   placeholder="Acme Care"
                 >
               </div>
 
               <div>
-                <label class="block mb-2 text-sm font-medium text-white/80">Phone (optional)</label>
+                <label class="block mb-2 text-sm font-medium text-gray-600">Phone (optional)</label>
                 <input
                   v-model="onboard.phone"
                   type="tel"
                   autocomplete="tel"
-                  class="bg-white/10 border border-white/10 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-white/50"
+                  class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
                   placeholder="+44 7..."
                 >
               </div>
             </div>
 
             <div v-if="step === 'password'" class="space-y-3">
-              <div class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white/80">
-                <div class="font-medium text-white">Welcome back</div>
-                <div class="mt-1 text-white/70">Sign in with your password, or use a one-time code.</div>
+              <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
+                <div class="font-medium text-gray-900">Welcome back</div>
+                <div class="mt-1 text-gray-500">Sign in with your password, or use a one-time code.</div>
               </div>
-              <label for="password" class="block mb-2 text-sm font-medium text-white/80">Password</label>
+              <label for="password" class="block mb-2 text-sm font-medium text-gray-600">Password</label>
               <input
                 id="password"
                 v-model="password"
                 type="password"
                 autocomplete="current-password"
-                class="bg-white/10 border border-white/10 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-white/50"
+                class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
                 placeholder="••••••••"
                 required
               >
@@ -405,7 +405,7 @@ async function onSubmit() {
             </div>
 
             <div v-if="step === 'code'">
-              <label for="code" class="block mb-2 text-sm font-medium text-white/80">Sign-in code</label>
+              <label for="code" class="block mb-2 text-sm font-medium text-gray-600">Sign-in code</label>
               <input
                 id="code"
                 v-model="code"
@@ -413,13 +413,13 @@ async function onSubmit() {
                 inputmode="numeric"
                 autocomplete="one-time-code"
                 placeholder="123456"
-                class="bg-white/10 border border-white/10 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-white/50"
+                class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
                 required
               >
-              <p class="mt-2 text-xs text-white/60">
+              <p class="mt-2 text-xs text-gray-500">
                 Enter the code we emailed you. It expires in ~10 minutes.
               </p>
-              <p class="mt-1 text-xs text-white/40">
+              <p class="mt-1 text-xs text-gray-400">
                 Can't find it? Check your spam or junk folder.
               </p>
               <button
@@ -430,36 +430,36 @@ async function onSubmit() {
               >
                 {{ resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : 'Resend code' }}
               </button>
-              <p v-if="devCodeHint" class="mt-2 text-xs text-amber-700 dark:text-amber-200">
+              <p v-if="devCodeHint" class="mt-2 text-xs text-amber-700 dark:text-amber-600">
                 Dev hint (no SMTP configured): code is <span class="font-semibold">{{ devCodeHint }}</span>
               </p>
             </div>
 
             <div v-if="step === 'setPassword'" class="space-y-4">
-              <div class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white/80">
-                <div class="font-medium text-white">Set a password (optional)</div>
-                <div class="mt-1 text-white/70">Faster sign-in next time. You can still use email codes any time.</div>
+              <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
+                <div class="font-medium text-gray-900">Set a password (optional)</div>
+                <div class="mt-1 text-gray-500">Faster sign-in next time. You can still use email codes any time.</div>
               </div>
 
               <div>
-                <label class="block mb-2 text-sm font-medium text-white/80">New password</label>
+                <label class="block mb-2 text-sm font-medium text-gray-600">New password</label>
                 <input
                   v-model="newPassword"
                   type="password"
                   autocomplete="new-password"
-                  class="bg-white/10 border border-white/10 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-white/50"
+                  class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
                   placeholder="At least 8 characters"
                   required
                 >
               </div>
 
               <div>
-                <label class="block mb-2 text-sm font-medium text-white/80">Confirm password</label>
+                <label class="block mb-2 text-sm font-medium text-gray-600">Confirm password</label>
                 <input
                   v-model="newPasswordConfirm"
                   type="password"
                   autocomplete="new-password"
-                  class="bg-white/10 border border-white/10 text-white rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-white/50"
+                  class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
                   placeholder="Repeat password"
                   required
                 >
@@ -508,11 +508,11 @@ async function onSubmit() {
             </button>
           </form>
 
-          <div v-if="info" class="rounded-lg border border-white/10 bg-white/5 p-3 text-sm text-white/80">
+          <div v-if="info" class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
             {{ info }}
           </div>
 
-          <div v-if="error" class="rounded-lg border border-rose-400/30 bg-rose-500/10 p-3 text-sm text-rose-100">
+          <div v-if="error" class="rounded-lg border border-rose-400/30 bg-rose-50 p-3 text-sm text-rose-100">
             {{ error }}
           </div>
 

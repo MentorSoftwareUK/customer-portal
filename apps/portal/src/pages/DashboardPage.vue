@@ -218,25 +218,25 @@ onMounted(async () => {
 <template>
   <div class="space-y-6">
     <!-- Hero Welcome Section -->
-    <div class="bg-[#14192d] rounded-lg p-6 sm:p-8 border border-white/10">
+    <div class="bg-white rounded-lg p-6 sm:p-8 border border-gray-200">
       <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">
+          <h1 class="text-2xl sm:text-2xl font-semibold tracking-tight text-black mb-2">
             Welcome back<template v-if="userName">, {{ userName }}</template>
           </h1>
-          <p class="text-gray-400 text-base mb-6">
+          <p class="text-xs text-gray-400 mt-0.5 mb-6">
             {{ provision === 'all' ? "Here's your portal overview." : `Here's today's highlights for ${provisionLabel}.` }}
           </p>
 
           <!-- Quick Actions -->
           <div class="flex flex-wrap gap-3">
-        <RouterLink v-if="featureFlags.knowledgeBaseEnabled" to="/app/knowledge-base" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/10">
+        <RouterLink v-if="featureFlags.knowledgeBaseEnabled" to="/app/knowledge-base" class="inline-flex items-center gap-2 px-4 py-2 rounded bg-gray-100 hover:bg-gray-100 text-gray-900 font-medium transition-colors border border-gray-200">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
           </svg>
           Knowledge Base
         </RouterLink>
-        <RouterLink v-if="featureFlags.videosEnabled" to="/app/videos" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/10">
+        <RouterLink v-if="featureFlags.videosEnabled" to="/app/videos" class="inline-flex items-center gap-2 px-4 py-2 rounded bg-gray-100 hover:bg-gray-100 text-gray-900 font-medium transition-colors border border-gray-200">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -245,7 +245,7 @@ onMounted(async () => {
         </RouterLink>
         <button
           type="button"
-          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#e7007e] hover:bg-[#c9006d] text-white font-medium transition-colors"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded bg-[#e7007e] hover:bg-[#c9006d] text-white font-medium transition-colors"
           @click="openContactModal"
         >
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -256,16 +256,16 @@ onMounted(async () => {
       </div>
         </div>
 
-        <div class="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white">
-          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-pink-500/10">
-            <svg class="h-6 w-6 text-pink-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <div class="flex items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900">
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-50">
+            <svg class="h-6 w-6 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="8" r="4" />
               <path d="M8.5 12.5L6 20l4-2 2 2 2-2 4 2-2.5-7.5" />
             </svg>
           </div>
           <div class="min-w-0">
             <div class="text-sm font-semibold">Mentor Champion</div>
-            <div class="text-xs text-white/60">Recognised as your organisation’s Champion</div>
+            <div class="text-xs text-gray-500">Recognised as your organisation’s Champion</div>
           </div>
         </div>
       </div>
@@ -293,17 +293,17 @@ onMounted(async () => {
     <!-- Stats Grid - only shown when enough features are active to fill the row -->
     <div v-if="showStatsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- Tickets -->
-      <div v-if="featureFlags.ticketsEnabled" class="bg-[#14192d] rounded-lg p-5 border border-white/10">
+      <div v-if="featureFlags.ticketsEnabled" class="bg-white rounded-lg p-5 border border-gray-200 shadow-md">
         <div class="flex items-center justify-between mb-3">
-          <div class="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-            <svg class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">
+            <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
           </div>
         </div>
-        <div class="text-3xl font-bold text-white mb-1">2</div>
-        <div class="text-sm text-gray-400 mb-3">Active Support Tickets</div>
-        <RouterLink to="/app/tickets" class="inline-flex items-center text-sm font-medium text-primary-400 hover:text-primary-300">
+        <div class="text-2xl font-semibold tracking-tight text-black mb-1">2</div>
+        <div class="text-xs font-medium uppercase tracking-widest text-gray-500 mb-2">Active Support Tickets</div>
+        <RouterLink to="/app/tickets" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
           View tickets
           <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -312,20 +312,20 @@ onMounted(async () => {
       </div>
 
       <!-- Invoices -->
-      <div v-if="featureFlags.invoicesEnabled" class="bg-[#14192d] rounded-lg p-5 border border-white/10">
+      <div v-if="featureFlags.invoicesEnabled" class="bg-white rounded-lg p-5 border border-gray-200 shadow-md">
         <div class="flex items-center justify-between mb-3">
-          <div class="h-10 w-10 rounded-lg flex items-center justify-center" :class="overdueInvoices.length ? 'bg-rose-500/10' : 'bg-amber-500/10'">
-            <svg class="h-5 w-5" :class="overdueInvoices.length ? 'text-rose-400' : 'text-amber-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="h-10 w-10 rounded-lg flex items-center justify-center" :class="overdueInvoices.length ? 'bg-rose-50' : 'bg-amber-50'">
+            <svg class="h-5 w-5" :class="overdueInvoices.length ? 'text-rose-600' : 'text-amber-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
         </div>
-        <div class="text-3xl font-bold mb-1" :class="overdueInvoices.length ? 'text-rose-300' : 'text-white'">
-          <span v-if="!invoicesLoaded" class="inline-block h-9 w-16 rounded bg-white/10 animate-pulse"></span>
+        <div class="text-2xl font-semibold tracking-tight mb-1" :class="overdueInvoices.length ? 'text-rose-600' : 'text-slate-900'">
+          <span v-if="!invoicesLoaded" class="inline-block h-9 w-16 rounded bg-gray-100 animate-pulse"></span>
           <span v-else>{{ outstandingInvoices.length }}</span>
         </div>
-        <div class="text-sm text-gray-400 mb-3">{{ overdueInvoices.length ? 'Overdue' : 'Outstanding' }} Invoices</div>
-        <RouterLink to="/app/invoices" class="inline-flex items-center text-sm font-medium text-primary-400 hover:text-primary-300">
+        <div class="text-xs font-medium uppercase tracking-widest text-gray-500 mb-2">{{ overdueInvoices.length ? 'Overdue' : 'Outstanding' }} Invoices</div>
+        <RouterLink to="/app/invoices" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
           View invoices
           <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -334,20 +334,20 @@ onMounted(async () => {
       </div>
 
       <!-- Events -->
-      <div class="bg-[#14192d] rounded-lg p-5 border border-white/10">
+      <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-md">
         <div class="flex items-center justify-between mb-3">
-          <div class="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-            <svg class="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="h-10 w-10 rounded-lg bg-violet-50 flex items-center justify-center">
+            <svg class="h-5 w-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
         </div>
-        <div class="text-3xl font-bold text-white mb-1">
-          <span v-if="!eventsLoaded" class="inline-block h-9 w-8 rounded bg-white/10 animate-pulse"></span>
+        <div class="text-2xl font-semibold tracking-tight text-black mb-1">
+          <span v-if="!eventsLoaded" class="inline-block h-9 w-8 rounded bg-gray-100 animate-pulse"></span>
           <span v-else>{{ upcomingEventsCount }}</span>
         </div>
-        <div class="text-sm text-gray-400 mb-3">Upcoming Events</div>
-        <RouterLink to="/app/events" class="inline-flex items-center text-sm font-medium text-primary-400 hover:text-primary-300">
+        <div class="text-xs font-medium uppercase tracking-widest text-gray-500 mb-2">Upcoming Events</div>
+        <RouterLink to="/app/events" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
           Browse events
           <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -356,17 +356,17 @@ onMounted(async () => {
       </div>
 
       <!-- Meetings -->
-      <div v-if="featureFlags.meetingsEnabled" class="bg-[#14192d] rounded-lg p-5 border border-white/10">
+      <div v-if="featureFlags.meetingsEnabled" class="bg-white rounded-lg p-5 border border-gray-200 shadow-md">
         <div class="flex items-center justify-between mb-3">
-          <div class="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-            <svg class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="h-10 w-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+            <svg class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </div>
         </div>
-        <div class="text-3xl font-bold text-white mb-1">{{ meetingsLoaded ? meetingsCount : '—' }}</div>
-        <div class="text-sm text-gray-400 mb-3">Scheduled Meetings</div>
-        <RouterLink to="/app/meetings" class="inline-flex items-center text-sm font-medium text-primary-400 hover:text-primary-300">
+        <div class="text-2xl font-semibold tracking-tight text-black mb-1">{{ meetingsLoaded ? meetingsCount : '—' }}</div>
+        <div class="text-xs font-medium uppercase tracking-widest text-gray-500 mb-2">Scheduled Meetings</div>
+        <RouterLink to="/app/meetings" class="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-700">
           View calendar
           <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -381,56 +381,56 @@ onMounted(async () => {
       title="Your onboarding journey"
       subtitle="Track your progress with Mentor"
     />
-    <p class="-mt-3 text-xs text-white/60">{{ lifecycleStageNote }}</p>
+    <p class="-mt-3 text-xs text-gray-500">{{ lifecycleStageNote }}</p>
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Left Column - Priority Items -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Action Required Section -->
-        <div v-if="featureFlags.ticketsEnabled || (featureFlags.invoicesEnabled && mostUrgentInvoice)" class="bg-[#14192d] rounded-lg p-6 border border-white/10">
+        <div v-if="featureFlags.ticketsEnabled || (featureFlags.invoicesEnabled && mostUrgentInvoice)" class="bg-white rounded-lg p-6 border border-gray-200 shadow-md">
           <div class="flex items-center justify-between mb-5">
-            <h2 class="text-lg font-semibold text-white">Requires Your Attention</h2>
-            <RouterLink v-if="featureFlags.ticketsEnabled" to="/app/tickets" class="text-sm font-medium text-primary-400 hover:text-primary-300">
+            <h2 class="text-lg font-semibold tracking-tight text-black">Requires Your Attention</h2>
+            <RouterLink v-if="featureFlags.ticketsEnabled" to="/app/tickets" class="text-xs font-medium text-primary-600 hover:text-primary-700">
               View all
             </RouterLink>
           </div>
           
           <div class="space-y-3">
             <!-- Ticket Item -->
-            <div v-if="featureFlags.ticketsEnabled" class="flex items-center gap-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group">
+            <div v-if="featureFlags.ticketsEnabled" class="flex items-center gap-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group">
               <div class="shrink-0">
-                <div class="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                  <svg class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                   </svg>
                 </div>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-white">Support ticket awaiting response</p>
-                <p class="text-sm text-gray-400 mt-0.5">TKT-104 · Customer requested an update on their query</p>
+                <p class="text-sm font-semibold text-gray-900">Support ticket awaiting response</p>
+                <p class="text-sm text-gray-500 mt-0.5">TKT-104 · Customer requested an update on their query</p>
               </div>
-              <RouterLink to="/app/tickets" class="px-3 py-1.5 rounded-lg bg-white/5 text-white text-sm font-medium hover:bg-white/10 transition-colors">
+              <RouterLink to="/app/tickets" class="px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 text-sm font-medium hover:bg-gray-100 transition-colors">
                 Reply
               </RouterLink>
             </div>
 
             <!-- Invoice Item -->
-            <div v-if="featureFlags.invoicesEnabled && mostUrgentInvoice" class="flex items-center gap-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group">
+            <div v-if="featureFlags.invoicesEnabled && mostUrgentInvoice" class="flex items-center gap-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group">
               <div class="shrink-0">
-                <div class="h-10 w-10 rounded-lg flex items-center justify-center" :class="mostUrgentInvoice.status === 'Overdue' ? 'bg-rose-500/20' : 'bg-amber-500/20'">
-                  <svg class="h-5 w-5" :class="mostUrgentInvoice.status === 'Overdue' ? 'text-rose-400' : 'text-amber-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="h-10 w-10 rounded-lg flex items-center justify-center" :class="mostUrgentInvoice.status === 'Overdue' ? 'bg-rose-50' : 'bg-amber-50'">
+                  <svg class="h-5 w-5" :class="mostUrgentInvoice.status === 'Overdue' ? 'text-rose-600' : 'text-amber-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-white">
+                <p class="text-sm font-semibold text-gray-900">
                   {{ mostUrgentInvoice.status === 'Overdue' ? 'Invoice overdue - payment required' : 'Invoice payment outstanding' }}
                 </p>
-                <p class="text-sm text-gray-400 mt-0.5">{{ mostUrgentInvoice.number }} · {{ mostUrgentInvoice.status }}</p>
+                <p class="text-sm text-gray-500 mt-0.5">{{ mostUrgentInvoice.number }} · {{ mostUrgentInvoice.status }}</p>
               </div>
-              <RouterLink to="/app/invoices" class="px-3 py-1.5 rounded-lg bg-white/5 text-white text-sm font-medium hover:bg-white/10 transition-colors">
+              <RouterLink to="/app/invoices" class="px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 text-sm font-medium hover:bg-gray-100 transition-colors">
                 View
               </RouterLink>
             </div>
@@ -438,17 +438,17 @@ onMounted(async () => {
         </div>
 
         <!-- Upcoming Events -->
-        <div class="bg-[#14192d] rounded-lg p-6 border border-white/10">
+        <div class="bg-white rounded-lg p-6 border border-gray-200 shadow-md">
           <div class="flex items-center justify-between mb-5">
-            <h2 class="text-lg font-semibold text-white">Upcoming Events</h2>
-            <RouterLink to="/app/events" class="text-sm font-medium text-primary-400 hover:text-primary-300">
+            <h2 class="text-lg font-semibold tracking-tight text-black">Upcoming Events</h2>
+            <RouterLink to="/app/events" class="text-xs font-medium text-primary-600 hover:text-primary-700">
               View all
             </RouterLink>
           </div>
 
           <!-- Loading skeleton -->
           <div v-if="!eventsLoaded" class="space-y-3">
-            <div v-for="i in 2" :key="i" class="h-16 rounded-lg bg-white/5 animate-pulse"></div>
+            <div v-for="i in 2" :key="i" class="h-16 rounded-lg bg-gray-50 animate-pulse"></div>
           </div>
 
           <div v-else-if="upcomingEvents.length" class="space-y-3">
@@ -456,20 +456,20 @@ onMounted(async () => {
               v-for="event in upcomingEvents.slice(0, 3)"
               :key="event.id"
               :to="`/app/events/${event.id}`"
-              class="flex items-center gap-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group"
+              class="flex items-center gap-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group"
             >
               <div class="shrink-0">
-                <div class="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                  <svg class="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="h-10 w-10 rounded-lg bg-violet-50 flex items-center justify-center">
+                  <svg class="h-5 w-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-white truncate">{{ event.title }}</p>
-                <p class="text-sm text-gray-400 mt-0.5">{{ event.dateLabel }} · {{ event.platform }}</p>
+                <p class="text-sm font-semibold text-gray-900 truncate">{{ event.title }}</p>
+                <p class="text-sm text-gray-500 mt-0.5">{{ event.dateLabel }} · {{ event.platform }}</p>
               </div>
-              <span class="shrink-0 text-primary-400">
+              <span class="shrink-0 text-primary-600">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
@@ -477,7 +477,7 @@ onMounted(async () => {
             </RouterLink>
           </div>
 
-          <div v-else class="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-white/60">
+          <div v-else class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
             No upcoming events scheduled.
           </div>
         </div>
@@ -486,10 +486,10 @@ onMounted(async () => {
       <!-- Right Column - Secondary Items -->
       <div class="space-y-6">
         <!-- Scheduled Meetings -->
-        <div v-if="featureFlags.meetingsEnabled" class="bg-[#14192d] rounded-lg p-6 border border-white/10">
+        <div v-if="featureFlags.meetingsEnabled" class="bg-white rounded-lg p-6 border border-gray-200 shadow-md">
           <div class="flex items-center justify-between mb-5">
-            <h2 class="text-lg font-semibold text-white">Your Meetings</h2>
-            <RouterLink to="/app/meetings" class="text-sm font-medium text-primary-400 hover:text-primary-300">
+            <h2 class="text-lg font-semibold tracking-tight text-black">Your Meetings</h2>
+            <RouterLink to="/app/meetings" class="text-xs font-medium text-primary-600 hover:text-primary-700">
               View all
             </RouterLink>
           </div>
@@ -498,48 +498,48 @@ onMounted(async () => {
             <RouterLink
               v-if="nextMeeting"
               to="/app/meetings"
-              class="block p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+              class="block p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
             >
               <div class="flex items-center gap-3">
                 <div class="shrink-0">
-                  <div class="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                    <svg class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div class="h-10 w-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                    <svg class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                   </div>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-semibold text-white">{{ meetingTitle(nextMeeting) }}</p>
-                  <p class="text-sm text-gray-400 mt-0.5">{{ nextMeeting.dateTimeLabel }}</p>
-                  <span class="inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/60">{{ meetingTeamLabel(nextMeeting) }}</span>
+                  <p class="text-sm font-semibold text-gray-900">{{ meetingTitle(nextMeeting) }}</p>
+                  <p class="text-sm text-gray-500 mt-0.5">{{ nextMeeting.dateTimeLabel }}</p>
+                  <span class="inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{{ meetingTeamLabel(nextMeeting) }}</span>
                 </div>
-                <div class="shrink-0 text-primary-400">
+                <div class="shrink-0 text-primary-600">
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
               </div>
             </RouterLink>
-            <div v-else class="rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-white/60">
+            <div v-else class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
               No meetings scheduled yet.
             </div>
           </div>
         </div>
 
         <!-- Latest Resources (only shown when at least one resource feature is on) -->
-        <div v-if="featureFlags.knowledgeBaseEnabled || featureFlags.videosEnabled || featureFlags.documentsEnabled" class="bg-[#14192d] rounded-lg p-6 border border-white/10">
+        <div v-if="featureFlags.knowledgeBaseEnabled || featureFlags.videosEnabled || featureFlags.documentsEnabled" class="bg-white rounded-lg p-6 border border-gray-200 shadow-md">
           <div class="flex items-center justify-between mb-5">
-            <h2 class="text-lg font-semibold text-white">Latest Resources</h2>
+            <h2 class="text-lg font-semibold tracking-tight text-black">Latest Resources</h2>
             <RouterLink
               :to="featureFlags.knowledgeBaseEnabled ? '/app/knowledge-base' : featureFlags.videosEnabled ? '/app/videos' : '/app/documents'"
-              class="text-sm font-medium text-primary-400 hover:text-primary-300"
+              class="text-xs font-medium text-primary-600 hover:text-primary-700"
             >
               View all
             </RouterLink>
           </div>
 
           <div class="space-y-3">
-            <RouterLink v-if="featureFlags.knowledgeBaseEnabled" to="/app/knowledge-base" class="block p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+            <RouterLink v-if="featureFlags.knowledgeBaseEnabled" to="/app/knowledge-base" class="block p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
               <div class="flex items-start gap-3">
                 <div class="shrink-0 mt-0.5">
                   <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -547,13 +547,13 @@ onMounted(async () => {
                   </svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-white">Knowledge Base</p>
+                  <p class="text-sm font-medium text-gray-900">Knowledge Base</p>
                   <p class="text-xs text-gray-400 mt-0.5">Guides and how-to articles</p>
                 </div>
               </div>
             </RouterLink>
 
-            <RouterLink v-if="featureFlags.videosEnabled" to="/app/videos" class="block p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+            <RouterLink v-if="featureFlags.videosEnabled" to="/app/videos" class="block p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
               <div class="flex items-start gap-3">
                 <div class="shrink-0 mt-0.5">
                   <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -562,13 +562,13 @@ onMounted(async () => {
                   </svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-white">Video Library</p>
+                  <p class="text-sm font-medium text-gray-900">Video Library</p>
                   <p class="text-xs text-gray-400 mt-0.5">Training videos and recordings</p>
                 </div>
               </div>
             </RouterLink>
 
-            <RouterLink v-if="featureFlags.documentsEnabled" to="/app/documents" class="block p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+            <RouterLink v-if="featureFlags.documentsEnabled" to="/app/documents" class="block p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
               <div class="flex items-start gap-3">
                 <div class="shrink-0 mt-0.5">
                   <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -576,7 +576,7 @@ onMounted(async () => {
                   </svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-white">Document Library</p>
+                  <p class="text-sm font-medium text-gray-900">Document Library</p>
                   <p class="text-xs text-gray-400 mt-0.5">Templates and downloadable files</p>
                 </div>
               </div>
@@ -605,16 +605,16 @@ onMounted(async () => {
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeContactModal" />
 
         <!-- Modal panel -->
-        <div class="relative z-10 w-full max-w-lg rounded-xl bg-[#14192d] border border-white/10 shadow-2xl overflow-hidden">
+        <div class="relative z-10 w-full max-w-lg rounded-xl bg-white border border-gray-200 shadow-2xl overflow-hidden">
           <!-- Header -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <div>
-              <h2 class="text-lg font-semibold text-white">Contact Us</h2>
-              <p class="text-sm text-gray-400 mt-0.5">We\'ll get back to you as soon as possible.</p>
+              <h2 class="text-lg font-semibold tracking-tight text-black">Contact Us</h2>
+              <p class="text-sm text-gray-500 mt-0.5">We\'ll get back to you as soon as possible.</p>
             </div>
             <button
               type="button"
-              class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+              class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
               aria-label="Close"
               @click="closeContactModal"
             >

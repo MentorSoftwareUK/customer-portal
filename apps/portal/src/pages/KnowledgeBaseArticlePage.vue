@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DOMPurify from 'dompurify'
 import { getKnowledgeBaseArticle, listKnowledgeBaseArticles, type KnowledgeBaseArticleDto, getKnowledgeBaseArticleFeaturedImage, getKnowledgeBaseArticleSnippet, trackKbView } from '../lib/api'
@@ -21,11 +21,12 @@ const authorTeam = ref('Training Team')
 const sanitizedArticleHtml = computed(() => {
   if (!articleHtml.value) return ''
   
-  // Configure DOMPurify to allow videos, iframes, and preserve formatting
+  // Allow iframes and video elements needed for HubSpot-embedded content.
+  // data-* attributes and scrolling/target are excluded — they are not required
+  // for video rendering and widen the XSS surface unnecessarily.
   return DOMPurify.sanitize(articleHtml.value, {
     ADD_TAGS: ['iframe', 'video', 'source'],
-    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target', 'rel', 'controls', 'autoplay', 'loop', 'muted', 'playsinline'],
-    ALLOW_DATA_ATTR: true,
+    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'controls', 'autoplay', 'loop', 'muted', 'playsinline', 'target', 'rel'],
   })
 })
 
@@ -48,23 +49,14 @@ function getArticleSnippet(article: KnowledgeBaseArticleDto): string {
   return article.snippet || 'Read this article to learn more...'
 }
 
-onMounted(async () => {
-  const url = route.query.url as string
-  const title = route.query.title as string
-  const category = route.query.category as string
-  
-  if (!url) {
-    router.push('/app/knowledge-base')
-    return
-  }
-  
+async function loadArticle(url: string, title: string, category: string) {
   articleUrl.value = url
   articleTitle.value = title || 'Loading...'
   articleCategory.value = category || ''
-  
+
   loading.value = true
   error.value = null
-  
+
   try {
     const data = await getKnowledgeBaseArticle(url)
     articleTitle.value = data.title
@@ -72,49 +64,39 @@ onMounted(async () => {
     articlePublishedDate.value = (data as any).publishedDate || ''
 
     trackKbView({ articleId: url, title: data.title, url })
-    
+
     // Load related articles
     const articlesData = await listKnowledgeBaseArticles({})
     const allArticles = articlesData.articles
-    
+
     // Filter to same category, exclude current article
-    let related = allArticles.filter(a => 
-      a.url !== url && 
+    let related = allArticles.filter(a =>
+      a.url !== url &&
       (category ? a.category === category : true)
     )
-    
+
     // If we don't have enough, add from other categories
     if (related.length < 3) {
       const others = allArticles.filter(a => a.url !== url && !related.includes(a))
       related = [...related, ...others]
     }
-    
+
     relatedArticles.value = related.slice(0, 3)
-    
+
     // Fetch featured images and snippets for related articles
     for (const article of relatedArticles.value) {
       if (article.url) {
-        // Fetch featured image
         getKnowledgeBaseArticleFeaturedImage(article.url)
           .then(imageUrl => {
-            if (imageUrl) {
-              article.featuredImageUrl = imageUrl
-            }
+            if (imageUrl) article.featuredImageUrl = imageUrl
           })
-          .catch(() => {
-            // Ignore errors, will use gradient placeholder
-          })
-        
-        // Fetch snippet
+          .catch(() => {})
+
         getKnowledgeBaseArticleSnippet(article.url)
           .then(snippet => {
-            if (snippet) {
-              article.snippet = snippet
-            }
+            if (snippet) article.snippet = snippet
           })
-          .catch(() => {
-            // Ignore errors, will use fallback text
-          })
+          .catch(() => {})
       }
     }
   } catch (e) {
@@ -122,7 +104,32 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+onMounted(() => {
+  const url = route.query.url as string
+
+  if (!url) {
+    router.push('/app/knowledge-base')
+    return
+  }
+
+  loadArticle(url, route.query.title as string, route.query.category as string)
 })
+
+// Watch for route query changes so related-article navigation works without a full reload.
+watch(
+  () => route.query.url,
+  (newUrl) => {
+    if (!newUrl) return
+    window.scrollTo(0, 0)
+    loadArticle(
+      newUrl as string,
+      route.query.title as string,
+      route.query.category as string,
+    )
+  },
+)
 
 function goBack() {
   router.push('/app/knowledge-base')
@@ -137,9 +144,7 @@ function openRelatedArticle(article: KnowledgeBaseArticleDto) {
       category: article.category,
     },
   })
-  // Scroll to top and reload
   window.scrollTo(0, 0)
-  window.location.reload()
 }
 </script>
 
@@ -148,7 +153,7 @@ function openRelatedArticle(article: KnowledgeBaseArticleDto) {
     <!-- Back button -->
     <button
       @click="goBack"
-      class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+      class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-900 transition-colors"
     >
       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -158,24 +163,24 @@ function openRelatedArticle(article: KnowledgeBaseArticleDto) {
 
     <!-- Article header -->
     <div class="border-b border-gray-300 pb-6 mb-6 dark:border-gray-600">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">{{ articleTitle }}</h1>
+      <h1 class="text-2xl font-semibold tracking-tight text-black dark:text-gray-900 mb-4">{{ articleTitle }}</h1>
       
       <!-- Author and date metadata -->
       <div class="flex items-center justify-between text-sm">
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-2">
-            <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
+            <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-gray-900 font-semibold text-sm">
               {{ authorInitials }}
             </div>
             <div>
-              <div class="font-medium text-gray-900 dark:text-white">{{ authorName }}</div>
+              <div class="font-medium text-gray-900 dark:text-gray-900">{{ authorName }}</div>
               <div class="text-xs text-gray-500 dark:text-gray-400">{{ authorTeam }}</div>
             </div>
           </div>
         </div>
         <div v-if="formattedDate" class="text-right">
           <div class="text-xs text-gray-500 dark:text-gray-400">Published</div>
-          <div class="font-medium text-gray-900 dark:text-white">{{ formattedDate }}</div>
+          <div class="font-medium text-gray-900 dark:text-gray-900">{{ formattedDate }}</div>
         </div>
       </div>
     </div>
@@ -207,13 +212,13 @@ function openRelatedArticle(article: KnowledgeBaseArticleDto) {
 
       <!-- Related articles - Flowbite style -->
       <div v-if="relatedArticles.length > 0" class="space-y-4">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Related articles</h2>
+        <h2 class="text-2xl font-semibold tracking-tight text-black dark:text-gray-900">Related articles</h2>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
           <button
             v-for="article in relatedArticles"
             :key="article.id"
             @click="openRelatedArticle(article)"
-            class="group flex flex-col overflow-hidden rounded-lg shadow-md transition-all hover:shadow-xl hover:scale-105 text-left bg-[#14192d]"
+            class="group flex flex-col overflow-hidden rounded-lg shadow-md transition-all hover:shadow-xl hover:scale-105 text-left bg-white"
           >
             <!-- Featured Image / Placeholder -->
             <div class="relative h-48 w-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600">
@@ -224,7 +229,7 @@ function openRelatedArticle(article: KnowledgeBaseArticleDto) {
                 class="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-110"
               />
               <div v-if="!article.featuredImageUrl" class="absolute inset-0 flex items-center justify-center">
-                <svg class="h-16 w-16 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
@@ -232,7 +237,7 @@ function openRelatedArticle(article: KnowledgeBaseArticleDto) {
             
             <!-- Card Content -->
             <div class="flex flex-col gap-3 p-5">
-              <h3 class="text-lg font-semibold text-white line-clamp-2">
+              <h3 class="text-lg font-semibold tracking-tight text-black line-clamp-2">
                 {{ article.title }}
               </h3>
               

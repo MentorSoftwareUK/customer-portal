@@ -9,12 +9,12 @@ import { toastState, removeToast } from '../lib/toast'
         <div
           v-for="toast in toastState.items"
           :key="toast.id"
-          class="flex items-center w-full max-w-sm p-4 rounded-xl shadow-2xl pointer-events-auto border backdrop-blur-sm"
+          class="flex items-center w-full max-w-sm p-4 rounded-xl shadow-lg pointer-events-auto overflow-hidden"
           :class="{
-            'bg-[#14192d]/95 border-emerald-500/40': toast.type === 'success',
-            'bg-[#14192d]/95 border-rose-500/40': toast.type === 'error',
-            'bg-[#14192d]/95 border-[#e7007e]/40': toast.type === 'info',
-            'bg-[#14192d]/95 border-amber-500/40': toast.type === 'warning',
+            'bg-white border-l-4 border-emerald-400 shadow-sm': toast.type === 'success',
+            'bg-white border-l-4 border-rose-400 shadow-sm': toast.type === 'error',
+            'bg-white border-l-4 border-primary-400 shadow-sm': toast.type === 'info',
+            'bg-white border-l-4 border-amber-400 shadow-sm': toast.type === 'warning',
           }"
           role="alert"
         >
@@ -22,10 +22,10 @@ import { toastState, removeToast } from '../lib/toast'
           <div
             class="flex-shrink-0 rounded-full p-1"
             :class="{
-              'bg-emerald-500/15 text-emerald-400': toast.type === 'success',
-              'bg-rose-500/15 text-rose-400': toast.type === 'error',
-              'bg-[#e7007e]/15 text-[#e7007e]': toast.type === 'info',
-              'bg-amber-500/15 text-amber-400': toast.type === 'warning',
+              'bg-emerald-50 text-emerald-600': toast.type === 'success',
+              'bg-rose-50 text-rose-600': toast.type === 'error',
+              'bg-primary-50 text-primary-600': toast.type === 'info',
+              'bg-amber-50 text-amber-600': toast.type === 'warning',
             }"
           >
             <svg v-if="toast.type === 'success'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -44,13 +44,13 @@ import { toastState, removeToast } from '../lib/toast'
 
           <!-- Message -->
           <div class="ml-3 flex-1 min-w-0">
-            <p class="text-sm text-white leading-snug">{{ toast.message }}</p>
+            <p class="text-sm text-gray-900 leading-snug">{{ toast.message }}</p>
           </div>
 
           <!-- Close -->
           <button
             type="button"
-            class="ml-3 flex-shrink-0 rounded-lg p-1 text-white/40 hover:bg-white/10 hover:text-white/80 transition"
+            class="ml-3 flex-shrink-0 rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
             @click="removeToast(toast.id)"
             aria-label="Dismiss"
           >

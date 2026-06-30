@@ -222,7 +222,7 @@ onMounted(async () => {
           <li class="inline-flex items-center">
             <RouterLink
               to="/app/events"
-              class="inline-flex items-center font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-white"
+              class="inline-flex items-center font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-gray-900"
             >
               Events
             </RouterLink>
@@ -257,72 +257,72 @@ onMounted(async () => {
             <div class="flex flex-wrap items-center gap-3">
               <EventTypeChip :type="event.type" />
             </div>
-            <h1 class="mt-2 text-2xl font-semibold text-gray-900 dark:text-white">Register your place</h1>
+            <h1 class="mt-2 text-2xl font-semibold tracking-tight text-black dark:text-gray-900">Register your place</h1>
           </div>
 
           <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-            <div class="ui-surface bg-brand-primary p-4">
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/60">
-                <svg class="h-4 w-4 text-white/60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <div class="ui-surface p-4">
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <svg class="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M8 7h8M8 11h5M7 3v2M17 3v2M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
                 Event
               </div>
-              <div class="mt-1 text-sm font-semibold text-white">{{ event.title }}</div>
+              <div class="mt-1 text-sm font-semibold text-gray-900">{{ event.title }}</div>
             </div>
-            <div class="ui-surface bg-brand-primary p-4">
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/60">
-                <svg class="h-4 w-4 text-white/60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <div class="ui-surface p-4">
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <svg class="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M12 6v6l4 2M12 22a10 10 0 100-20 10 10 0 000 20z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
                 Date & time
               </div>
-              <div class="mt-1 text-sm font-semibold text-white">{{ eventStartLabel }} – {{ eventEndLabel }}</div>
-              <div class="text-xs text-white/60">{{ event.timezoneLabel }}</div>
+              <div class="mt-1 text-sm font-semibold text-gray-900">{{ eventStartLabel }} – {{ eventEndLabel }}</div>
+              <div class="text-xs text-gray-500">{{ event.timezoneLabel }}</div>
             </div>
-            <div class="ui-surface bg-brand-primary p-4">
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/60">
-                <svg class="h-4 w-4 text-white/60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <div class="ui-surface p-4">
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <svg class="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M12 12a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.5" />
                   <path d="M4 20a8 8 0 0116 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                 </svg>
                 Host
               </div>
-              <div class="mt-1 text-sm font-semibold text-white">{{ event.hostName || 'Mentor team' }}</div>
+              <div class="mt-1 text-sm font-semibold text-gray-900">{{ event.hostName || 'Mentor team' }}</div>
             </div>
-            <div class="ui-surface bg-brand-primary p-4">
-              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/60">
-                <svg class="h-4 w-4 text-white/60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <div class="ui-surface p-4">
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <svg class="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <path d="M4 5h16v10H4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
                   <path d="M8 19h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                 </svg>
                 Platform
               </div>
-              <div class="mt-1 text-sm font-semibold text-white">{{ event.platform }}</div>
+              <div class="mt-1 text-sm font-semibold text-gray-900">{{ event.platform }}</div>
             </div>
           </div>
           </header>
 
         <form class="space-y-4" @submit.prevent="onSubmit">
           <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <section class="lg:col-span-2 ui-surface bg-brand-primary p-5">
-              <h2 class="text-base font-semibold text-gray-900 dark:text-white">Your details</h2>
+            <section class="lg:col-span-2 ui-surface p-5">
+              <h2 class="text-base font-semibold tracking-tight text-black dark:text-gray-900">Your details</h2>
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">We’ll use these to confirm your place and send your joining link.</p>
 
               <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label for="reg-name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
+                  <label for="reg-name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">Name</label>
                   <input
                     id="reg-name"
                     v-model.trim="form.name"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     required
                     autocomplete="name"
                   >
                 </div>
 
                 <div>
-                  <label for="reg-email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+                  <label for="reg-email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">Email</label>
                   <input
                     id="reg-email"
                     :value="viewerEmail ?? ''"
@@ -333,13 +333,13 @@ onMounted(async () => {
                 </div>
 
                 <div>
-                  <label for="reg-company" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Company</label>
+                  <label for="reg-company" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">Company</label>
                   <input
                     id="reg-company"
                     v-model.trim="form.company"
                     type="text"
                     disabled
-                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     autocomplete="organization"
                   >
                   <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -348,11 +348,11 @@ onMounted(async () => {
                 </div>
 
                 <div v-if="showPhoneField">
-                  <label for="reg-phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Phone</label>
+                  <label for="reg-phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">Phone</label>
                   <input
                     id="reg-phone"
                     v-model.trim="form.phone"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     autocomplete="tel"
                   >
                   <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -361,21 +361,21 @@ onMounted(async () => {
                 </div>
 
                 <div class="md:col-span-2">
-                  <label for="reg-custom" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Anything else we should know?</label>
+                  <label for="reg-custom" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-900">Anything else we should know?</label>
                   <input
                     id="reg-custom"
                     v-model.trim="form.customField"
                     placeholder="Optional (access needs, topics, or questions)"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-900 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   >
                 </div>
               </div>
             </section>
 
             <aside class="space-y-4">
-              <div class="ui-surface bg-brand-primary p-5">
+              <div class="ui-surface p-5">
                 <div class="flex items-center justify-between gap-3">
-                  <h2 class="text-base font-semibold text-gray-900 dark:text-white">Attendee type</h2>
+                  <h2 class="text-base font-semibold tracking-tight text-black dark:text-gray-900">Attendee type</h2>
                   <span
                     v-if="viewerType === 'customer'"
                     class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-200"
@@ -384,7 +384,7 @@ onMounted(async () => {
                   </span>
                   <span
                     v-else-if="viewerType === 'non-customer'"
-                    class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900/30 dark:text-amber-200"
+                    class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900/30 dark:text-amber-600"
                   >
                     Non-customer
                   </span>
@@ -392,7 +392,7 @@ onMounted(async () => {
 
                 <div class="mt-3 flex items-start justify-between gap-3">
                   <div class="text-sm text-gray-600 dark:text-gray-300">
-                    <span v-if="viewerType === 'customer'" class="block text-lg font-semibold text-white">Free</span>
+                    <span v-if="viewerType === 'customer'" class="block text-lg font-semibold tracking-tight text-black">Free</span>
                     <span v-else-if="viewerType === 'non-customer'">Non-customer (may require payment)</span>
                     <span v-else class="inline-flex items-center" aria-live="polite">
                       <span class="h-2.5 w-24 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
@@ -408,15 +408,15 @@ onMounted(async () => {
                 </div>
               </div>
 
-              <div class="ui-surface bg-brand-primary p-5">
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">What happens next</h2>
+              <div class="ui-surface p-5">
+                <h2 class="text-base font-semibold tracking-tight text-black dark:text-gray-900">What happens next</h2>
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                   We’ll send your confirmation and joining link. You’ll also get a reminder before the session.
                 </p>
               </div>
 
-              <div class="ui-surface bg-brand-primary p-5">
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Ready to confirm?</h2>
+              <div class="ui-surface p-5">
+                <h2 class="text-base font-semibold tracking-tight text-black dark:text-gray-900">Ready to confirm?</h2>
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                   Check your details and confirm your registration.
                 </p>
@@ -432,22 +432,22 @@ onMounted(async () => {
                   </button>
                   <RouterLink
                     :to="`/app/events/${encodeURIComponent(event.id)}`"
-                    class="ui-btn-secondary w-full py-2.5 bg-white/10 text-white border-white/10 hover:bg-white/15"
+                    class="ui-btn-secondary w-full py-2.5 bg-gray-100 text-gray-900 border-gray-200 hover:bg-gray-200"
                   >
                     Cancel
                   </RouterLink>
                 </div>
               </div>
 
-              <div v-if="requiresPayment && event.priceForNonCustomers != null" class="ui-surface bg-brand-primary p-5">
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Payment</h2>
+              <div v-if="requiresPayment && event.priceForNonCustomers != null" class="ui-surface p-5">
+                <h2 class="text-base font-semibold tracking-tight text-black dark:text-gray-900">Payment</h2>
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                   Secure payment is handled by Stripe.
                 </p>
                 <p v-if="canUseEmbeddedCheckout" class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                   After you confirm registration, checkout will load here.
                 </p>
-                <div class="mt-3 rounded-lg border border-white/10 bg-white/10 p-3 text-xs text-white/70">
+                <div class="mt-3 rounded-lg border border-gray-200 bg-gray-100 p-3 text-xs text-gray-500">
                   Payment confirmation should link to HubSpot contact + transaction records.
                 </div>
               </div>
@@ -455,7 +455,7 @@ onMounted(async () => {
             </aside>
           </div>
 
-          <div v-if="resumingPayment" class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-200">
+          <div v-if="resumingPayment" class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-600">
             Resuming payment…
           </div>
 
@@ -471,13 +471,13 @@ onMounted(async () => {
             {{ paymentMessage }}
           </div>
 
-          <div v-if="submitResult?.status === 'payment_required'" class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-200">
+          <div v-if="submitResult?.status === 'payment_required'" class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-600">
             <div>Payment required: £{{ submitResult.amount }} {{ submitResult.currency }}.</div>
             <div v-if="submitResult.warning" class="mt-1 text-xs">{{ submitResult.warning }}</div>
           </div>
 
           <div v-if="showEmbeddedCheckout" class="ui-surface p-5">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Secure checkout</h2>
+            <h2 class="text-base font-semibold tracking-tight text-black dark:text-gray-900">Secure checkout</h2>
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
               Complete payment below to finish registration.
             </p>
