@@ -57,15 +57,15 @@ function pct(n: number) {
 }
 
 function priorityBadgeClass(p?: string) {
-  if (p === 'High') return 'bg-rose-500/20 text-rose-600 border border-rose-500/30'
-  if (p === 'Low') return 'bg-gray-50 text-gray-400 border border-gray-200'
-  return 'bg-amber-500/20 text-amber-600 border border-amber-500/30'
+  if (p === 'High') return 'ui-pill ui-pill-danger'
+  if (p === 'Low') return 'ui-pill ui-pill-neutral'
+  return 'ui-pill ui-pill-warning'
 }
 
 function statusBadgeClass(s: TicketDto['status']) {
-  if (s === 'Closed') return 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30'
-  if (s === 'Open') return 'bg-amber-500/15 text-amber-600 border border-amber-500/30'
-  return 'bg-blue-500/15 text-sky-600 border border-blue-500/30'
+  if (s === 'Closed') return 'ui-pill ui-pill-success'
+  if (s === 'Open') return 'ui-pill ui-pill-warning'
+  return 'ui-pill ui-pill-info'
 }
 
 function toggleSelect(id: string) {
@@ -180,7 +180,7 @@ onMounted(async () => {
           <div class="rounded-full bg-blue-400 transition-all duration-700 ease-out delay-75" :style="{ width: barsReady ? pct(stats.pending) + '%' : '0%' }" />
           <div class="rounded-full bg-emerald-400 transition-all duration-700 ease-out delay-150" :style="{ width: barsReady ? pct(stats.closed) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 flex gap-3 text-xs text-gray-400">
+        <div class="mt-2 flex gap-3 text-xs text-gray-500">
           <span class="flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-amber-400 inline-block" />Open</span>
           <span class="flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-blue-400 inline-block" />Pending</span>
           <span class="flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />Closed</span>
@@ -193,7 +193,7 @@ onMounted(async () => {
         <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-amber-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.open) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 text-xs text-gray-400">{{ pct(stats.open) }}% of total</div>
+        <div class="mt-2 text-xs text-gray-500">{{ pct(stats.open) }}% of total</div>
       </div>
       <!-- Pending -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
@@ -202,7 +202,7 @@ onMounted(async () => {
         <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-blue-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.pending) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 text-xs text-gray-400">{{ pct(stats.pending) }}% of total</div>
+        <div class="mt-2 text-xs text-gray-500">{{ pct(stats.pending) }}% of total</div>
       </div>
       <!-- Closed -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
@@ -211,7 +211,7 @@ onMounted(async () => {
         <div class="mt-3 h-1.5 rounded-full bg-gray-50 overflow-hidden">
           <div class="h-full rounded-full bg-emerald-400 transition-all duration-700 ease-out" :style="{ width: barsReady ? pct(stats.closed) + '%' : '0%' }" />
         </div>
-        <div class="mt-2 text-xs text-gray-400">{{ pct(stats.closed) }}% of total</div>
+        <div class="mt-2 text-xs text-gray-500">{{ pct(stats.closed) }}% of total</div>
       </div>
       <!-- Avg Response -->
       <div class="bg-white rounded-lg p-5 border border-gray-200">
@@ -221,7 +221,7 @@ onMounted(async () => {
         </div>
         <div class="mt-3 flex items-center gap-1.5">
           <svg class="h-3.5 w-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span class="text-xs text-gray-400">Time to first reply</span>
+          <span class="text-xs text-gray-500">Time to first reply</span>
         </div>
       </div>
       <!-- Avg Resolution -->
@@ -232,7 +232,7 @@ onMounted(async () => {
         </div>
         <div class="mt-3 flex items-center gap-1.5">
           <svg class="h-3.5 w-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span class="text-xs text-gray-400">Time to close</span>
+          <span class="text-xs text-gray-500">Time to close</span>
         </div>
       </div>
     </div>
@@ -240,7 +240,7 @@ onMounted(async () => {
     <!-- New ticket panel -->
     <div v-if="showNewTicket" class="bg-white rounded-lg border border-gray-200 p-5">
       <h3 class="text-base font-semibold tracking-tight text-black mb-1">Create a new support ticket</h3>
-      <p class="text-sm text-gray-400 mb-4">Fields are provisional and will be updated once Support confirms criteria.</p>
+      <p class="text-sm text-gray-500 mb-4">Tell us what's happening and our support team will pick it up.</p>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div class="md:col-span-2">
           <label class="ui-label">Subject</label>
@@ -316,32 +316,32 @@ onMounted(async () => {
             </template>
             <!-- Empty -->
             <tr v-else-if="!tickets.length">
-              <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-400">No tickets found.</td>
+              <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500">No tickets found.</td>
             </tr>
             <!-- Rows -->
             <tr
               v-for="ticket in tickets"
               :key="ticket.id"
-              class="group hover:bg-white/[0.02] transition-colors cursor-pointer"
+              class="group hover:bg-gray-50 transition-colors cursor-pointer"
               @click.self="$router.push(`/app/tickets/${encodeURIComponent(ticket.id)}`)"
             >
               <td class="px-4 py-3.5" @click.stop>
                 <input type="checkbox" class="rounded border-gray-300 bg-gray-50 text-primary-500 focus:ring-primary-500/50" :checked="selectedIds.has(ticket.id)" @change="toggleSelect(ticket.id)" />
               </td>
-              <td class="px-4 py-3.5 font-mono text-xs text-gray-400">#{{ ticket.id }}</td>
+              <td class="px-4 py-3.5 font-mono text-xs text-gray-500">#{{ ticket.id }}</td>
               <td class="px-4 py-3.5 text-gray-900 font-medium max-w-xs">
                 <RouterLink :to="`/app/tickets/${encodeURIComponent(ticket.id)}`" class="hover:text-primary-700 transition-colors truncate block">
                   {{ ticket.subject }}
                 </RouterLink>
               </td>
               <td class="px-4 py-3.5">
-                <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium" :class="priorityBadgeClass(ticket.priority)">
+                <span :class="priorityBadgeClass(ticket.priority)">
                   {{ ticket.priority ?? 'Normal' }}
                 </span>
               </td>
-              <td class="px-4 py-3.5 text-sm text-gray-400">{{ ticket.createdLabel }}</td>
+              <td class="px-4 py-3.5 text-sm text-gray-500">{{ ticket.createdLabel }}</td>
               <td class="px-4 py-3.5">
-                <span class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium" :class="statusBadgeClass(ticket.status)">
+                <span :class="statusBadgeClass(ticket.status)">
                   <!-- Hourglass for Pending -->
                   <svg v-if="ticket.status === 'Pending'" class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
                   <!-- Check for Closed -->

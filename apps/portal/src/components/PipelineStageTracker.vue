@@ -136,8 +136,6 @@ export default defineComponent({
           </button>
         </div>
       </div>
-
-      <div class="mt-2 text-xs text-gray-400">Tap a stage to view details (coming soon).</div>
     </div>
   </div>
 </template>

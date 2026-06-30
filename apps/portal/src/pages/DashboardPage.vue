@@ -171,7 +171,6 @@ const lifecycleStages = [
 ]
 
 const activeLifecycleStage = ref<'discovery' | 'demo' | 'contract' | 'training' | 'live'>('training')
-const lifecycleStageNote = 'Preview mode: this lifecycle step is currently placeholder data until CRM lifecycle sync is enabled.'
 
 // Show the stats grid only when there are enough feature-gated cards to justify the row.
 // Events + Meetings alone are not worth the row — they'll reappear when tickets/invoices
@@ -381,7 +380,6 @@ onMounted(async () => {
       title="Your onboarding journey"
       subtitle="Track your progress with Mentor"
     />
-    <p class="-mt-3 text-xs text-gray-500">{{ lifecycleStageNote }}</p>
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

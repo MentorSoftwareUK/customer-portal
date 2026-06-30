@@ -289,15 +289,8 @@ const typeBadgeClass = computed(() => {
                   </svg>
                 </div>
                 <p class="mt-3 text-base font-semibold text-emerald-600">You're registered</p>
-                <p class="mt-1 text-sm text-emerald-400/80">We'll send joining details before the session.</p>
+                <p class="mt-1 text-sm text-emerald-600/80">We'll send joining details before the session.</p>
               </div>
-              <button
-                type="button"
-                disabled
-                class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-300 cursor-not-allowed"
-              >
-                Add to calendar (coming soon)
-              </button>
             </template>
 
             <!-- Payment pending -->
