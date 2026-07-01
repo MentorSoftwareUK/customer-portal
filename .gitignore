@@ -6,3 +6,5 @@ apps/portal/dist/
 apps/portal/.vite/
 apps/api/.fastify/
 .DS_Store
+.vercel
+.env*

@@ -2,6 +2,7 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import compress from '@fastify/compress'
 import rateLimit from '@fastify/rate-limit'
+import helmet from '@fastify/helmet'
 import { env } from './env'
 import { getDb, isMongoConfigured, ensureIndexes } from './db'
 import { authRoutes } from './routes/auth'
@@ -64,6 +65,12 @@ export async function buildServer() {
     origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  })
+
+  await app.register(helmet, {
+    // crossOriginEmbedderPolicy breaks HubSpot iframe embeds in KB articles
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: false,
   })
 
   await app.register(compress, { global: true })

@@ -30,7 +30,6 @@ function requireHubSpotToken() {
     ;(err as any).code = 'HUBSPOT_NOT_CONFIGURED'
     throw err
   }
-  console.log('[hubspot] Using token prefix:', token.slice(0, 6))
   return token
 }
 
@@ -84,7 +83,6 @@ async function hubspotFetch(path: string, init?: RequestInit, _retryCount = 0): 
       'Content-Type': 'application/json',
       ...(init?.headers ?? {}),
     }
-    console.log('[hubspot] Request', path)
     const res = await fetch(`${HUBSPOT_BASE_URL}${path}`, {
       ...init,
       signal: controller.signal,

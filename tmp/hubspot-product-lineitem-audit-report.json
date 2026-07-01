@@ -1,0 +1,4794 @@
+{
+  "generatedAt": "2026-06-17T13:48:55.970Z",
+  "scope": {
+    "totalProductsInLibrary": 33,
+    "totalDealsScanned": 637,
+    "totalDealsNotClosedLost": 552,
+    "totalLineItemsScanned": 725
+  },
+  "productsLibrary": [
+    {
+      "id": "74313526480",
+      "name": "Exit Fee"
+    },
+    {
+      "id": "311627990247",
+      "name": "Free Access "
+    },
+    {
+      "id": "3917897689",
+      "name": "Mentor Software V2 - Monthly Subscription (18+ Services)"
+    },
+    {
+      "id": "3918437872",
+      "name": "Mentor Software V2 - Monthly Subscription (18+ Services)"
+    },
+    {
+      "id": "3918437873",
+      "name": "Mentor Software V2 - Monthly Subscription (18+ Services)"
+    },
+    {
+      "id": "3917897690",
+      "name": "Mentor Software V2 - Monthly Subscription (Children's Home)"
+    },
+    {
+      "id": "3917897691",
+      "name": "Mentor Software V2 - Monthly Subscription (Children's Home)"
+    },
+    {
+      "id": "3918437875",
+      "name": "Mentor Software V2 - Monthly Subscription (Children's Home)"
+    },
+    {
+      "id": "16255753457",
+      "name": "Mentor Software V2 - Monthly Subscription (Solo Children's Home)"
+    },
+    {
+      "id": "16269793475",
+      "name": "Mentor Software V2 - Monthly Subscription (Solo Children's Home)"
+    },
+    {
+      "id": "16269793477",
+      "name": "Mentor Software V2 - Monthly Subscription (Solo Children's Home)"
+    },
+    {
+      "id": "3917897696",
+      "name": "Mentor Software V2 - Monthly Subscription (Supported Accommodation)"
+    },
+    {
+      "id": "3918437880",
+      "name": "Mentor Software V2 - Monthly Subscription (Supported Accommodation)"
+    },
+    {
+      "id": "3918438075",
+      "name": "Mentor Software V2 - Monthly Subscription (Supported Accommodation)"
+    },
+    {
+      "id": "33054090460",
+      "name": "Mentor Software V2 - Monthly Subscription (Zero Young People)"
+    },
+    {
+      "id": "3917897707",
+      "name": "Mentor Software V2 - Setup Fee (18+ Services)"
+    },
+    {
+      "id": "3912056819",
+      "name": "Mentor Software V2 - Setup Fee (Children's Home)"
+    },
+    {
+      "id": "3912069579",
+      "name": "Mentor Software V2 - Setup Fee (Supported Accommodation)"
+    },
+    {
+      "id": "418943695085",
+      "name": "Mentor Software V3 - Monthly Subscription (18+ Services) "
+    },
+    {
+      "id": "419073014971",
+      "name": "Mentor Software V3 - Monthly Subscription (18+ Services) "
+    },
+    {
+      "id": "419075892418",
+      "name": "Mentor Software V3 - Monthly Subscription (18+ Services) "
+    },
+    {
+      "id": "418943695084",
+      "name": "Mentor Software V3 - Monthly Subscription (Children's Home) "
+    },
+    {
+      "id": "419116380363",
+      "name": "Mentor Software V3 - Monthly Subscription (Children's Home) "
+    },
+    {
+      "id": "419116380366",
+      "name": "Mentor Software V3 - Monthly Subscription (Children's Home) "
+    },
+    {
+      "id": "419074453713",
+      "name": "Mentor Software V3 - Monthly Subscription (Solo Children's Home)"
+    },
+    {
+      "id": "418657804498",
+      "name": "Mentor Software V3 - Monthly Subscription (Solo Children's Home) "
+    },
+    {
+      "id": "419074453712",
+      "name": "Mentor Software V3 - Monthly Subscription (Solo Children's Home) "
+    },
+    {
+      "id": "418942975215",
+      "name": "Mentor Software V3 - Monthly Subscription (Supported Accommodation) "
+    },
+    {
+      "id": "418942975216",
+      "name": "Mentor Software V3 - Monthly Subscription (Supported Accommodation) "
+    },
+    {
+      "id": "419073734900",
+      "name": "Mentor Software V3 - Monthly Subscription (Supported Accommodation) "
+    },
+    {
+      "id": "418943695081",
+      "name": "Mentor Software V3 - Monthly Subscription (Zero Young People) "
+    },
+    {
+      "id": "228512624858",
+      "name": "Pre registered Free Promo "
+    },
+    {
+      "id": "18452688096",
+      "name": "Undecided Package"
+    }
+  ],
+  "groupedByProductName": [
+    {
+      "productName": "Mentor Software V2 - Monthly Subscription (Children's Home)",
+      "dealsUsingIt": 293,
+      "stages": [
+        "1st Demonstration Completed",
+        "Agreed To Purchase",
+        "Closed Won",
+        "Commercials Sent",
+        "Contract Sent"
+      ],
+      "dealReferences": [
+        {
+          "id": "363458816209",
+          "name": "1st Class Healthcare Support and Housing Ltd - New Deal"
+        },
+        {
+          "id": "367595798726",
+          "name": "3S Adolescent Care Limited - New Deal"
+        },
+        {
+          "id": "505743508703",
+          "name": "3S Adolescent Care Ltd - New Deal"
+        },
+        {
+          "id": "242673220819",
+          "name": "4PURE HEART LIMITED - 01/02/2023"
+        },
+        {
+          "id": "458056034553",
+          "name": "A Child's Journey Ltd - New Deal"
+        },
+        {
+          "id": "461230815424",
+          "name": "A G Supply Solutions Ltd - New Deal"
+        },
+        {
+          "id": "125471104242",
+          "name": "A&S Rescue Services Limited - New Deal"
+        },
+        {
+          "id": "349108241619",
+          "name": "A1 Care Choices Ltd - New Deal"
+        },
+        {
+          "id": "237062806755",
+          "name": "Aasra Care Limited - New Deal"
+        },
+        {
+          "id": "165152310484",
+          "name": "Abbi House Limited - New Deal"
+        },
+        {
+          "id": "193199814898",
+          "name": "Accord Care Homes Ltd - New Deal"
+        },
+        {
+          "id": "486641667292",
+          "name": "Achieving for Children Community Interest Company - New Deal"
+        },
+        {
+          "id": "501313176806",
+          "name": "Achieving for Children Community Interest Company - New Home"
+        },
+        {
+          "id": "339992544444",
+          "name": "Achieving Together Ltd - New Deal ch home "
+        },
+        {
+          "id": "154040473836",
+          "name": "Acorns to Oaks Children's Care & Support Ltd - New Deal"
+        },
+        {
+          "id": "153274725586",
+          "name": "Acorns to Oaks Children's Care & Support Ltd - New Home"
+        },
+        {
+          "id": "223999201487",
+          "name": "Acorns to Oaks Children's Care & Support Ltd - New Home"
+        },
+        {
+          "id": "110072774875",
+          "name": "Aden Homes Limited - New 3 year contract"
+        },
+        {
+          "id": "499546377438",
+          "name": "Aden Homes Limited - New Deal"
+        },
+        {
+          "id": "500646144243",
+          "name": "Albarr Care  - New Deal"
+        },
+        {
+          "id": "499546168509",
+          "name": "Albright Childrens Home - New Deal"
+        },
+        {
+          "id": "21071219930",
+          "name": "Alcedo Care - New Deal"
+        },
+        {
+          "id": "296914370780",
+          "name": "Alcedo Gold Limited - New Deal"
+        },
+        {
+          "id": "228497279185",
+          "name": "Alcedo Gold Ltd - New Home"
+        },
+        {
+          "id": "292751454447",
+          "name": "Alcedo Gold Ltd - New Home"
+        },
+        {
+          "id": "121796583632",
+          "name": "Alcedo Gold Ltd - New Home Deal"
+        },
+        {
+          "id": "110774188231",
+          "name": "Alicie Enterprises Ltd - 2024 New Deal"
+        },
+        {
+          "id": "334291414238",
+          "name": "Allison May - New Deal"
+        },
+        {
+          "id": "110073002226",
+          "name": "Alpine4care Services Ltd - 2024 New Deal"
+        },
+        {
+          "id": "498987541718",
+          "name": "AM&S Limited - New Deal"
+        },
+        {
+          "id": "315169714388",
+          "name": "Ankh-a Ltd - New Deal"
+        },
+        {
+          "id": "110073003216",
+          "name": "Apex Support LTD - 2024 New Deal"
+        },
+        {
+          "id": "262915372224",
+          "name": "Ardent Residential Children's Services Ltd - New Deal"
+        },
+        {
+          "id": "110821386480",
+          "name": "Ardent Residential Children's Services Ltd - New Deal 2024"
+        },
+        {
+          "id": "381534023910",
+          "name": "Ariyah Children's Care - New Deal"
+        },
+        {
+          "id": "242673209582",
+          "name": "Aropa Care Group Ltd - 2023 deal"
+        },
+        {
+          "id": "321441777902",
+          "name": "Aropa Care Group Ltd - New CH for v3 "
+        },
+        {
+          "id": "321305231546",
+          "name": "Aropa Care Group Ltd - New Deal"
+        },
+        {
+          "id": "103818391780",
+          "name": "Aropa Care Group Ltd - New Home"
+        },
+        {
+          "id": "242801516786",
+          "name": "Aspire 2 Be - 01/11/2023"
+        },
+        {
+          "id": "63398265079",
+          "name": "Aspire 2 Be - New Deal"
+        },
+        {
+          "id": "107541008585",
+          "name": "Aspire 2 Be - New Home"
+        },
+        {
+          "id": "53939583189",
+          "name": "Aspire Care Network - New Deal"
+        },
+        {
+          "id": "336469647547",
+          "name": "Assure Care Homes - New Deal"
+        },
+        {
+          "id": "250562816209",
+          "name": "Axios Care Homes - New Deal"
+        },
+        {
+          "id": "110073009348",
+          "name": "Ayai Care Limited - New Deal 2024"
+        },
+        {
+          "id": "110728622312",
+          "name": "AZ Caring Services - 2024 New Deal"
+        },
+        {
+          "id": "110776372413",
+          "name": "Baytreehouse (Gravesend) Ltd - 2024 New Deal"
+        },
+        {
+          "id": "453706565827",
+          "name": "Beacon Haven Ltd - New Deal"
+        },
+        {
+          "id": "274489642210",
+          "name": "Bear Care 1 Limited - New Deal"
+        },
+        {
+          "id": "110073010391",
+          "name": "Bear Care 1 Limited - New Deal 2024"
+        },
+        {
+          "id": "473244643537",
+          "name": "Belmont residential care - New Deal"
+        },
+        {
+          "id": "242673241304",
+          "name": "Belmont Residential Care Ltd - 14/02/2023"
+        },
+        {
+          "id": "45645834458",
+          "name": "Bess Solutions Limited - New Deal"
+        },
+        {
+          "id": "442980592853",
+          "name": "Bess Solutions Limited - New Deal new home "
+        },
+        {
+          "id": "378153708734",
+          "name": "BFG Together - New Deal"
+        },
+        {
+          "id": "505110419645",
+          "name": "Bluejay Care Ltd - New Deal"
+        },
+        {
+          "id": "269563828451",
+          "name": "Boreland Youth Care - New Deal"
+        },
+        {
+          "id": "53939595453",
+          "name": "Bridgewater Children's Care Services - New Deal"
+        },
+        {
+          "id": "341542415576",
+          "name": "Brighter Horizons Care - New Deal"
+        },
+        {
+          "id": "495182542054",
+          "name": "Brighter Horizons Care Ltd - New Deal"
+        },
+        {
+          "id": "281712220385",
+          "name": "Brightside Northwest - New Deal"
+        },
+        {
+          "id": "135645552851",
+          "name": "Brite Futures - New Deal"
+        },
+        {
+          "id": "503199134911",
+          "name": "Brite Futures - New Deal"
+        },
+        {
+          "id": "411341435105",
+          "name": "Brookecare Limited - New Deal"
+        },
+        {
+          "id": "311146385602",
+          "name": "Butterfly Heart Homes Ltd - Upgraded from v3 un registered to paying "
+        },
+        {
+          "id": "350013753571",
+          "name": "Cairnara Ltd - New Deal"
+        },
+        {
+          "id": "46299024621",
+          "name": "Care Worldwide (Carlton) Ltd - New Deal"
+        },
+        {
+          "id": "230086769900",
+          "name": "Care2Rise - New Deal"
+        },
+        {
+          "id": "314866876663",
+          "name": "Caring 4 U Group Limited - Pre Registered Won"
+        },
+        {
+          "id": "242807850184",
+          "name": "Caritas Homes - 02/01/2024"
+        },
+        {
+          "id": "242673249479",
+          "name": "Caritas Homes - 13/11/2023"
+        },
+        {
+          "id": "110776372433",
+          "name": "Casaegis Limited - 2024 New Deal"
+        },
+        {
+          "id": "503020698865",
+          "name": "Champion Children (NW London) Limited - New Deal"
+        },
+        {
+          "id": "21071332334",
+          "name": "Channels & Choices - New Deal"
+        },
+        {
+          "id": "301756888277",
+          "name": "Channels & Choices - New Deal"
+        },
+        {
+          "id": "459379419325",
+          "name": "Channels & Choices LLP - New Deal"
+        },
+        {
+          "id": "505110991065",
+          "name": "Channels & Choices LLP - New Deal"
+        },
+        {
+          "id": "110073011418",
+          "name": "Cherished Children - New Deal 2024"
+        },
+        {
+          "id": "122627155151",
+          "name": "Cillrua Care Ltd - New Deal"
+        },
+        {
+          "id": "108998375668",
+          "name": "Cohen Care Ltd - 2024 Deal"
+        },
+        {
+          "id": "270764017905",
+          "name": "Collective Care Ltd - New home"
+        },
+        {
+          "id": "110818843869",
+          "name": "collectivecare.co.uk - New Deal 2024"
+        },
+        {
+          "id": "110073005284",
+          "name": "Continuum Support Care Services LTD - 2024 New Deal + v2 upgrade"
+        },
+        {
+          "id": "502454884558",
+          "name": "Cove Child Care Services Ltd - New Deal"
+        },
+        {
+          "id": "334552330456",
+          "name": "Cove Child Care Services Ltd - Registered "
+        },
+        {
+          "id": "110073006318",
+          "name": "Coven Care Homes LTD - 2024 New Deal"
+        },
+        {
+          "id": "184679756023",
+          "name": "Coven Care Homes LTD - New CH"
+        },
+        {
+          "id": "293209517242",
+          "name": "Creating Lifestyles Homes Ltd - New Home"
+        },
+        {
+          "id": "268877129969",
+          "name": "D&G Living Ltd - New Deal"
+        },
+        {
+          "id": "116421543160",
+          "name": "Diverse Children Homes Ltd - New Deal"
+        },
+        {
+          "id": "37714519266",
+          "name": "DTA Residential Ltd - Renewal"
+        },
+        {
+          "id": "501727629521",
+          "name": "Eastmid Alliance Care Ltd - New Deal"
+        },
+        {
+          "id": "110073022680",
+          "name": "Edison and Unity Residential Care Services Limited - New Deal"
+        },
+        {
+          "id": "305550519486",
+          "name": "Empower Homes Ltd - New Deal"
+        },
+        {
+          "id": "306553731312",
+          "name": "Empower Homes Ltd - New Deal"
+        },
+        {
+          "id": "140505098426",
+          "name": "Fairview Care & Support Ltd - New Children's Home"
+        },
+        {
+          "id": "399645203695",
+          "name": "First Healthcare Services Ltd - New Deal"
+        },
+        {
+          "id": "403343008954",
+          "name": "First Healthcare Services Ltd - New Deal"
+        },
+        {
+          "id": "110073009395",
+          "name": "Flora Care Solutions Ltd - New Deal 2024"
+        },
+        {
+          "id": "110073009397",
+          "name": "Flora Care Solutions Ltd - New Deal new home"
+        },
+        {
+          "id": "110073010364",
+          "name": "Flora Care Solutions Ltd - New Deal new home"
+        },
+        {
+          "id": "285715114178",
+          "name": "Florinee Homes - New Deal"
+        },
+        {
+          "id": "110073009353",
+          "name": "Florinee Homes - New Deal 2024"
+        },
+        {
+          "id": "110818842840",
+          "name": "Florinee Homes - New Deal 2024 new home"
+        },
+        {
+          "id": "453706560719",
+          "name": "Florinee Homes - New Deal uplift license "
+        },
+        {
+          "id": "110728623304",
+          "name": "Footsteps a Path to Change 08 Ltd - 2024 New Deal"
+        },
+        {
+          "id": "110073003231",
+          "name": "Footsteps a Path to Change 08 Ltd - 2024 New Deal x 1 extra home"
+        },
+        {
+          "id": "485125178610",
+          "name": "Footsteps a Path to Change 08 Ltd - New Deal"
+        },
+        {
+          "id": "241312139489",
+          "name": "Footsteps a Path to Change 08 Ltd - New Deal 21/03/2024"
+        },
+        {
+          "id": "168155430107",
+          "name": "Footsteps a Path to Change 08 Ltd - New Home"
+        },
+        {
+          "id": "242796413136",
+          "name": "Footsteps to Futures - 2023"
+        },
+        {
+          "id": "110729204956",
+          "name": "Footsteps to Futures - 2024 New Deal"
+        },
+        {
+          "id": "270779113701",
+          "name": "Footsteps to Futures - New home"
+        },
+        {
+          "id": "222899785969",
+          "name": "Formations Care Services Ltd - New Deal"
+        },
+        {
+          "id": "110073004234",
+          "name": "Formby Care Ltd - 2024 New Deal"
+        },
+        {
+          "id": "263930972388",
+          "name": "Fosse Childrens Services - New Deal- new home"
+        },
+        {
+          "id": "108337116365",
+          "name": "Fosse Healthcare - New Deal"
+        },
+        {
+          "id": "346477889753",
+          "name": "Fresh Start Children's Home Limited - New Deal"
+        },
+        {
+          "id": "495031389403",
+          "name": "Freshstart Care Solutions - New Deal"
+        },
+        {
+          "id": "146255612105",
+          "name": "Gateshead Group Ltd - New CH"
+        },
+        {
+          "id": "110073004218",
+          "name": "Gemstones Care - 2024 New Deal"
+        },
+        {
+          "id": "110073001159",
+          "name": "Gentle Guardian Limited - 2024 New Deal"
+        },
+        {
+          "id": "458738548960",
+          "name": "GIMS Care Solutions Limited - New Deal"
+        },
+        {
+          "id": "110721998057",
+          "name": "Gratia Cura - New Deal"
+        },
+        {
+          "id": "352930219228",
+          "name": "Gratia Cura Residential - New Deal"
+        },
+        {
+          "id": "301846619373",
+          "name": "Guiding Light Residential Care LTD - New Deal"
+        },
+        {
+          "id": "500644606199",
+          "name": "Guiding Light Residential Care LTD - New Deal"
+        },
+        {
+          "id": "387804860605",
+          "name": "Harbour Light Home Ltd - New Deal"
+        },
+        {
+          "id": "110073002206",
+          "name": "Headstart School and Care - 2024 New Deal"
+        },
+        {
+          "id": "281391030489",
+          "name": "Heart and Home Living Ltd - New Deal"
+        },
+        {
+          "id": "126719288567",
+          "name": "Heart and Home Living Ltd - New Home"
+        },
+        {
+          "id": "204969715909",
+          "name": "Heartly Care - New Home"
+        },
+        {
+          "id": "178344147178",
+          "name": "Hearts and Haven Childcare LTD - New Deal"
+        },
+        {
+          "id": "492652271833",
+          "name": "Hearts and Haven Childcare LTD - New Deal"
+        },
+        {
+          "id": "498928259303",
+          "name": "Heath Care Children Services - New Deal"
+        },
+        {
+          "id": "315169751258",
+          "name": "Heka Care - New Deal"
+        },
+        {
+          "id": "498927313110",
+          "name": "Helm care Services - New Deal"
+        },
+        {
+          "id": "175217264881",
+          "name": "Helm Care Services Ltd - New Deal"
+        },
+        {
+          "id": "201351320813",
+          "name": "Home care unique - New Deal"
+        },
+        {
+          "id": "497522063575",
+          "name": "Homecare Unique Limited - New Deal"
+        },
+        {
+          "id": "305550522588",
+          "name": "Hope Spring Care Services - New Deal"
+        },
+        {
+          "id": "241333596384",
+          "name": "Hopscotch Care - New Deal 08/08/2023"
+        },
+        {
+          "id": "242801519824",
+          "name": "IMPACT CRC - 15/09/2023"
+        },
+        {
+          "id": "313644114165",
+          "name": "Independence Development - New Deal"
+        },
+        {
+          "id": "314791405815",
+          "name": "Inspiration Care Group Ltd - New Deal"
+        },
+        {
+          "id": "320361445598",
+          "name": "Inspiration Care Group Ltd - New home v2"
+        },
+        {
+          "id": "499552728274",
+          "name": "J24 - New Deal"
+        },
+        {
+          "id": "110726285524",
+          "name": "J24 Resourcing Ltd - 2024 New Deal"
+        },
+        {
+          "id": "110073008329",
+          "name": "Jasmine Gardens Private Ltd - New Deal 2024"
+        },
+        {
+          "id": "110073012437",
+          "name": "Jasper Education and Support Services Limited (Jess Care) - New Deal 2024"
+        },
+        {
+          "id": "195460283596",
+          "name": "Jenevi Educare Limited - New Deal"
+        },
+        {
+          "id": "279207940282",
+          "name": "JTA Health Care Limited - New Deal"
+        },
+        {
+          "id": "281391055034",
+          "name": "JTA Health Care Limited - New Deal"
+        },
+        {
+          "id": "242673215730",
+          "name": "K & G Care Ltd - 2023"
+        },
+        {
+          "id": "110073004250",
+          "name": "K & G Care Ltd - 2024 New Deal"
+        },
+        {
+          "id": "309211091153",
+          "name": "K & G Care Ltd - New Deal"
+        },
+        {
+          "id": "502454094056",
+          "name": "K & G Care Ltd - New Deal"
+        },
+        {
+          "id": "298440312031",
+          "name": "KD Residential Care Ltd - New Deal"
+        },
+        {
+          "id": "271617394878",
+          "name": "Kennedy and Elliott - New Home"
+        },
+        {
+          "id": "501539805376",
+          "name": "Leading Aspirations - New Deal"
+        },
+        {
+          "id": "264882472174",
+          "name": "LeoCrys Care - New Deal"
+        },
+        {
+          "id": "97925553385",
+          "name": "Liberi Care Ltd - New Deal"
+        },
+        {
+          "id": "409574433982",
+          "name": "Liberi Care Ltd - New Deal"
+        },
+        {
+          "id": "503037470947",
+          "name": "Life skills Services Letombo - New V3 Deal"
+        },
+        {
+          "id": "242791686338",
+          "name": "Lighthouse Southwest Ltd - 2023"
+        },
+        {
+          "id": "20702131672",
+          "name": "Little Feet Homes Ltd - New Deal"
+        },
+        {
+          "id": "154040775887",
+          "name": "Little Feet Homes Ltd - New Deal"
+        },
+        {
+          "id": "363160898751",
+          "name": "Little Feet Homes Ltd - New Deal"
+        },
+        {
+          "id": "297227332840",
+          "name": "Living Nurture Homes - New Deal"
+        },
+        {
+          "id": "493166301414",
+          "name": "LKEE Care Services Ltd - New Deal"
+        },
+        {
+          "id": "281391020237",
+          "name": "Manuel Cornwall - New Deal"
+        },
+        {
+          "id": "307977666749",
+          "name": "Me and You Residential - New Deal"
+        },
+        {
+          "id": "278864013516",
+          "name": "Mellifera Homes - New Deal"
+        },
+        {
+          "id": "110726284505",
+          "name": "Midas Manors Ltd - 2024 New Deal"
+        },
+        {
+          "id": "503144928480",
+          "name": "MJ Children's Services - New Deal"
+        },
+        {
+          "id": "18283921354",
+          "name": "MSPC Limited TA Giant Healthcare Services - New Deal"
+        },
+        {
+          "id": "481444055259",
+          "name": "Nationwide Care Homes - New Deal"
+        },
+        {
+          "id": "151536770251",
+          "name": "Nest Homes Northwest Ltd - New Deal-V3 Unregistered"
+        },
+        {
+          "id": "25917230328",
+          "name": "Netpex Ltd - New Deal"
+        },
+        {
+          "id": "293194947788",
+          "name": "Netpex Ltd - New Deal"
+        },
+        {
+          "id": "296913648835",
+          "name": "Netpex Ltd - New Deal"
+        },
+        {
+          "id": "492906689748",
+          "name": "Netpex Ltd - New Deal"
+        },
+        {
+          "id": "432048229601",
+          "name": "Netpex Ltd - New home "
+        },
+        {
+          "id": "110821387457",
+          "name": "New Day Children Services Ltd - New Deal 2024"
+        },
+        {
+          "id": "234824547514",
+          "name": "New Day Childrens Services LTD - New Deal"
+        },
+        {
+          "id": "430980288761",
+          "name": "New Horizons Children's Homes - New Deal"
+        },
+        {
+          "id": "221860785388",
+          "name": "New Path Care - New Deal"
+        },
+        {
+          "id": "342077493437",
+          "name": "Newpath Social Care Ltd - New Deal paid"
+        },
+        {
+          "id": "500644614382",
+          "name": "Next Steps Children’s Care Ltd - New Deal"
+        },
+        {
+          "id": "110417068253",
+          "name": "Nurture Support Services Ltd - 2024 New Deal"
+        },
+        {
+          "id": "501231634654",
+          "name": "Oak Care Services  - New Deal"
+        },
+        {
+          "id": "235110191320",
+          "name": "Oak House Childrens Home Ltd - New Deal"
+        },
+        {
+          "id": "242673224944",
+          "name": "Oakley House Brentwood - 04/07/2024"
+        },
+        {
+          "id": "242801510645",
+          "name": "Oakley House Brentwood - 30/01/2025 new home"
+        },
+        {
+          "id": "242796419306",
+          "name": "Oakley House Children's Home Ltd - Kent - 01/04/2023"
+        },
+        {
+          "id": "110726285547",
+          "name": "Oakley House Children's Home Ltd - Kent - 2024 New Deal"
+        },
+        {
+          "id": "276560749782",
+          "name": "Oakley House Children's Home Ltd - Kent - New home"
+        },
+        {
+          "id": "314090311925",
+          "name": "Outdoor Care - New Deal"
+        },
+        {
+          "id": "110073007338",
+          "name": "Panache Care - New Deal 2024"
+        },
+        {
+          "id": "366031150309",
+          "name": "Paradigm Breaks - New Deal"
+        },
+        {
+          "id": "152635730153",
+          "name": "Pathway Specialist Care  - New Deal"
+        },
+        {
+          "id": "493651989697",
+          "name": "Pathway Specialist Care Limited - New Deal"
+        },
+        {
+          "id": "335778611407",
+          "name": "Pathway Specialist Care Limited - New Home"
+        },
+        {
+          "id": "503198496954",
+          "name": "Phase Homes - New Deal"
+        },
+        {
+          "id": "505110815988",
+          "name": "Phase Homes - New Deal"
+        },
+        {
+          "id": "498985302243",
+          "name": "Pinnacle Care - New Deal"
+        },
+        {
+          "id": "110726285511",
+          "name": "Platinum Services for Children (Residential Care) Ltd - 2024 New Deal"
+        },
+        {
+          "id": "494472996045",
+          "name": "PVL Care Limited - New Deal"
+        },
+        {
+          "id": "108998376665",
+          "name": "Rainbows Corner Ltd - 2024 Deal"
+        },
+        {
+          "id": "192214665445",
+          "name": "Rapha Social Care Limited - New Deal"
+        },
+        {
+          "id": "110821387460",
+          "name": "RCS Operations Limited - New Deal 2024"
+        },
+        {
+          "id": "110073010403",
+          "name": "RCS Operations Limited - New Deal new homes x 2"
+        },
+        {
+          "id": "503998835922",
+          "name": "Reliant Care - New Deal"
+        },
+        {
+          "id": "242673245406",
+          "name": "Resi Action Ltd - 17/01/2024"
+        },
+        {
+          "id": "242673244356",
+          "name": "Resi Action Ltd - 23/07/2023"
+        },
+        {
+          "id": "498499480821",
+          "name": "Resi-Action Staffordshire Ltd - New Deal"
+        },
+        {
+          "id": "366350597360",
+          "name": "Revive Social Care - New Contract "
+        },
+        {
+          "id": "481590728896",
+          "name": "Roots Care Group - New Deal"
+        },
+        {
+          "id": "234824715492",
+          "name": "Ruby Care Services - New Deal"
+        },
+        {
+          "id": "163242527956",
+          "name": "Safe Haven Care - New Deal"
+        },
+        {
+          "id": "498045412559",
+          "name": "SAHAH Ltd - New Deal"
+        },
+        {
+          "id": "224285990082",
+          "name": "Sapphire Futures - New Deal"
+        },
+        {
+          "id": "330240370892",
+          "name": "Second Step North Ltd - New Deal"
+        },
+        {
+          "id": "125741233378",
+          "name": "Second Step NW - New Deal"
+        },
+        {
+          "id": "359292131566",
+          "name": "sifaa - New Deal"
+        },
+        {
+          "id": "30327210233",
+          "name": "Sifaa Limited  - New Deal"
+        },
+        {
+          "id": "110073012471",
+          "name": "Simple Settings - New Deal 2024"
+        },
+        {
+          "id": "145368410333",
+          "name": "Skylark Care Solutions Ltd - New Deal"
+        },
+        {
+          "id": "276212240601",
+          "name": "Skylark Care Solutions Ltd - New home"
+        },
+        {
+          "id": "110073006271",
+          "name": "Snow Drop Care - 2024 New Deal"
+        },
+        {
+          "id": "494058191075",
+          "name": "Soaring Heights Care LTD - New Deal"
+        },
+        {
+          "id": "467110101205",
+          "name": "Sprinkled With Hope - New Deal "
+        },
+        {
+          "id": "61279390937",
+          "name": "Star Bright Living - New Deal"
+        },
+        {
+          "id": "306555529450",
+          "name": "Stepping Stone Homes Ltd - New Deal"
+        },
+        {
+          "id": "504550399223",
+          "name": "Stockton-on-Tees Borough Council - New Deal"
+        },
+        {
+          "id": "406326399178",
+          "name": "Streetz Ahead Creative Housing - New Deal"
+        },
+        {
+          "id": "298195223764",
+          "name": "Strides Childcare Services - New Deal"
+        },
+        {
+          "id": "329784670413",
+          "name": "Strides Childcare Services - New home v3 "
+        },
+        {
+          "id": "192056686780",
+          "name": "Summit Residential Care Ltd - New Deal"
+        },
+        {
+          "id": "320946792663",
+          "name": "Sunny Smiles Residential Care - New Deal"
+        },
+        {
+          "id": "224285963513",
+          "name": "Supreme Care Services NW - New Deal"
+        },
+        {
+          "id": "315069280494",
+          "name": "Surety Care Limited - New Deal"
+        },
+        {
+          "id": "242801512688",
+          "name": "Sussex Children's Care Ltd - 23/12/2023"
+        },
+        {
+          "id": "389301108923",
+          "name": "Sweet Hope House Limited - New Deal"
+        },
+        {
+          "id": "110818842820",
+          "name": "T&J Victorious - New Deal 2024"
+        },
+        {
+          "id": "279208128750",
+          "name": "T&J Victorious Ltd - New Deal"
+        },
+        {
+          "id": "333644003558",
+          "name": "The Acorns Leicester Ltd - New Deal"
+        },
+        {
+          "id": "103713759445",
+          "name": "The Care Advantage Limited - x 2 New Homes"
+        },
+        {
+          "id": "54389828854",
+          "name": "Through Their Eyes Care Ltd - New Deal"
+        },
+        {
+          "id": "110073003250",
+          "name": "Treasure Nest - 2024 New Deal"
+        },
+        {
+          "id": "498334586045",
+          "name": "Treasure Nest Limited - New Deal"
+        },
+        {
+          "id": "273755623624",
+          "name": "Treesa Group Limited - 9574 - New Deal"
+        },
+        {
+          "id": "502015239383",
+          "name": "Triumph Childcare Services Ltd - New Deal"
+        },
+        {
+          "id": "502454493410",
+          "name": "TS Children Services - New Deal"
+        },
+        {
+          "id": "484393393349",
+          "name": "Turret Care Limited - New Deal"
+        },
+        {
+          "id": "242807853258",
+          "name": "Ty Caredig Ltd - 15/05/2023"
+        },
+        {
+          "id": "242673255654",
+          "name": "Ty Caredig Ltd - 15/05/2025"
+        },
+        {
+          "id": "239593857265",
+          "name": "Ty Caredig Ltd - New Deal"
+        },
+        {
+          "id": "103713562812",
+          "name": "Ty Caredig Ltd - x 1 new home"
+        },
+        {
+          "id": "281391016135",
+          "name": "Ty Derwen Ltd - New Deal"
+        },
+        {
+          "id": "110073009387",
+          "name": "Ty Ni – STEER The Enterprise Academy - New Deal"
+        },
+        {
+          "id": "110721997034",
+          "name": "TYLI Ltd - 2024 New Deal"
+        },
+        {
+          "id": "110821387478",
+          "name": "United Children Limited - New Deal 2024"
+        },
+        {
+          "id": "281391061189",
+          "name": "Unity One Care Solution Ltd - New Deal"
+        },
+        {
+          "id": "110721998027",
+          "name": "Unity Residential Care - 2024 v2 upgrade New Deal"
+        },
+        {
+          "id": "29328658658",
+          "name": "Urban-Care - New Deal"
+        },
+        {
+          "id": "234824902854",
+          "name": "Utopia Childcare Ltd - New Deal"
+        },
+        {
+          "id": "258646993121",
+          "name": "Utopia Childcare Ltd - New Deal"
+        },
+        {
+          "id": "281390986472",
+          "name": "Utopia Childcare Ltd - New Deal"
+        },
+        {
+          "id": "479225513177",
+          "name": "Utopia Childcare Ltd - New Deal"
+        },
+        {
+          "id": "478329867464",
+          "name": "Utopia Childcare Ltd - New Deal"
+        },
+        {
+          "id": "479224779988",
+          "name": "Utopia Childcare Ltd - New Home"
+        },
+        {
+          "id": "108792369394",
+          "name": "V-Care Homes - 2024 Deal"
+        },
+        {
+          "id": "426741327047",
+          "name": "V-CARE HOMES (UK) LIMITED - New Deal"
+        },
+        {
+          "id": "168399374585",
+          "name": "Virtus Homes Limited - New Deal"
+        },
+        {
+          "id": "281391008994",
+          "name": "Virtus Homes Limited - New Deal"
+        },
+        {
+          "id": "242673218797",
+          "name": "Watermead Care Ltd - 15/08/2023"
+        },
+        {
+          "id": "242796415173",
+          "name": "Watermead Care Ltd - 15/08/2024"
+        },
+        {
+          "id": "110821387454",
+          "name": "wecare360.co.uk - New Deal 2024"
+        },
+        {
+          "id": "495032148202",
+          "name": "Wedgefield Baptist Church - New Deal"
+        },
+        {
+          "id": "174844894415",
+          "name": "Wel Care - New Deal"
+        },
+        {
+          "id": "303271199978",
+          "name": "Westgate Lifestyle - New Deal"
+        },
+        {
+          "id": "316495312114",
+          "name": "Xanadu Care Ltd - New Deal"
+        },
+        {
+          "id": "108998369489",
+          "name": "Young Birch Ltd - 2024 Deal"
+        },
+        {
+          "id": "240889727217",
+          "name": "Young Birch Ltd - New Deal"
+        },
+        {
+          "id": "500881684694",
+          "name": "Young Birch Ltd - New Deal"
+        },
+        {
+          "id": "230122653890",
+          "name": "Young Generation - New Deal"
+        },
+        {
+          "id": "110862039235",
+          "name": "Your Chapter Limited - New Deal"
+        },
+        {
+          "id": "492976897259",
+          "name": "Youth Inspire Ltd - New Deal"
+        },
+        {
+          "id": "53934396661",
+          "name": "Youth of Today Ltd - New Deal"
+        },
+        {
+          "id": "70387156172",
+          "name": "Youthworx London Limited - New Deal"
+        },
+        {
+          "id": "306553538804",
+          "name": "Zenith Care Group - New Deal"
+        }
+      ],
+      "lineItemCount": 298,
+      "linkedProductIds": [
+        "3917897690",
+        "3918437875",
+        "3917897691"
+      ]
+    },
+    {
+      "productName": "Mentor Software - Setup Fee (Children's Home)",
+      "dealsUsingIt": 94,
+      "stages": [
+        "Closed Won"
+      ],
+      "dealReferences": [
+        {
+          "id": "125471104242",
+          "name": "A&S Rescue Services Limited - New Deal"
+        },
+        {
+          "id": "21071219930",
+          "name": "Alcedo Care - New Deal"
+        },
+        {
+          "id": "261525063893",
+          "name": "Alpha Metro Ltd, trading as Novosolis Care Projects - New Deal"
+        },
+        {
+          "id": "110073002226",
+          "name": "Alpine4care Services Ltd - 2024 New Deal"
+        },
+        {
+          "id": "110821386480",
+          "name": "Ardent Residential Children's Services Ltd - New Deal 2024"
+        },
+        {
+          "id": "53939583189",
+          "name": "Aspire Care Network - New Deal"
+        },
+        {
+          "id": "250562816209",
+          "name": "Axios Care Homes - New Deal"
+        },
+        {
+          "id": "110073009348",
+          "name": "Ayai Care Limited - New Deal 2024"
+        },
+        {
+          "id": "110728622312",
+          "name": "AZ Caring Services - 2024 New Deal"
+        },
+        {
+          "id": "110776372413",
+          "name": "Baytreehouse (Gravesend) Ltd - 2024 New Deal"
+        },
+        {
+          "id": "110073010391",
+          "name": "Bear Care 1 Limited - New Deal 2024"
+        },
+        {
+          "id": "45645834458",
+          "name": "Bess Solutions Limited - New Deal"
+        },
+        {
+          "id": "269563828451",
+          "name": "Boreland Youth Care - New Deal"
+        },
+        {
+          "id": "18452992717",
+          "name": "Branch Out Residential Services Ltd - New Deal"
+        },
+        {
+          "id": "53939595453",
+          "name": "Bridgewater Children's Care Services - New Deal"
+        },
+        {
+          "id": "135645552851",
+          "name": "Brite Futures - New Deal"
+        },
+        {
+          "id": "46299024621",
+          "name": "Care Worldwide (Carlton) Ltd - New Deal"
+        },
+        {
+          "id": "110073005249",
+          "name": "CentrePeace Homes Ltd - 2024 New Deal"
+        },
+        {
+          "id": "21071332334",
+          "name": "Channels & Choices - New Deal"
+        },
+        {
+          "id": "110073011418",
+          "name": "Cherished Children - New Deal 2024"
+        },
+        {
+          "id": "122627155151",
+          "name": "Cillrua Care Ltd - New Deal"
+        },
+        {
+          "id": "108998375668",
+          "name": "Cohen Care Ltd - 2024 Deal"
+        },
+        {
+          "id": "110818843869",
+          "name": "collectivecare.co.uk - New Deal 2024"
+        },
+        {
+          "id": "39868499163",
+          "name": "Community Building Management Care CIC - New Deal"
+        },
+        {
+          "id": "110073006318",
+          "name": "Coven Care Homes LTD - 2024 New Deal"
+        },
+        {
+          "id": "268877129969",
+          "name": "D&G Living Ltd - New Deal"
+        },
+        {
+          "id": "116421543160",
+          "name": "Diverse Children Homes Ltd - New Deal"
+        },
+        {
+          "id": "110073022680",
+          "name": "Edison and Unity Residential Care Services Limited - New Deal"
+        },
+        {
+          "id": "110073009395",
+          "name": "Flora Care Solutions Ltd - New Deal 2024"
+        },
+        {
+          "id": "110073009353",
+          "name": "Florinee Homes - New Deal 2024"
+        },
+        {
+          "id": "110728623304",
+          "name": "Footsteps a Path to Change 08 Ltd - 2024 New Deal"
+        },
+        {
+          "id": "241312139489",
+          "name": "Footsteps a Path to Change 08 Ltd - New Deal 21/03/2024"
+        },
+        {
+          "id": "222899785969",
+          "name": "Formations Care Services Ltd - New Deal"
+        },
+        {
+          "id": "110073004234",
+          "name": "Formby Care Ltd - 2024 New Deal"
+        },
+        {
+          "id": "108337116365",
+          "name": "Fosse Healthcare - New Deal"
+        },
+        {
+          "id": "110774188243",
+          "name": "Fury Care - 2024 New Deal"
+        },
+        {
+          "id": "110073004218",
+          "name": "Gemstones Care - 2024 New Deal"
+        },
+        {
+          "id": "110073001159",
+          "name": "Gentle Guardian Limited - 2024 New Deal"
+        },
+        {
+          "id": "110721998057",
+          "name": "Gratia Cura - New Deal"
+        },
+        {
+          "id": "110073002206",
+          "name": "Headstart School and Care - 2024 New Deal"
+        },
+        {
+          "id": "178344147178",
+          "name": "Hearts and Haven Childcare LTD - New Deal"
+        },
+        {
+          "id": "175217264881",
+          "name": "Helm Care Services Ltd - New Deal"
+        },
+        {
+          "id": "146255487189",
+          "name": "Heron Care Group LTD - New Deal"
+        },
+        {
+          "id": "146196036819",
+          "name": "Home care unique - New Deal"
+        },
+        {
+          "id": "241333596384",
+          "name": "Hopscotch Care - New Deal 08/08/2023"
+        },
+        {
+          "id": "151570952410",
+          "name": "Jakaranda Care - New Deal"
+        },
+        {
+          "id": "110073012437",
+          "name": "Jasper Education and Support Services Limited (Jess Care) - New Deal 2024"
+        },
+        {
+          "id": "201086246095",
+          "name": "Jeeves Care Group Ltd - New Deal"
+        },
+        {
+          "id": "195460283596",
+          "name": "Jenevi Educare Limited - New Deal"
+        },
+        {
+          "id": "110818842850",
+          "name": "Kiwi Children Services - New Deal 2024"
+        },
+        {
+          "id": "52629658848",
+          "name": "Lemur Care Limited (Galago) - New Deal"
+        },
+        {
+          "id": "97925553385",
+          "name": "Liberi Care Ltd - New Deal"
+        },
+        {
+          "id": "20702131672",
+          "name": "Little Feet Homes Ltd - New Deal"
+        },
+        {
+          "id": "108792166611",
+          "name": "Living Life Care - New Deal (Registration Phase)"
+        },
+        {
+          "id": "110726284505",
+          "name": "Midas Manors Ltd - 2024 New Deal"
+        },
+        {
+          "id": "18283921354",
+          "name": "MSPC Limited TA Giant Healthcare Services - New Deal"
+        },
+        {
+          "id": "25917230328",
+          "name": "Netpex Ltd - New Deal"
+        },
+        {
+          "id": "110821387457",
+          "name": "New Day Children Services Ltd - New Deal 2024"
+        },
+        {
+          "id": "221860785388",
+          "name": "New Path Care - New Deal"
+        },
+        {
+          "id": "110073007338",
+          "name": "Panache Care - New Deal 2024"
+        },
+        {
+          "id": "152635730153",
+          "name": "Pathway Specialist Care  - New Deal"
+        },
+        {
+          "id": "108998368469",
+          "name": "Protective Care Group - 2024 Deal"
+        },
+        {
+          "id": "108998376665",
+          "name": "Rainbows Corner Ltd - 2024 Deal"
+        },
+        {
+          "id": "192214665445",
+          "name": "Rapha Social Care Limited - New Deal"
+        },
+        {
+          "id": "110821387460",
+          "name": "RCS Operations Limited - New Deal 2024"
+        },
+        {
+          "id": "242673244356",
+          "name": "Resi Action Ltd - 23/07/2023"
+        },
+        {
+          "id": "156851069152",
+          "name": "Revive Social Care Limited - New Deal"
+        },
+        {
+          "id": "234824715492",
+          "name": "Ruby Care Services - New Deal"
+        },
+        {
+          "id": "163242527956",
+          "name": "Safe Haven Care - New Deal"
+        },
+        {
+          "id": "125741233378",
+          "name": "Second Step NW - New Deal"
+        },
+        {
+          "id": "30327210233",
+          "name": "Sifaa Limited  - New Deal"
+        },
+        {
+          "id": "145368410333",
+          "name": "Skylark Care Solutions Ltd - New Deal"
+        },
+        {
+          "id": "110073006271",
+          "name": "Snow Drop Care - 2024 New Deal"
+        },
+        {
+          "id": "61279390937",
+          "name": "Star Bright Living - New Deal"
+        },
+        {
+          "id": "192056686780",
+          "name": "Summit Residential Care Ltd - New Deal"
+        },
+        {
+          "id": "110073010382",
+          "name": "Supported Living and Learning Solutions C.I.C - New Deal 2024"
+        },
+        {
+          "id": "110818842820",
+          "name": "T&J Victorious - New Deal 2024"
+        },
+        {
+          "id": "54389828854",
+          "name": "Through Their Eyes Care Ltd - New Deal"
+        },
+        {
+          "id": "110073009387",
+          "name": "Ty Ni – STEER The Enterprise Academy - New Deal"
+        },
+        {
+          "id": "110721997034",
+          "name": "TYLI Ltd - 2024 New Deal"
+        },
+        {
+          "id": "110821387478",
+          "name": "United Children Limited - New Deal 2024"
+        },
+        {
+          "id": "110721998027",
+          "name": "Unity Residential Care - 2024 v2 upgrade New Deal"
+        },
+        {
+          "id": "29328658658",
+          "name": "Urban-Care - New Deal"
+        },
+        {
+          "id": "108792369394",
+          "name": "V-Care Homes - 2024 Deal"
+        },
+        {
+          "id": "110818842868",
+          "name": "Verve Homecare - New Deal 2024"
+        },
+        {
+          "id": "110821387454",
+          "name": "wecare360.co.uk - New Deal 2024"
+        },
+        {
+          "id": "174844894415",
+          "name": "Wel Care - New Deal"
+        },
+        {
+          "id": "45496631527",
+          "name": "WiJa Solutions Ltd - New Deal"
+        },
+        {
+          "id": "108998369489",
+          "name": "Young Birch Ltd - 2024 Deal"
+        },
+        {
+          "id": "230122653890",
+          "name": "Young Generation - New Deal"
+        },
+        {
+          "id": "110862039235",
+          "name": "Your Chapter Limited - New Deal"
+        },
+        {
+          "id": "222795923694",
+          "name": "Your New Beginning Ltd - New Deal"
+        },
+        {
+          "id": "70387156172",
+          "name": "Youthworx London Limited - New Deal"
+        },
+        {
+          "id": "121845011645",
+          "name": "Zenith Care Group - New Deal"
+        }
+      ],
+      "lineItemCount": 94,
+      "linkedProductIds": [
+        "3912056819"
+      ]
+    },
+    {
+      "productName": "Mentor Software V2 - Monthly Subscription (Supported Accommodation)",
+      "dealsUsingIt": 94,
+      "stages": [
+        "1st Demonstration Completed",
+        "3rd Demonstration Completed",
+        "Agreed To Purchase",
+        "Closed Won"
+      ],
+      "dealReferences": [
+        {
+          "id": "110774188275",
+          "name": "ABC Hillingdon LTD - 2024 New Deal"
+        },
+        {
+          "id": "107541071050",
+          "name": "Abiding Care & Support Limited  - New Deal"
+        },
+        {
+          "id": "110072774875",
+          "name": "Aden Homes Limited - New 3 year contract"
+        },
+        {
+          "id": "110072762613",
+          "name": "Aden Homes Limited - New Deal"
+        },
+        {
+          "id": "201955293433",
+          "name": "Akala Childrens Services - New Deal"
+        },
+        {
+          "id": "242673231091",
+          "name": "Alpine House - 16/07/2024"
+        },
+        {
+          "id": "140451269855",
+          "name": "Arch Homes and Support Ltd - New Deal"
+        },
+        {
+          "id": "334554481877",
+          "name": "Aspiration Home - New Deal"
+        },
+        {
+          "id": "54389351631",
+          "name": "Assess to Support - New Deal"
+        },
+        {
+          "id": "110073004260",
+          "name": "Assist Care Ltd - 2024 New Deal"
+        },
+        {
+          "id": "502092130509",
+          "name": "Atonia Care - New Deal"
+        },
+        {
+          "id": "467110252748",
+          "name": "Avance Care Services - New Deal"
+        },
+        {
+          "id": "58443312322",
+          "name": "Avec Support Ltd - New Deal"
+        },
+        {
+          "id": "110073010421",
+          "name": "Babcam Support for Living - New Deal 2024"
+        },
+        {
+          "id": "502402624737",
+          "name": "Believe and Achieve - New Deal"
+        },
+        {
+          "id": "499845068986",
+          "name": "Blossom Kare - New Deal"
+        },
+        {
+          "id": "499551315164",
+          "name": "BSF Midlands Ltd - New Deal"
+        },
+        {
+          "id": "262949255388",
+          "name": "caccou - New Deal "
+        },
+        {
+          "id": "402389004485",
+          "name": "Caccou Ltd - New additional License"
+        },
+        {
+          "id": "385104312563",
+          "name": "Caccou Ltd - New Deal- New License"
+        },
+        {
+          "id": "110818842860",
+          "name": "Catalyst Care LTD - New Deal 2024"
+        },
+        {
+          "id": "110729204950",
+          "name": "Community Hosting and Support - 2024 New Deal"
+        },
+        {
+          "id": "110073005284",
+          "name": "Continuum Support Care Services LTD - 2024 New Deal + v2 upgrade"
+        },
+        {
+          "id": "502036763845",
+          "name": "Continuum Support Care Services LTD - New Deal"
+        },
+        {
+          "id": "110776371434",
+          "name": "Creative Support Solutions Limited - 2024 New Deal"
+        },
+        {
+          "id": "329706892523",
+          "name": "Emeraldz Ltd - New Deal"
+        },
+        {
+          "id": "110774188264",
+          "name": "Empower House - 2024 New Deal"
+        },
+        {
+          "id": "378240998616",
+          "name": "Fairtree Group - New Deal"
+        },
+        {
+          "id": "18452994552",
+          "name": "Fairview Care & Support Ltd - New Deal"
+        },
+        {
+          "id": "18283918526",
+          "name": "Family Advocacy & Children's Care Services (FACCS) - New Deal"
+        },
+        {
+          "id": "340035118308",
+          "name": "Firbanks Supported Living - New license"
+        },
+        {
+          "id": "495031389403",
+          "name": "Freshstart Care Solutions - New Deal"
+        },
+        {
+          "id": "378156055759",
+          "name": "Giant Healthcare Services - New SA license "
+        },
+        {
+          "id": "54389351617",
+          "name": "Gifted Hands Care - New Deal"
+        },
+        {
+          "id": "110073005270",
+          "name": "Hannah-Grace Care and Support Ltd - 2024 New Deal"
+        },
+        {
+          "id": "110774187241",
+          "name": "Hannah-Grace Care and Support Ltd - New Deal"
+        },
+        {
+          "id": "110073001170",
+          "name": "Headway Support Services Limited - 2024 New Deal"
+        },
+        {
+          "id": "110073003222",
+          "name": "High Rise Support Services Ltd - 2024 New Deal"
+        },
+        {
+          "id": "165182989511",
+          "name": "High Rise Support Services Ltd - EXTRA LICENSE"
+        },
+        {
+          "id": "411385610448",
+          "name": "Highrise Support Services - New Deal extra licence "
+        },
+        {
+          "id": "320947689713",
+          "name": "Hope For 16 Plus - New Deal"
+        },
+        {
+          "id": "409394776313",
+          "name": "Hope For 16 Plus Ltd - New Deal"
+        },
+        {
+          "id": "479225509069",
+          "name": "Icons Care - New Deal"
+        },
+        {
+          "id": "110818843874",
+          "name": "Kempshire Ltd - New Deal 2024"
+        },
+        {
+          "id": "442374220025",
+          "name": "Kia Ora - New Deal"
+        },
+        {
+          "id": "110073007322",
+          "name": "Kilter Care - 2024 New Deal"
+        },
+        {
+          "id": "29881330898",
+          "name": "Lagom Residential Services - New Deal"
+        },
+        {
+          "id": "495708520676",
+          "name": "Leadway Care - New Deal"
+        },
+        {
+          "id": "320946742496",
+          "name": "Lemur Care (Galago) - New Deal"
+        },
+        {
+          "id": "53939581160",
+          "name": "Liberty Supported Living - New Deal"
+        },
+        {
+          "id": "459140355313",
+          "name": "Liberty Supported Living - New Deal"
+        },
+        {
+          "id": "322798305525",
+          "name": "Liberty Supported Living - New license "
+        },
+        {
+          "id": "340035733694",
+          "name": "Liberty Supported Living - New License "
+        },
+        {
+          "id": "133164828906",
+          "name": "Liberty Supported Living Ltd - Extra license"
+        },
+        {
+          "id": "107675179232",
+          "name": "Liberty Supported Living Ltd - New Deal (extra license)"
+        },
+        {
+          "id": "108998370493",
+          "name": "Life Skills Services - 2024 Deal"
+        },
+        {
+          "id": "110073003210",
+          "name": "Lignum Vitae Care & Support - 2024 New Deal"
+        },
+        {
+          "id": "338902967507",
+          "name": "Luthando Group Ltd - New Deal"
+        },
+        {
+          "id": "287920736498",
+          "name": "MMR Homecare Limited - extra license"
+        },
+        {
+          "id": "335778611415",
+          "name": "MMR Homecare Limited - New license "
+        },
+        {
+          "id": "358952674542",
+          "name": "MMR Homecare Limited - New license "
+        },
+        {
+          "id": "270764004553",
+          "name": "MMR Homecare Limited - New registered cost"
+        },
+        {
+          "id": "502091446465",
+          "name": "Moon Healthcare Group - New Deal"
+        },
+        {
+          "id": "205629572342",
+          "name": "Moorefutures Limited - New Deal"
+        },
+        {
+          "id": "281712129228",
+          "name": "Moorefutures Limited - New Deal"
+        },
+        {
+          "id": "19644477174",
+          "name": "Needs First Ltd - New Deal"
+        },
+        {
+          "id": "105607654626",
+          "name": "New Start Living - New Deal"
+        },
+        {
+          "id": "461226037438",
+          "name": "New Start Living Ltd - New Deal"
+        },
+        {
+          "id": "378241059004",
+          "name": "Next Chapter Residential Services Ltd - New Deal"
+        },
+        {
+          "id": "110073007307",
+          "name": "Next Steps Suppport Services Limited - 2024 New Deal"
+        },
+        {
+          "id": "446400952511",
+          "name": "Nurture U Health Care - New Deal"
+        },
+        {
+          "id": "110728622273",
+          "name": "Oak Care Home Limited - 2024 New Deal"
+        },
+        {
+          "id": "388156473588",
+          "name": "Oaktree Education Services - New Deal"
+        },
+        {
+          "id": "110073008377",
+          "name": "Onward Path Care - New Deal 2024"
+        },
+        {
+          "id": "461232437495",
+          "name": "Optimal Supported Living - New Deal"
+        },
+        {
+          "id": "461225790710",
+          "name": "Park Lodge Project - New Deal (Opportunity)"
+        },
+        {
+          "id": "110721997046",
+          "name": "Peepal Tree Support Services Limited - 2024 New Deal"
+        },
+        {
+          "id": "284845059269",
+          "name": "Pennine Youth Support - New v3 deal"
+        },
+        {
+          "id": "192528341217",
+          "name": "Pockets of Peace Care Ltd - New Deal"
+        },
+        {
+          "id": "108792369354",
+          "name": "Reach Care & Support - 2024 Deal"
+        },
+        {
+          "id": "366350597360",
+          "name": "Revive Social Care - New Contract "
+        },
+        {
+          "id": "502004038848",
+          "name": "Saannie Medical Services - New Deal"
+        },
+        {
+          "id": "110073012467",
+          "name": "Simple Settings - New Deal 2024"
+        },
+        {
+          "id": "497918168289",
+          "name": "Spire Squared Semi-Independent Supported Living - New Deal"
+        },
+        {
+          "id": "251463206112",
+          "name": "St Christopher Homes Limited - New Deal"
+        },
+        {
+          "id": "501314507977",
+          "name": "Streetz Ahead Creative Housing Ltd  - New Deal"
+        },
+        {
+          "id": "110818842820",
+          "name": "T&J Victorious - New Deal 2024"
+        },
+        {
+          "id": "110726284523",
+          "name": "The Care Advantage Limited - 2024 New Deal"
+        },
+        {
+          "id": "18452997360",
+          "name": "Today4U Ltd - New Deal"
+        },
+        {
+          "id": "502453043448",
+          "name": "TPR Care Services Ltd - New Deal"
+        },
+        {
+          "id": "298345679043",
+          "name": "Transition Care Services LTD - New Deal"
+        },
+        {
+          "id": "242807847148",
+          "name": "Willow Tree Support Services - 06/02/2024"
+        },
+        {
+          "id": "18452991434",
+          "name": "Yani Care Support Services - New Deal"
+        },
+        {
+          "id": "110729204963",
+          "name": "youthhubz.org - 2024 New Deal"
+        }
+      ],
+      "lineItemCount": 98,
+      "linkedProductIds": [
+        "3917897696",
+        "3918437880",
+        "3918438075"
+      ]
+    },
+    {
+      "productName": "Mentor Software V2 - Monthly Subscription (Solo Children's Home)",
+      "dealsUsingIt": 56,
+      "stages": [
+        "Agreed To Purchase",
+        "Closed Won",
+        "Commercials Sent"
+      ],
+      "dealReferences": [
+        {
+          "id": "263931009245",
+          "name": "Achieving Together Ltd - New Deal"
+        },
+        {
+          "id": "263931010271",
+          "name": "Achieving Together Ltd - New Deal"
+        },
+        {
+          "id": "281391087863",
+          "name": "AMJ Support Services LTD - New Deal"
+        },
+        {
+          "id": "151677736163",
+          "name": "Annex services ltd - New Deal"
+        },
+        {
+          "id": "313352413428",
+          "name": "Caccou - New Deal"
+        },
+        {
+          "id": "313356818622",
+          "name": "Caccou Ltd - New Deal Additional License "
+        },
+        {
+          "id": "99628084456",
+          "name": "Calder Living  - New Deal"
+        },
+        {
+          "id": "39868499163",
+          "name": "Community Building Management Care CIC - New Deal"
+        },
+        {
+          "id": "465636436206",
+          "name": "Connections Sanctuary - New Deal"
+        },
+        {
+          "id": "110073005295",
+          "name": "Continuum Support Care Services LTD - 2024 New Deal - New Home"
+        },
+        {
+          "id": "110073005284",
+          "name": "Continuum Support Care Services LTD - 2024 New Deal + v2 upgrade"
+        },
+        {
+          "id": "231252345068",
+          "name": "Continuum Support Care Services LTD - New CH"
+        },
+        {
+          "id": "268612947183",
+          "name": "Cornerways Homes - New Deal"
+        },
+        {
+          "id": "268612948208",
+          "name": "Cornerways Homes - New Deal"
+        },
+        {
+          "id": "316493056220",
+          "name": "Daffodils Care and Support Services - New Deal"
+        },
+        {
+          "id": "404189074650",
+          "name": "Ease Assist - New Deal"
+        },
+        {
+          "id": "45249612019",
+          "name": "Essential Living Care - New Deal"
+        },
+        {
+          "id": "92960570566",
+          "name": "Evolve Support Service - New Deal"
+        },
+        {
+          "id": "281712187613",
+          "name": "Firbanks Supported Living - New Deal"
+        },
+        {
+          "id": "110774188243",
+          "name": "Fury Care - 2024 New Deal"
+        },
+        {
+          "id": "110073006278",
+          "name": "Fury Care - 2024 New Deal X 1 NEW HOME"
+        },
+        {
+          "id": "322791887088",
+          "name": "Glorious  Splendor - New Deal"
+        },
+        {
+          "id": "411340724460",
+          "name": "Helm care Services - NEW HOME "
+        },
+        {
+          "id": "241333596384",
+          "name": "Hopscotch Care - New Deal 08/08/2023"
+        },
+        {
+          "id": "453667550399",
+          "name": "J24 Resourcing Ltd - New Deal new home "
+        },
+        {
+          "id": "201086246095",
+          "name": "Jeeves Care Group Ltd - New Deal"
+        },
+        {
+          "id": "303214042323",
+          "name": "Jeeves Care Group Ltd - New Deal"
+        },
+        {
+          "id": "110818842850",
+          "name": "Kiwi Children Services - New Deal 2024"
+        },
+        {
+          "id": "186343219419",
+          "name": "Lemur Care Limited (Galago) - New CH"
+        },
+        {
+          "id": "52629658848",
+          "name": "Lemur Care Limited (Galago) - New Deal"
+        },
+        {
+          "id": "218889668856",
+          "name": "MKHG children's services - New Deal"
+        },
+        {
+          "id": "428974855365",
+          "name": "MMR Homecare Limited - New Deal"
+        },
+        {
+          "id": "18283921354",
+          "name": "MSPC Limited TA Giant Healthcare Services - New Deal"
+        },
+        {
+          "id": "236266400988",
+          "name": "Nest Children's Homes Limited - New Deal"
+        },
+        {
+          "id": "378241059004",
+          "name": "Next Chapter Residential Services Ltd - New Deal"
+        },
+        {
+          "id": "504636601560",
+          "name": "Next Step Independence Ltd - New Deal"
+        },
+        {
+          "id": "328141910252",
+          "name": "Opus Care Group - New Deal"
+        },
+        {
+          "id": "62977828066",
+          "name": "Protective Care - New Deal"
+        },
+        {
+          "id": "108998368469",
+          "name": "Protective Care Group - 2024 Deal"
+        },
+        {
+          "id": "145101463769",
+          "name": "Providence Care Group - New Deal"
+        },
+        {
+          "id": "316396428536",
+          "name": "Regal Residential Care Ltd - New Deal"
+        },
+        {
+          "id": "452852683984",
+          "name": "Safe Steps Care Ltd - New Deal"
+        },
+        {
+          "id": "174844699844",
+          "name": "Skylark Care Solutions Ltd - New CH"
+        },
+        {
+          "id": "279464932581",
+          "name": "Sunrise Healthcare - New Deal"
+        },
+        {
+          "id": "251467201735",
+          "name": "Supported Living and Learning Solutions C.I.C - New Deal"
+        },
+        {
+          "id": "110073010382",
+          "name": "Supported Living and Learning Solutions C.I.C - New Deal 2024"
+        },
+        {
+          "id": "29328658658",
+          "name": "Urban-Care - New Deal"
+        },
+        {
+          "id": "103714021599",
+          "name": "UTOPIA CARE PIONEER HOMES - New Deal"
+        },
+        {
+          "id": "275528175817",
+          "name": "Verve Homecare - New Deal"
+        },
+        {
+          "id": "110818842868",
+          "name": "Verve Homecare - New Deal 2024"
+        },
+        {
+          "id": "504048402658",
+          "name": "Visions Pioneer Homes LTD - New Deal"
+        },
+        {
+          "id": "45496631527",
+          "name": "WiJa Solutions Ltd - New Deal"
+        },
+        {
+          "id": "364839055588",
+          "name": "WiJa Solutions Ltd - New Deal"
+        },
+        {
+          "id": "126689165501",
+          "name": "WiJa Solutions Ltd - New Home"
+        },
+        {
+          "id": "413292486894",
+          "name": "WiJa Solutions Ltd - New home "
+        },
+        {
+          "id": "222795923694",
+          "name": "Your New Beginning Ltd - New Deal"
+        }
+      ],
+      "lineItemCount": 57,
+      "linkedProductIds": [
+        "16269793477",
+        "16269793475",
+        "16255753457"
+      ]
+    },
+    {
+      "productName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "dealsUsingIt": 44,
+      "stages": [
+        "1st Demonstration Completed",
+        "Closed Won"
+      ],
+      "dealReferences": [
+        {
+          "id": "110072762613",
+          "name": "Aden Homes Limited - New Deal"
+        },
+        {
+          "id": "201955293433",
+          "name": "Akala Childrens Services - New Deal"
+        },
+        {
+          "id": "140451269855",
+          "name": "Arch Homes and Support Ltd - New Deal"
+        },
+        {
+          "id": "54389351631",
+          "name": "Assess to Support - New Deal"
+        },
+        {
+          "id": "110073004260",
+          "name": "Assist Care Ltd - 2024 New Deal"
+        },
+        {
+          "id": "58443312322",
+          "name": "Avec Support Ltd - New Deal"
+        },
+        {
+          "id": "110728622312",
+          "name": "AZ Caring Services - 2024 New Deal"
+        },
+        {
+          "id": "110073010421",
+          "name": "Babcam Support for Living - New Deal 2024"
+        },
+        {
+          "id": "49624924361",
+          "name": "Building Young Lives - New Deal"
+        },
+        {
+          "id": "262949255388",
+          "name": "caccou - New Deal "
+        },
+        {
+          "id": "99628084456",
+          "name": "Calder Living  - New Deal"
+        },
+        {
+          "id": "110818842860",
+          "name": "Catalyst Care LTD - New Deal 2024"
+        },
+        {
+          "id": "110073005249",
+          "name": "CentrePeace Homes Ltd - 2024 New Deal"
+        },
+        {
+          "id": "110776371434",
+          "name": "Creative Support Solutions Limited - 2024 New Deal"
+        },
+        {
+          "id": "110774188264",
+          "name": "Empower House - 2024 New Deal"
+        },
+        {
+          "id": "92960570566",
+          "name": "Evolve Support Service - New Deal"
+        },
+        {
+          "id": "18452994552",
+          "name": "Fairview Care & Support Ltd - New Deal"
+        },
+        {
+          "id": "18283918526",
+          "name": "Family Advocacy & Children's Care Services (FACCS) - New Deal"
+        },
+        {
+          "id": "54389351617",
+          "name": "Gifted Hands Care - New Deal"
+        },
+        {
+          "id": "110073005270",
+          "name": "Hannah-Grace Care and Support Ltd - 2024 New Deal"
+        },
+        {
+          "id": "110073001170",
+          "name": "Headway Support Services Limited - 2024 New Deal"
+        },
+        {
+          "id": "110073003222",
+          "name": "High Rise Support Services Ltd - 2024 New Deal"
+        },
+        {
+          "id": "110818843874",
+          "name": "Kempshire Ltd - New Deal 2024"
+        },
+        {
+          "id": "29881330898",
+          "name": "Lagom Residential Services - New Deal"
+        },
+        {
+          "id": "163189039316",
+          "name": "Lakesyde Care Limited  - New Deal"
+        },
+        {
+          "id": "53939581160",
+          "name": "Liberty Supported Living - New Deal"
+        },
+        {
+          "id": "108998370493",
+          "name": "Life Skills Services - 2024 Deal"
+        },
+        {
+          "id": "110073003210",
+          "name": "Lignum Vitae Care & Support - 2024 New Deal"
+        },
+        {
+          "id": "163264561393",
+          "name": "MMR Homecare Limited - New Deal"
+        },
+        {
+          "id": "19644477174",
+          "name": "Needs First Ltd - New Deal"
+        },
+        {
+          "id": "105607654626",
+          "name": "New Start Living - New Deal"
+        },
+        {
+          "id": "110073007307",
+          "name": "Next Steps Suppport Services Limited - 2024 New Deal"
+        },
+        {
+          "id": "110728622273",
+          "name": "Oak Care Home Limited - 2024 New Deal"
+        },
+        {
+          "id": "110073008377",
+          "name": "Onward Path Care - New Deal 2024"
+        },
+        {
+          "id": "110721997046",
+          "name": "Peepal Tree Support Services Limited - 2024 New Deal"
+        },
+        {
+          "id": "192528341217",
+          "name": "Pockets of Peace Care Ltd - New Deal"
+        },
+        {
+          "id": "145101463769",
+          "name": "Providence Care Group - New Deal"
+        },
+        {
+          "id": "108792369354",
+          "name": "Reach Care & Support - 2024 Deal"
+        },
+        {
+          "id": "49526515913",
+          "name": "Sams Homes Services Ltd - New Deal"
+        },
+        {
+          "id": "110818842820",
+          "name": "T&J Victorious - New Deal 2024"
+        },
+        {
+          "id": "110726284523",
+          "name": "The Care Advantage Limited - 2024 New Deal"
+        },
+        {
+          "id": "18452997360",
+          "name": "Today4U Ltd - New Deal"
+        },
+        {
+          "id": "103714021599",
+          "name": "UTOPIA CARE PIONEER HOMES - New Deal"
+        },
+        {
+          "id": "18452991434",
+          "name": "Yani Care Support Services - New Deal"
+        }
+      ],
+      "lineItemCount": 44,
+      "linkedProductIds": [
+        "3912069579"
+      ]
+    },
+    {
+      "productName": "Pre registered Free Promo",
+      "dealsUsingIt": 38,
+      "stages": [
+        "1st Demonstration Completed",
+        "Agreed To Purchase",
+        "Closed Won"
+      ],
+      "dealReferences": [
+        {
+          "id": "363459536087",
+          "name": "1st Class Healthcare Support and Housing Ltd - New Deal"
+        },
+        {
+          "id": "457808766169",
+          "name": "A Child's Journey Ltd - New Deal"
+        },
+        {
+          "id": "343762446533",
+          "name": "A1 Care Choices Ltd - New Deal"
+        },
+        {
+          "id": "405654834388",
+          "name": "Ability Beams - New Deal"
+        },
+        {
+          "id": "371715611858",
+          "name": "Allways Assisted Care Ltd - New Deal"
+        },
+        {
+          "id": "494813795540",
+          "name": "Aspire Care & Support LTD - New Deal"
+        },
+        {
+          "id": "495575061719",
+          "name": "Atimaz Home Ltd - New Deal"
+        },
+        {
+          "id": "287026093283",
+          "name": "Beacon Haven - Unregistered New Deal"
+        },
+        {
+          "id": "378153707768",
+          "name": "BFG Together - New Deal"
+        },
+        {
+          "id": "274567057616",
+          "name": "Butterfly Heart Homes - New Deal"
+        },
+        {
+          "id": "329121400024",
+          "name": "Cairnara - New Deal"
+        },
+        {
+          "id": "311666002163",
+          "name": "Caring 4 U Group Ltd - New Deal"
+        },
+        {
+          "id": "409044369645",
+          "name": "Countrywide Children's Homes Ltd - New Deal"
+        },
+        {
+          "id": "502401723606",
+          "name": "Cove Child Care Services Ltd - New Deal"
+        },
+        {
+          "id": "326788228297",
+          "name": "Cove Childcare - New Deal (pre reg)"
+        },
+        {
+          "id": "502451720395",
+          "name": "Eastmid Alliance Care Ltd - New Deal"
+        },
+        {
+          "id": "362827026629",
+          "name": "Emeraldz Ltd - New Deal"
+        },
+        {
+          "id": "305550519486",
+          "name": "Empower Homes Ltd - New Deal"
+        },
+        {
+          "id": "399645203695",
+          "name": "First Healthcare Services Ltd - New Deal"
+        },
+        {
+          "id": "346477170890",
+          "name": "Fresh Start Children's Home Limited - New Deal"
+        },
+        {
+          "id": "296064776388",
+          "name": "Future Visions Ltd - New Deal pre reg"
+        },
+        {
+          "id": "505241791715",
+          "name": "Gentle Steps - New Deal"
+        },
+        {
+          "id": "505719554292",
+          "name": "Gentle Steps - New Deal"
+        },
+        {
+          "id": "258147841213",
+          "name": "Glorious  Splendor - New Deal"
+        },
+        {
+          "id": "500643883206",
+          "name": "Guiding Light Residential Care LTD - New Deal"
+        },
+        {
+          "id": "151536770251",
+          "name": "Nest Homes Northwest Ltd - New Deal-V3 Unregistered"
+        },
+        {
+          "id": "336301969595",
+          "name": "Newpath Social Care Ltd - New Deal pre reg"
+        },
+        {
+          "id": "378241059004",
+          "name": "Next Chapter Residential Services Ltd - New Deal"
+        },
+        {
+          "id": "479420557514",
+          "name": "Next Step Independence - New Deal"
+        },
+        {
+          "id": "494190776542",
+          "name": "Next Steps Childrens Care - New Deal"
+        },
+        {
+          "id": "340037118177",
+          "name": "Optimal Supported Living - New Deal"
+        },
+        {
+          "id": "494473708735",
+          "name": "PVL Care Limited - New Deal"
+        },
+        {
+          "id": "338231352563",
+          "name": "Seren Steps Ltd - New Deal"
+        },
+        {
+          "id": "306555529450",
+          "name": "Stepping Stone Homes Ltd - New Deal"
+        },
+        {
+          "id": "459377280207",
+          "name": "Streetz Ahead Creative Housing Ltd  - New Deal"
+        },
+        {
+          "id": "316482756822",
+          "name": "Sunny Smiles Residential Care - New Deal"
+        },
+        {
+          "id": "252591541489",
+          "name": "Turret Care - New Deal V3 Unregistered"
+        },
+        {
+          "id": "505033979087",
+          "name": "Young Angels - New Deal"
+        }
+      ],
+      "lineItemCount": 38,
+      "linkedProductIds": [
+        "228512624858"
+      ]
+    },
+    {
+      "productName": "Mentor Software V2 - Monthly Subscription (18+ Services)",
+      "dealsUsingIt": 27,
+      "stages": [
+        "Agreed To Purchase",
+        "Closed Won",
+        "Discovery Call Made "
+      ],
+      "dealReferences": [
+        {
+          "id": "110774188275",
+          "name": "ABC Hillingdon LTD - 2024 New Deal"
+        },
+        {
+          "id": "151677736163",
+          "name": "Annex services ltd - New Deal"
+        },
+        {
+          "id": "110728622312",
+          "name": "AZ Caring Services - 2024 New Deal"
+        },
+        {
+          "id": "499845068986",
+          "name": "Blossom Kare - New Deal"
+        },
+        {
+          "id": "269793373429",
+          "name": "Bright Future Semi-Independent Living - New Deal"
+        },
+        {
+          "id": "110729204950",
+          "name": "Community Hosting and Support - 2024 New Deal"
+        },
+        {
+          "id": "495031389403",
+          "name": "Freshstart Care Solutions - New Deal"
+        },
+        {
+          "id": "338160531693",
+          "name": "Future Visions Ltd - New Deal PAID"
+        },
+        {
+          "id": "143004294360",
+          "name": "Graceful Healthcare Services Ltd - New Deal"
+        },
+        {
+          "id": "320947689713",
+          "name": "Hope For 16 Plus - New Deal"
+        },
+        {
+          "id": "18453032687",
+          "name": "Inspired Youth Ltd - New Deal"
+        },
+        {
+          "id": "475464003826",
+          "name": "KADS Support - New Deal"
+        },
+        {
+          "id": "263490477252",
+          "name": "Key Living Project - New Deal"
+        },
+        {
+          "id": "163189039316",
+          "name": "Lakesyde Care Limited  - New Deal"
+        },
+        {
+          "id": "493807525092",
+          "name": "Legacy Family Assessment Centre Ltd - New Deal"
+        },
+        {
+          "id": "20997547731",
+          "name": "Lona Care - New Deal"
+        },
+        {
+          "id": "338902967507",
+          "name": "Luthando Group Ltd - New Deal"
+        },
+        {
+          "id": "110728622273",
+          "name": "Oak Care Home Limited - 2024 New Deal"
+        },
+        {
+          "id": "503577962716",
+          "name": "Olive Supported Accommodation - New Deal"
+        },
+        {
+          "id": "110073008377",
+          "name": "Onward Path Care - New Deal 2024"
+        },
+        {
+          "id": "493808224505",
+          "name": "Orbital Homes Ltd - New Deal"
+        },
+        {
+          "id": "461225790710",
+          "name": "Park Lodge Project - New Deal (Opportunity)"
+        },
+        {
+          "id": "110721997046",
+          "name": "Peepal Tree Support Services Limited - 2024 New Deal"
+        },
+        {
+          "id": "54344150210",
+          "name": "Serene Care and Support - New Deal"
+        },
+        {
+          "id": "375009028282",
+          "name": "Sikh Welfare Team - New Deal"
+        },
+        {
+          "id": "501314507977",
+          "name": "Streetz Ahead Creative Housing Ltd  - New Deal"
+        },
+        {
+          "id": "154179011799",
+          "name": "YMCA Wellington and District - New Deal"
+        }
+      ],
+      "lineItemCount": 27,
+      "linkedProductIds": [
+        "3918437872",
+        "3917897689",
+        "3918437873"
+      ]
+    },
+    {
+      "productName": "Free Access",
+      "dealsUsingIt": 20,
+      "stages": [
+        "Agreed To Purchase",
+        "Closed Won"
+      ],
+      "dealReferences": [
+        {
+          "id": "461172764920",
+          "name": "A G Supply Solutions Ltd - New Deal"
+        },
+        {
+          "id": "461230815424",
+          "name": "A G Supply Solutions Ltd - New Deal"
+        },
+        {
+          "id": "334291414238",
+          "name": "Allison May - New Deal"
+        },
+        {
+          "id": "381534023910",
+          "name": "Ariyah Children's Care - New Deal"
+        },
+        {
+          "id": "334554481877",
+          "name": "Aspiration Home - New Deal"
+        },
+        {
+          "id": "269563828451",
+          "name": "Boreland Youth Care - New Deal"
+        },
+        {
+          "id": "466795881706",
+          "name": "Connections Sanctuary Limited - New Deal"
+        },
+        {
+          "id": "498928259303",
+          "name": "Heath Care Children Services - New Deal"
+        },
+        {
+          "id": "305550522588",
+          "name": "Hope Spring Care Services - New Deal"
+        },
+        {
+          "id": "475464003826",
+          "name": "KADS Support - New Deal"
+        },
+        {
+          "id": "492085843181",
+          "name": "LKEE Care Services Ltd - New Deal"
+        },
+        {
+          "id": "395074424036",
+          "name": "Me and You Residential Ltd - New Deal"
+        },
+        {
+          "id": "388156473588",
+          "name": "Oaktree Education Services - New Deal"
+        },
+        {
+          "id": "461225790710",
+          "name": "Park Lodge Project - New Deal (Opportunity)"
+        },
+        {
+          "id": "481590728896",
+          "name": "Roots Care Group - New Deal"
+        },
+        {
+          "id": "452852683984",
+          "name": "Safe Steps Care Ltd - New Deal"
+        },
+        {
+          "id": "467110101205",
+          "name": "Sprinkled With Hope - New Deal "
+        },
+        {
+          "id": "459762765012",
+          "name": "Test Deal"
+        },
+        {
+          "id": "504551039196",
+          "name": "Visions Pioneer Homes LTD - New Deal"
+        },
+        {
+          "id": "492976898277",
+          "name": "Youth Inspire Ltd - New Deal"
+        }
+      ],
+      "lineItemCount": 20,
+      "linkedProductIds": [
+        "311627990247"
+      ]
+    },
+    {
+      "productName": "Undecided Package",
+      "dealsUsingIt": 17,
+      "stages": [
+        "1st Demonstration Completed",
+        "Agreed To Purchase",
+        "Closed Won",
+        "Discovery Call Made "
+      ],
+      "dealReferences": [
+        {
+          "id": "45417092344",
+          "name": "Brighter Horizons"
+        },
+        {
+          "id": "49624924361",
+          "name": "Building Young Lives - New Deal"
+        },
+        {
+          "id": "199316364516",
+          "name": "Clinevo Holdings Ltd - New Deal"
+        },
+        {
+          "id": "103713704122",
+          "name": "Ease Assist - New Deal"
+        },
+        {
+          "id": "69320690890",
+          "name": "F2L Ltd - New Deal"
+        },
+        {
+          "id": "305513213157",
+          "name": "Harbour Light Home Ltd - New Deal"
+        },
+        {
+          "id": "305550522588",
+          "name": "Hope Spring Care Services - New Deal"
+        },
+        {
+          "id": "58443853036",
+          "name": "Ibsho Care Ltd - New Deal"
+        },
+        {
+          "id": "254391227628",
+          "name": "Inspired Living South West Ltd - New Deal"
+        },
+        {
+          "id": "46298787057",
+          "name": "Kennedy Elliott - New Deal"
+        },
+        {
+          "id": "263278930144",
+          "name": "Meliora Care Ltd  - New Deal"
+        },
+        {
+          "id": "49526515913",
+          "name": "Sams Homes Services Ltd - New Deal"
+        },
+        {
+          "id": "460476210386",
+          "name": "Triplehomescare - New Deal"
+        },
+        {
+          "id": "397465409754",
+          "name": "True North Care - New Deal"
+        },
+        {
+          "id": "252591541489",
+          "name": "Turret Care - New Deal V3 Unregistered"
+        },
+        {
+          "id": "71542624476",
+          "name": "Young People First Ltd - New Deal"
+        },
+        {
+          "id": "74192278743",
+          "name": "Young People First Ltd - New Deal"
+        }
+      ],
+      "lineItemCount": 17,
+      "linkedProductIds": [
+        "18452688096"
+      ]
+    },
+    {
+      "productName": "Mentor Software V2 - Monthly Subscription (Zero Young People)",
+      "dealsUsingIt": 14,
+      "stages": [
+        "Closed Won"
+      ],
+      "dealReferences": [
+        {
+          "id": "261525063893",
+          "name": "Alpha Metro Ltd, trading as Novosolis Care Projects - New Deal"
+        },
+        {
+          "id": "236542444753",
+          "name": "Always Here Care Ltd - New Deal"
+        },
+        {
+          "id": "39868499163",
+          "name": "Community Building Management Care CIC - New Deal"
+        },
+        {
+          "id": "399854139580",
+          "name": "Community Building Management Care CIC - New Deal"
+        },
+        {
+          "id": "315213299941",
+          "name": "Florinee Homes Ltd - New Home pre reg"
+        },
+        {
+          "id": "146255487189",
+          "name": "Heron Care Group LTD - New Deal"
+        },
+        {
+          "id": "146196036819",
+          "name": "Home care unique - New Deal"
+        },
+        {
+          "id": "151570952410",
+          "name": "Jakaranda Care - New Deal"
+        },
+        {
+          "id": "108792166611",
+          "name": "Living Life Care - New Deal (Registration Phase)"
+        },
+        {
+          "id": "340978743506",
+          "name": "Mastery Services Limited - New Deal "
+        },
+        {
+          "id": "163264561393",
+          "name": "MMR Homecare Limited - New Deal"
+        },
+        {
+          "id": "246055379159",
+          "name": "Onward Path Care - New Deal"
+        },
+        {
+          "id": "156851069152",
+          "name": "Revive Social Care Limited - New Deal"
+        },
+        {
+          "id": "121845011645",
+          "name": "Zenith Care Group - New Deal"
+        }
+      ],
+      "lineItemCount": 14,
+      "linkedProductIds": [
+        "33054090460"
+      ]
+    },
+    {
+      "productName": "Mentor Software V3 - Monthly Subscription (Children's Home)",
+      "dealsUsingIt": 5,
+      "stages": [
+        "1st Demonstration Completed",
+        "Closed Won",
+        "Commercials Sent",
+        "Contract Sent"
+      ],
+      "dealReferences": [
+        {
+          "id": "506128977097",
+          "name": "Care Afloat Ltd - New Deal"
+        },
+        {
+          "id": "506218776775",
+          "name": "Sapphire Futures - New Deal"
+        },
+        {
+          "id": "506106495204",
+          "name": "Tree House Care - New Deal"
+        },
+        {
+          "id": "506129335528",
+          "name": "Unity One care solutions - New Deal"
+        },
+        {
+          "id": "505428880606",
+          "name": "Young Angels - New Deal"
+        }
+      ],
+      "lineItemCount": 5,
+      "linkedProductIds": [
+        "419116380366",
+        "418943695084"
+      ]
+    },
+    {
+      "productName": "Mentor Software V2 - Setup Fee (18+ Services)",
+      "dealsUsingIt": 4,
+      "stages": [
+        "Closed Won"
+      ],
+      "dealReferences": [
+        {
+          "id": "18453032687",
+          "name": "Inspired Youth Ltd - New Deal"
+        },
+        {
+          "id": "263490477252",
+          "name": "Key Living Project - New Deal"
+        },
+        {
+          "id": "20997547731",
+          "name": "Lona Care - New Deal"
+        },
+        {
+          "id": "154179011799",
+          "name": "YMCA Wellington and District - New Deal"
+        }
+      ],
+      "lineItemCount": 4,
+      "linkedProductIds": [
+        "3917897707"
+      ]
+    },
+    {
+      "productName": "Mentor Software V3 - Monthly Subscription (Solo Children's Home)",
+      "dealsUsingIt": 3,
+      "stages": [
+        "1st Demonstration Completed",
+        "Commercials Sent"
+      ],
+      "dealReferences": [
+        {
+          "id": "506128977097",
+          "name": "Care Afloat Ltd - New Deal"
+        },
+        {
+          "id": "505241791736",
+          "name": "Gentle Steps - New Deal"
+        },
+        {
+          "id": "505719555277",
+          "name": "Gentle Steps - New Deal"
+        }
+      ],
+      "lineItemCount": 3,
+      "linkedProductIds": [
+        "418657804498"
+      ]
+    },
+    {
+      "productName": "Mentor Software V3 - Monthly Subscription (Supported Accommodation)",
+      "dealsUsingIt": 3,
+      "stages": [
+        "1st Demonstration Completed",
+        "Agreed To Purchase"
+      ],
+      "dealReferences": [
+        {
+          "id": "506128977097",
+          "name": "Care Afloat Ltd - New Deal"
+        },
+        {
+          "id": "506217326792",
+          "name": "Elpis Trust - New Deal"
+        },
+        {
+          "id": "506218825948",
+          "name": "YP Quality Care Ltd - New Deal"
+        }
+      ],
+      "lineItemCount": 3,
+      "linkedProductIds": [
+        "419073734900",
+        "418942975216"
+      ]
+    },
+    {
+      "productName": "Exit Fee",
+      "dealsUsingIt": 1,
+      "stages": [
+        "Closed Won"
+      ],
+      "dealReferences": [
+        {
+          "id": "110073005249",
+          "name": "CentrePeace Homes Ltd - 2024 New Deal"
+        }
+      ],
+      "lineItemCount": 1,
+      "linkedProductIds": [
+        "74313526480"
+      ]
+    },
+    {
+      "productName": "Mentor Software - Setup Fee (18+ Services)",
+      "dealsUsingIt": 1,
+      "stages": [
+        "Closed Won"
+      ],
+      "dealReferences": [
+        {
+          "id": "143004294360",
+          "name": "Graceful Healthcare Services Ltd - New Deal"
+        }
+      ],
+      "lineItemCount": 1,
+      "linkedProductIds": [
+        "3912069579"
+      ]
+    },
+    {
+      "productName": "Mentor Software V3 - Monthly Subscription (18+ Services)",
+      "dealsUsingIt": 1,
+      "stages": [
+        "1st Demonstration Completed"
+      ],
+      "dealReferences": [
+        {
+          "id": "506217326792",
+          "name": "Elpis Trust - New Deal"
+        }
+      ],
+      "lineItemCount": 1,
+      "linkedProductIds": [
+        "418943695085"
+      ]
+    }
+  ],
+  "orphanedLineItemsCount": 139,
+  "orphanedLineItemsByReason": {
+    "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY": 139
+  },
+  "orphanedLineItems": [
+    {
+      "lineItemId": "13919642100",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "18452991434",
+      "dealName": "Yani Care Support Services - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "14094864594",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "18452992717",
+      "dealName": "Branch Out Residential Services Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "13919646147",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "18283918526",
+      "dealName": "Family Advocacy & Children's Care Services (FACCS) - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "14094867910",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "18452994552",
+      "dealName": "Fairview Care & Support Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "13919650029",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "18283921354",
+      "dealName": "MSPC Limited TA Giant Healthcare Services - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "13919652030",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "18452997360",
+      "dealName": "Today4U Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "15291020988",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "19644477174",
+      "dealName": "Needs First Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "16589165026",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "20702131672",
+      "dealName": "Little Feet Homes Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "16955010750",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "21071219930",
+      "dealName": "Alcedo Care - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "24826127605",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "21071332334",
+      "dealName": "Channels & Choices - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "24289882301",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "25917230328",
+      "dealName": "Netpex Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "25430412505",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "29328658658",
+      "dealName": "Urban-Care - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "25971760319",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "29881330898",
+      "dealName": "Lagom Residential Services - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "26468715722",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "30327210233",
+      "dealName": "Sifaa Limited  - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "36179299536",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "39868499163",
+      "dealName": "Community Building Management Care CIC - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "40230754511",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "45496631527",
+      "dealName": "WiJa Solutions Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "40231078131",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "45645834458",
+      "dealName": "Bess Solutions Limited - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "40731012328",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "46299024621",
+      "dealName": "Care Worldwide (Carlton) Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "42988293339",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "49526515913",
+      "dealName": "Sams Homes Services Ltd - New Deal",
+      "dealStage": "1st Demonstration Completed"
+    },
+    {
+      "lineItemId": "42988294353",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "49624924361",
+      "dealName": "Building Young Lives - New Deal",
+      "dealStage": "1st Demonstration Completed"
+    },
+    {
+      "lineItemId": "44935073012",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "52629658848",
+      "dealName": "Lemur Care Limited (Galago) - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "61410303209",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "53939581160",
+      "dealName": "Liberty Supported Living - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "60551030987",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "53939583189",
+      "dealName": "Aspire Care Network - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "108076060858",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "53939595453",
+      "dealName": "Bridgewater Children's Care Services - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "45932547315",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "54389351617",
+      "dealName": "Gifted Hands Care - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "45864360152",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "54389351631",
+      "dealName": "Assess to Support - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "149154525433",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "54389828854",
+      "dealName": "Through Their Eyes Care Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "82111046859",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "58443312322",
+      "dealName": "Avec Support Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "55994222828",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "61279390937",
+      "dealName": "Star Bright Living - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "57030527210",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "70387156172",
+      "dealName": "Youthworx London Limited - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "73392463065",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "92960570566",
+      "dealName": "Evolve Support Service - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "77115381988",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "97925553385",
+      "dealName": "Liberi Care Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "78035862729",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "99628084456",
+      "dealName": "Calder Living  - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "81663453424",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "103714021599",
+      "dealName": "UTOPIA CARE PIONEER HOMES - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "82135800016",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "105607654626",
+      "dealName": "New Start Living - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "83639818442",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "108337116365",
+      "dealName": "Fosse Healthcare - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "91656382683",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "108792166611",
+      "dealName": "Living Life Care - New Deal (Registration Phase)",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84415303911",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "108998368469",
+      "dealName": "Protective Care Group - 2024 Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84415305954",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "108998369489",
+      "dealName": "Young Birch Ltd - 2024 Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84415306973",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "108998370493",
+      "dealName": "Life Skills Services - 2024 Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84439877864",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "108792369354",
+      "dealName": "Reach Care & Support - 2024 Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84444312808",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "108792369394",
+      "dealName": "V-Care Homes - 2024 Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84444314822",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "108998375668",
+      "dealName": "Cohen Care Ltd - 2024 Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84439881921",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "108998376665",
+      "dealName": "Rainbows Corner Ltd - 2024 Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84763707635",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110072762613",
+      "dealName": "Aden Homes Limited - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693657802",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110721997034",
+      "dealName": "TYLI Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693657840",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110721997046",
+      "dealName": "Peepal Tree Support Services Limited - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85073746122",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110721998027",
+      "dealName": "Unity Residential Care - 2024 v2 upgrade New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693659858",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110721998057",
+      "dealName": "Gratia Cura - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693660863",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110726284505",
+      "dealName": "Midas Manors Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85074086089",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110726284523",
+      "dealName": "The Care Advantage Limited - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85074086096",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073001159",
+      "dealName": "Gentle Guardian Limited - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85074086127",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073001170",
+      "dealName": "Headway Support Services Limited - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693664959",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110728622273",
+      "dealName": "Oak Care Home Limited - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85058358483",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073002206",
+      "dealName": "Headstart School and Care - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85058358490",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073002226",
+      "dealName": "Alpine4care Services Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85058358498",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110728622312",
+      "dealName": "AZ Caring Services - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85058358499",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110728622312",
+      "dealName": "AZ Caring Services - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693665011",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073003210",
+      "dealName": "Lignum Vitae Care & Support - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85058359497",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073003222",
+      "dealName": "High Rise Support Services Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693666002",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110728623304",
+      "dealName": "Footsteps a Path to Change 08 Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85058360531",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073004218",
+      "dealName": "Gemstones Care - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85058360567",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073004234",
+      "dealName": "Formby Care Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693668066",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073004260",
+      "dealName": "Assist Care Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85074856148",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073005249",
+      "dealName": "CentrePeace Homes Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85074856149",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073005249",
+      "dealName": "CentrePeace Homes Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85074856183",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073005270",
+      "dealName": "Hannah-Grace Care and Support Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85074858227",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073006271",
+      "dealName": "Snow Drop Care - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693671156",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110774188243",
+      "dealName": "Fury Care - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85059248317",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110774188264",
+      "dealName": "Empower House - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85059248353",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073006318",
+      "dealName": "Coven Care Homes LTD - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85059248371",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110776371434",
+      "dealName": "Creative Support Solutions Limited - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693673198",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073007307",
+      "dealName": "Next Steps Suppport Services Limited - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693674176",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110776372413",
+      "dealName": "Baytreehouse (Gravesend) Ltd - 2024 New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85059250386",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073007338",
+      "dealName": "Panache Care - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85074859211",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073008377",
+      "dealName": "Onward Path Care - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693677272",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110818842820",
+      "dealName": "T&J Victorious - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693677273",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110818842820",
+      "dealName": "T&J Victorious - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693677280",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073009348",
+      "dealName": "Ayai Care Limited - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85074859248",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073009353",
+      "dealName": "Florinee Homes - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693678276",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110818842850",
+      "dealName": "Kiwi Children Services - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85074860249",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110818842860",
+      "dealName": "Catalyst Care LTD - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85075376324",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110818842868",
+      "dealName": "Verve Homecare - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85075376360",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073009387",
+      "dealName": "Ty Ni – STEER The Enterprise Academy - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693680348",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073009395",
+      "dealName": "Flora Care Solutions Ltd - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693681339",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110818843869",
+      "dealName": "collectivecare.co.uk - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693681364",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110818843874",
+      "dealName": "Kempshire Ltd - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85075377384",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110821386480",
+      "dealName": "Ardent Residential Children's Services Ltd - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85075379395",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073010382",
+      "dealName": "Supported Living and Learning Solutions C.I.C - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693682396",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073010391",
+      "dealName": "Bear Care 1 Limited - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693682400",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110821387454",
+      "dealName": "wecare360.co.uk - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85075379424",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110821387457",
+      "dealName": "New Day Children Services Ltd - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85075379426",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110821387460",
+      "dealName": "RCS Operations Limited - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693683417",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110821387478",
+      "dealName": "United Children Limited - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85075380434",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073010421",
+      "dealName": "Babcam Support for Living - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693685434",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073011418",
+      "dealName": "Cherished Children - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85075695851",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073012437",
+      "dealName": "Jasper Education and Support Services Limited (Jess Care) - New Deal 2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "84693705947",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110862039235",
+      "dealName": "Your Chapter Limited - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "85064071383",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "110073022680",
+      "dealName": "Edison and Unity Residential Care Services Limited - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "89319187679",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "116421543160",
+      "dealName": "Diverse Children Homes Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "93188182230",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "121845011645",
+      "dealName": "Zenith Care Group - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "93928130792",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "122627155151",
+      "dealName": "Cillrua Care Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "95752219865",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "125471104242",
+      "dealName": "A&S Rescue Services Limited - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "95772889277",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "125741233378",
+      "dealName": "Second Step NW - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "103066605791",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "135645552851",
+      "dealName": "Brite Futures - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "106254352622",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "140451269855",
+      "dealName": "Arch Homes and Support Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "108732635349",
+      "lineItemName": "Mentor Software - Setup Fee (18+ Services)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "143004294360",
+      "dealName": "Graceful Healthcare Services Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "110167112903",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "145101463769",
+      "dealName": "Providence Care Group - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "110422535402",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "145368410333",
+      "dealName": "Skylark Care Solutions Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "110717112514",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "146196036819",
+      "dealName": "Home care unique - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "111859977453",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "146255487189",
+      "dealName": "Heron Care Group LTD - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "114604619980",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "151570952410",
+      "dealName": "Jakaranda Care - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "115255057640",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "152635730153",
+      "dealName": "Pathway Specialist Care  - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "117622721752",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "156851069152",
+      "dealName": "Revive Social Care Limited - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "121724392678",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "163242527956",
+      "dealName": "Safe Haven Care - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "121704095960",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "163264561393",
+      "dealName": "MMR Homecare Limited - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "121769808074",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "163189039316",
+      "dealName": "Lakesyde Care Limited  - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "130545194198",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "174844894415",
+      "dealName": "Wel Care - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "130846587100",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "175217264881",
+      "dealName": "Helm Care Services Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "132874857677",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "178344147178",
+      "dealName": "Hearts and Haven Childcare LTD - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "141158145273",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "192056686780",
+      "dealName": "Summit Residential Care Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "143347033294",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "192214665445",
+      "dealName": "Rapha Social Care Limited - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "143489716444",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "192528341217",
+      "dealName": "Pockets of Peace Care Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "145635519715",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "195460283596",
+      "dealName": "Jenevi Educare Limited - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "149632660707",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "201086246095",
+      "dealName": "Jeeves Care Group Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "150119299279",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "201955293433",
+      "dealName": "Akala Childrens Services - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "165719763177",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "221860785388",
+      "dealName": "New Path Care - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "166344719549",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "222795923694",
+      "dealName": "Your New Beginning Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "166424296650",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "222899785969",
+      "dealName": "Formations Care Services Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "171144783038",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "230122653890",
+      "dealName": "Young Generation - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "176061219038",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "234824715492",
+      "dealName": "Ruby Care Services - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "179708071126",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "241312139489",
+      "dealName": "Footsteps a Path to Change 08 Ltd - New Deal 21/03/2024",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "179699839168",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "241333596384",
+      "dealName": "Hopscotch Care - New Deal 08/08/2023",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "180809429206",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "242673244356",
+      "dealName": "Resi Action Ltd - 23/07/2023",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "186320884959",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "250562816209",
+      "dealName": "Axios Care Homes - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "197217393913",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "261525063893",
+      "dealName": "Alpha Metro Ltd, trading as Novosolis Care Projects - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "197808168142",
+      "lineItemName": "Mentor Software - Setup Fee (Supported Accommodation)",
+      "linkedProductId": "3912069579",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "262949255388",
+      "dealName": "caccou - New Deal ",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "203735866613",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "268877129969",
+      "dealName": "D&G Living Ltd - New Deal",
+      "dealStage": "Closed Won"
+    },
+    {
+      "lineItemId": "204408164599",
+      "lineItemName": "Mentor Software - Setup Fee (Children's Home)",
+      "linkedProductId": "3912056819",
+      "linkedProductExists": true,
+      "lineItemNameMatchesCurrentProducts": false,
+      "reason": "NAME_NOT_IN_CURRENT_PRODUCT_LIBRARY",
+      "dealId": "269563828451",
+      "dealName": "Boreland Youth Care - New Deal",
+      "dealStage": "Closed Won"
+    }
+  ]
+}

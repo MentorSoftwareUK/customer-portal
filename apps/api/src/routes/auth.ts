@@ -360,8 +360,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
     app.log.info({ email, emailConfigured: isEmailConfigured(), nodeEnv: env.NODE_ENV }, '[start] auth start request')
 
-    // Dev ergonomics: when SMTP isn't configured, return the code so local/dev testing isn't blocked.
-    if (env.NODE_ENV !== 'production' && !isEmailConfigured()) {
+    // Dev ergonomics: when email isn't configured, return the code so local development isn't blocked.
+    // Restricted to NODE_ENV === 'development' only — staging/preview envs must have email configured.
+    if (env.NODE_ENV === 'development' && !isEmailConfigured()) {
       devCode = code
       app.log.info({ email, code }, 'Login code (dev)')
       return reply.status(200).send({ ok: true, email, devCode })

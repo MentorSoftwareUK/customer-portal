@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { createTicket, listTickets, type CreateTicketRequest, type TicketDto, type TicketStats } from '../lib/api'
+import { listTickets, type TicketDto, type TicketStats } from '../lib/api'
 import { useFeatureFlags } from '../lib/featureFlags'
 import PageHeader from '../components/PageHeader.vue'
 
@@ -15,23 +15,7 @@ const barsReady = ref(false)
 const router = useRouter()
 const { featureFlags, loadFeatureFlags } = useFeatureFlags()
 
-const showNewTicket = ref(false)
-const creating = ref(false)
-const createError = ref<string | null>(null)
-const createSuccess = ref<string | null>(null)
-
 const selectedIds = ref<Set<string>>(new Set())
-
-const ticketForm = ref<CreateTicketRequest>({
-  subject: '',
-  description: '',
-  category: 'General',
-  priority: 'Normal',
-})
-
-const canCreate = computed(() => {
-  return ticketForm.value.subject.trim().length >= 3 && ticketForm.value.description.trim().length >= 10 && !creating.value
-})
 
 const stats = computed(() => apiStats.value ?? {
   total: tickets.value.length,
@@ -101,30 +85,6 @@ async function refreshTickets() {
   }
 }
 
-async function submitTicket() {
-  createError.value = null
-  createSuccess.value = null
-  creating.value = true
-  try {
-    const payload: CreateTicketRequest = {
-      subject: ticketForm.value.subject,
-      description: ticketForm.value.description,
-      category: ticketForm.value.category?.trim() ? ticketForm.value.category : undefined,
-      priority: ticketForm.value.priority,
-    }
-    const res = await createTicket(payload)
-    createSuccess.value = `Created ticket #${res.ticket.id}`
-    if (res.warning) warning.value = res.warning
-    ticketForm.value = { subject: '', description: '', category: ticketForm.value.category, priority: ticketForm.value.priority }
-    await refreshTickets()
-    showNewTicket.value = false
-  } catch (e) {
-    createError.value = e instanceof Error ? e.message : 'Failed to create ticket'
-  } finally {
-    creating.value = false
-  }
-}
-
 onMounted(async () => {
   await loadFeatureFlags()
   if (!featureFlags.value.ticketsEnabled) {
@@ -145,12 +105,6 @@ onMounted(async () => {
     >
       <template #actions>
         <RouterLink to="/app/tickets/org" class="ui-btn-secondary">All tickets</RouterLink>
-        <button type="button" class="ui-btn-primary" @click="showNewTicket = !showNewTicket">
-          <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path clip-rule="evenodd" fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
-          </svg>
-          New ticket
-        </button>
         <button type="button" class="ui-btn-secondary" :disabled="loading" @click="refreshTickets">Refresh</button>
       </template>
     </PageHeader>
@@ -233,49 +187,6 @@ onMounted(async () => {
         <div class="mt-3 flex items-center gap-1.5">
           <svg class="h-3.5 w-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           <span class="text-xs text-gray-500">Time to close</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- New ticket panel -->
-    <div v-if="showNewTicket" class="bg-white rounded-lg border border-gray-200 p-5">
-      <h3 class="text-base font-semibold tracking-tight text-black mb-1">Create a new support ticket</h3>
-      <p class="text-sm text-gray-500 mb-4">Tell us what's happening and our support team will pick it up.</p>
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div class="md:col-span-2">
-          <label class="ui-label">Subject</label>
-          <input v-model="ticketForm.subject" type="text" class="mt-1 ui-input" placeholder="e.g. Cannot access invoices" />
-        </div>
-        <div class="md:col-span-2">
-          <label class="ui-label">Description</label>
-          <textarea v-model="ticketForm.description" rows="4" class="mt-1 ui-input" placeholder="Include what you were doing, what you expected, and what happened instead." />
-        </div>
-        <div>
-          <label class="ui-label">Category</label>
-          <select v-model="ticketForm.category" class="mt-1 ui-input">
-            <option value="General">General</option>
-            <option value="Access">Access</option>
-            <option value="Events">Events</option>
-            <option value="Billing">Billing</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label class="ui-label">Priority</label>
-          <select v-model="ticketForm.priority" class="mt-1 ui-input">
-            <option value="Low">Low</option>
-            <option value="Normal">Normal</option>
-            <option value="High">High</option>
-          </select>
-        </div>
-        <div v-if="createError" class="md:col-span-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{{ createError }}</div>
-        <div v-if="createSuccess" class="md:col-span-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{{ createSuccess }}</div>
-        <div class="md:col-span-2 flex items-center justify-end gap-2">
-          <button type="button" class="ui-btn-secondary" :disabled="creating" @click="showNewTicket = false">Cancel</button>
-          <button type="button" class="ui-btn-primary" :disabled="!canCreate" @click="submitTicket">
-            <span v-if="creating">Creating…</span>
-            <span v-else>Create ticket</span>
-          </button>
         </div>
       </div>
     </div>

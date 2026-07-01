@@ -608,7 +608,7 @@ onMounted(async () => {
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <div>
               <h2 class="text-lg font-semibold tracking-tight text-black">Contact Us</h2>
-              <p class="text-sm text-gray-500 mt-0.5">We\'ll get back to you as soon as possible.</p>
+              <p class="text-sm text-gray-500 mt-0.5">We'll get back to you as soon as possible.</p>
             </div>
             <button
               type="button"

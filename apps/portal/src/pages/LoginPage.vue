@@ -160,9 +160,9 @@ async function onSubmit() {
       apiDone.value = false
       const animationDone = waitForAnimationComplete()
 
-      // Fire lookup + start in parallel while the loading animation plays.
+      // Fire lookup while the loading animation plays. authStart is only called
+      // once the next step is confirmed — never eagerly for onboard or password paths.
       const lookupPromise = lookupWithTimeout(email.value, 3000).catch(() => null)
-      const startPromise = authStart(email.value)
 
       try {
         response.value = await lookupPromise
@@ -194,7 +194,7 @@ async function onSubmit() {
       } else if (response.value?.isLiveCustomer === true && response.value?.auth?.hasPassword) {
         nextStep = 'password'
       } else {
-        startResult = await startPromise
+        startResult = await authStart(email.value)
       }
 
       // Signal the loading animation to fast-forward remaining steps.
@@ -276,44 +276,61 @@ async function onSubmit() {
 </script>
 
 <template>
-  <section class="bg-white">
-    <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-      <div class="flex justify-center mb-4">
-        <img src="/mentor-icon.png" alt="Mentor" class="h-16 w-auto" />
+  <div class="min-h-screen bg-white flex">
+
+    <!-- Left panel — hidden on mobile -->
+    <div class="hidden lg:flex lg:w-1/2 bg-white p-10">
+      <div class="w-full rounded-2xl p-10 flex flex-col justify-between" style="background-color: #14192D;">
+        <div>
+          <img src="/mentor-icon.png" alt="Mentor" class="h-14 w-auto" />
+        </div>
+        <div class="text-white">
+          <h2 class="text-4xl font-bold leading-tight">All-in-one software</h2>
+          <h2 class="text-4xl font-bold leading-tight">for children's Services.</h2>
+        </div>
+        <div />
       </div>
-      <div class="ui-surface w-full md:mt-0 sm:max-w-md xl:p-0">
-        <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-          <h1 class="ui-surface-title text-xl font-semibold tracking-tight leading-tight tracking-tight md:text-2xl">
-            Sign in to Mentor Portal
-          </h1>
+    </div>
 
-          <LoginLoadingSequence v-if="showLoadingSequence" :done="apiDone" @complete="onAnimationComplete" />
+    <!-- Right panel — login form -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div class="w-full max-w-md">
 
-          <template v-else>
-          <p class="text-sm text-gray-500">
-            Enter your work email to continue.
-          </p>
+        <!-- Mobile logo -->
+        <div class="lg:hidden flex items-center gap-3 mb-8">
+          <img src="/mentor-icon.png" alt="Mentor" class="h-12 w-auto" />
+        </div>
 
-          <form class="space-y-4 md:space-y-6" @submit.prevent="onSubmit">
+        <LoginLoadingSequence v-if="showLoadingSequence" :done="apiDone" @complete="onAnimationComplete" />
+
+        <template v-else>
+
+          <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Sign in</h1>
+            <p class="text-base font-semibold text-gray-900 mb-1">Welcome back</p>
+            <p class="text-sm text-gray-500">Enter your work email to access your portal.</p>
+          </div>
+
+          <form class="space-y-5" @submit.prevent="onSubmit">
             <div>
-              <label for="email" class="block mb-2 text-sm font-medium text-gray-600">Your email</label>
+              <label for="email" class="block text-sm font-semibold text-gray-900 mb-2">Email</label>
               <input
                 id="email"
                 v-model="email"
                 type="email"
                 name="email"
                 autocomplete="email"
-                class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#14192d] focus:border-transparent outline-none transition text-sm text-gray-900 placeholder-gray-400 disabled:bg-gray-50 disabled:text-gray-500"
                 placeholder="name@company.com"
                 required
                 :disabled="step !== 'email'"
               >
-              <p v-if="step === 'email'" class="mt-2 text-xs text-gray-500">
-                We’ll check HubSpot to tailor your portal experience.
+              <p v-if="step === 'email'" class="mt-1.5 text-xs text-gray-500">
+                We'll check if your email is registered with Mentor.
               </p>
             </div>
 
-            <div v-if="viewerPill && step !== 'email'" class="rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <div v-if="viewerPill && step !== 'email'" class="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
               <div class="flex items-center justify-between">
                 <span :class="viewerPill.class">{{ viewerPill.label }}</span>
                 <span v-if="response?.provisionType" class="ui-pill ui-pill-neutral">{{ response.provisionType }}</span>
@@ -333,23 +350,23 @@ async function onSubmit() {
 
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label class="block mb-2 text-sm font-medium text-gray-600">First name</label>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">First name <span class="text-red-500">*</span></label>
                   <input
                     v-model="onboard.firstName"
                     type="text"
                     autocomplete="given-name"
-                    class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#14192d] focus:border-transparent outline-none transition text-sm text-gray-900 placeholder-gray-400"
                     placeholder="Jane"
                     required
                   >
                 </div>
                 <div>
-                  <label class="block mb-2 text-sm font-medium text-gray-600">Last name</label>
+                  <label class="block text-sm font-semibold text-gray-900 mb-2">Last name <span class="text-red-500">*</span></label>
                   <input
                     v-model="onboard.lastName"
                     type="text"
                     autocomplete="family-name"
-                    class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#14192d] focus:border-transparent outline-none transition text-sm text-gray-900 placeholder-gray-400"
                     placeholder="Doe"
                     required
                   >
@@ -357,46 +374,46 @@ async function onSubmit() {
               </div>
 
               <div>
-                <label class="block mb-2 text-sm font-medium text-gray-600">Company (optional)</label>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Company <span class="text-xs font-normal text-gray-400">(optional)</span></label>
                 <input
                   v-model="onboard.company"
                   type="text"
                   autocomplete="organization"
-                  class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#14192d] focus:border-transparent outline-none transition text-sm text-gray-900 placeholder-gray-400"
                   placeholder="Acme Care"
                 >
               </div>
 
               <div>
-                <label class="block mb-2 text-sm font-medium text-gray-600">Phone (optional)</label>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Phone <span class="text-xs font-normal text-gray-400">(optional)</span></label>
                 <input
                   v-model="onboard.phone"
                   type="tel"
                   autocomplete="tel"
-                  class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#14192d] focus:border-transparent outline-none transition text-sm text-gray-900 placeholder-gray-400"
                   placeholder="+44 7..."
                 >
               </div>
             </div>
 
-            <div v-if="step === 'password'" class="space-y-3">
+            <div v-if="step === 'password'" class="space-y-4">
               <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
                 <div class="font-medium text-gray-900">Welcome back</div>
                 <div class="mt-1 text-gray-500">Sign in with your password, or use a one-time code.</div>
               </div>
-              <label for="password" class="block mb-2 text-sm font-medium text-gray-600">Password</label>
+              <label for="password" class="block text-sm font-semibold text-gray-900 mb-2">Password</label>
               <input
                 id="password"
                 v-model="password"
                 type="password"
                 autocomplete="current-password"
-                class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#14192d] focus:border-transparent outline-none transition text-sm text-gray-900 placeholder-gray-400"
                 placeholder="••••••••"
                 required
               >
               <button
                 type="button"
-                class="ui-btn-secondary w-full py-2.5"
+                class="w-full py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
                 :disabled="loading"
                 @click="switchToCode"
               >
@@ -405,7 +422,7 @@ async function onSubmit() {
             </div>
 
             <div v-if="step === 'code'">
-              <label for="code" class="block mb-2 text-sm font-medium text-gray-600">Sign-in code</label>
+              <label for="code" class="block text-sm font-semibold text-gray-900 mb-2">Sign-in code</label>
               <input
                 id="code"
                 v-model="code"
@@ -413,7 +430,7 @@ async function onSubmit() {
                 inputmode="numeric"
                 autocomplete="one-time-code"
                 placeholder="123456"
-                class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#14192d] focus:border-transparent outline-none transition text-sm text-gray-900 placeholder-gray-400"
                 required
               >
               <p class="mt-2 text-xs text-gray-500">
@@ -424,13 +441,13 @@ async function onSubmit() {
               </p>
               <button
                 type="button"
-                class="mt-3 text-xs text-primary-400 hover:text-primary-300 underline underline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="mt-3 text-xs text-[#14192d] hover:opacity-70 underline underline-offset-2 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 :disabled="loading || resendCooldown > 0"
                 @click="resendCode"
               >
                 {{ resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : 'Resend code' }}
               </button>
-              <p v-if="devCodeHint" class="mt-2 text-xs text-amber-700 dark:text-amber-600">
+              <p v-if="devCodeHint" class="mt-2 text-xs text-amber-700">
                 Dev hint (no SMTP configured): code is <span class="font-semibold">{{ devCodeHint }}</span>
               </p>
             </div>
@@ -442,24 +459,24 @@ async function onSubmit() {
               </div>
 
               <div>
-                <label class="block mb-2 text-sm font-medium text-gray-600">New password</label>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">New password</label>
                 <input
                   v-model="newPassword"
                   type="password"
                   autocomplete="new-password"
-                  class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#14192d] focus:border-transparent outline-none transition text-sm text-gray-900 placeholder-gray-400"
                   placeholder="At least 8 characters"
                   required
                 >
               </div>
 
               <div>
-                <label class="block mb-2 text-sm font-medium text-gray-600">Confirm password</label>
+                <label class="block text-sm font-semibold text-gray-900 mb-2">Confirm password</label>
                 <input
                   v-model="newPasswordConfirm"
                   type="password"
                   autocomplete="new-password"
-                  class="bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 placeholder:text-gray-400"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#14192d] focus:border-transparent outline-none transition text-sm text-gray-900 placeholder-gray-400"
                   placeholder="Repeat password"
                   required
                 >
@@ -468,7 +485,8 @@ async function onSubmit() {
 
             <button
               type="submit"
-              class="ui-btn-primary w-full py-2.5"
+              class="w-full py-3 rounded-lg font-semibold text-sm text-white transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#14192d] disabled:opacity-50 disabled:cursor-not-allowed"
+              style="background-color: #14192D;"
               :disabled="!canSubmit"
             >
               <span v-if="busyLabel">{{ busyLabel }}</span>
@@ -490,7 +508,7 @@ async function onSubmit() {
             <button
               v-if="step !== 'email'"
               type="button"
-              class="ui-btn-secondary w-full py-2.5"
+              class="w-full py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
               :disabled="loading"
               @click="step = 'email'; password = ''; code = ''; newPassword = ''; newPasswordConfirm = ''; info = null; error = null"
             >
@@ -500,7 +518,7 @@ async function onSubmit() {
             <button
               v-if="step === 'setPassword'"
               type="button"
-              class="ui-btn-secondary w-full py-2.5"
+              class="w-full py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
               :disabled="loading"
               @click="router.push('/app/dashboard')"
             >
@@ -508,20 +526,15 @@ async function onSubmit() {
             </button>
           </form>
 
-          <div v-if="info" class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
-            {{ info }}
-          </div>
-
-          <div v-if="error" class="rounded-lg border border-rose-400/30 bg-rose-50 p-3 text-sm text-rose-100">
-            {{ error }}
-          </div>
-
-          <div v-if="response?.warning" class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+          <div v-if="info" class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">{{ info }}</div>
+          <div v-if="error" class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error }}</div>
+          <div v-if="response?.warning" class="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
             Integration not configured yet: {{ response.warning }}
           </div>
-          </template>
-        </div>
+
+        </template>
       </div>
     </div>
-  </section>
+
+  </div>
 </template>

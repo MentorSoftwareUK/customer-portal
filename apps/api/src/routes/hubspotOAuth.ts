@@ -10,20 +10,19 @@ const HUBSPOT_TOKEN_INFO_URL = 'https://api.hubapi.com/oauth/v1/access-tokens'
 
 /**
  * OAuth routes for HubSpot Knowledge Base API access
- * - /authorize: Redirects admin to HubSpot OAuth consent screen
+ * - /authorize: Returns the HubSpot OAuth URL (admin-only; frontend does the redirect)
  * - /callback: Receives authorization code and exchanges for tokens
  */
 export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
-  // /authorize and /callback are browser navigations (no Authorization header).
-  // /authorize only redirects to HubSpot's consent screen.
-  // /callback stores tokens only if HubSpot returns a valid authorization code.
-  // Admin auth is applied per-route to /status, /disconnect, and /debug below.
 
   /**
    * GET /api/hubspot/oauth/authorize
-   * Initiates OAuth flow by redirecting to HubSpot (no auth required — browser navigation)
+   * Returns the HubSpot OAuth authorization URL. Requires admin auth.
+   * The frontend is responsible for redirecting the browser — this keeps the
+   * endpoint behind auth (browsers cannot send Authorization headers on
+   * window.location.href navigations, so the old redirect approach was open).
    */
-  app.get('/authorize', async (request, reply) => {
+  app.get('/authorize', { preHandler: async (req, reply) => { const ok = await requireAdmin(req, reply); if (!ok) return reply } }, async (request, reply) => {
     const clientId = env.HUBSPOT_OAUTH_CLIENT_ID
     const redirectUri = env.HUBSPOT_OAUTH_REDIRECT_URI
 
@@ -50,7 +49,7 @@ export const hubspotOAuthRoutes: FastifyPluginAsync = async (app) => {
     authUrl.searchParams.set('redirect_uri', redirectUri)
     authUrl.searchParams.set('scope', scopes.join(' '))
 
-    reply.redirect(authUrl.toString())
+    return reply.send({ url: authUrl.toString() })
   })
 
   /**
