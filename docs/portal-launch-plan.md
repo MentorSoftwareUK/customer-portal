@@ -20,9 +20,94 @@ Core authentication, events, tickets, knowledge base, videos, documents, meeting
 
 ---
 
-## Outstanding Items Before Launch
+## Infrastructure Blockers — Must Resolve First
 
-### 🔴 Blockers (must fix before Phase 1)
+These are non-code blockers that must be resolved before any external user can access the portal. Nothing in the codebase can fix these.
+
+| # | Item | Owner | Notes |
+|---|------|-------|-------|
+| I-1 | **Vercel paid plan** | Liam | The portal is currently deployed on Vercel's free tier (Hobby). The free tier does not support custom domains on team projects, has no password protection, and has bandwidth/build limits unsuitable for production. Upgrade to Vercel Pro before Phase 1 goes live. Team: `mentor-software1`. Project: `customer-portal-portal-gky9`. ~$20/month. |
+| I-2 | **Custom domain on Vercel** | Liam | Portal needs a production domain (e.g. `portal.mentorsoftware.co.uk`). Add domain in Vercel → project settings → Domains. Requires DNS CNAME record at domain registrar pointing to `cname.vercel-dns.com`. Vercel auto-provisions SSL. Cannot be done until I-1 (paid plan) is in place. |
+| I-3 | **Render production env vars** | Liam | `PORTAL_BASE_URL` on the Render API service must be updated to the production domain once I-2 is set. Also confirm `STRIPE_SECRET_KEY` is set to the **live** key (not test), and `STRIPE_WEBHOOK_SECRET` matches the Stripe live webhook endpoint. |
+| I-4 | **Stripe live mode + webhook** | Liam | In the Stripe dashboard, create a live-mode webhook pointing to `https://customer-portal-znxq.onrender.com/stripe/webhook`. Copy the new `whsec_...` signing secret and update `STRIPE_WEBHOOK_SECRET` on Render. Test a £0.00 event first to validate the webhook fires without a real charge. |
+| I-5 | **CORS update on API** | Liam | The API only allows requests from `PORTAL_BASE_URL`. Once the domain changes from the Vercel preview URL to `portal.mentorsoftware.co.uk`, update `PORTAL_BASE_URL` on Render or the browser will block all API calls with a CORS error. |
+| I-6 | **Render sleep / cold starts** | Liam | Render free-tier web services sleep after 15 minutes of inactivity, causing 30–60s cold starts on first login. Upgrade to at least Render Starter ($7/month) or set up a health-check ping (e.g. UptimeRobot hitting `/health` every 10 minutes) to prevent sleeping. |
+| I-7 | **MongoDB Atlas IP allowlist** | Liam | If MongoDB Atlas IP access is currently set to a specific IP, add `0.0.0.0/0` (allow all) or Render's static IP (if on paid Render tier with static outbound IPs). Without this, Render may fail to connect after a service restart or IP rotation. |
+| I-8 | **Brevo SMTP sending limit** | Liam | Verify Brevo daily sending quota is sufficient for Phase 1. Free plan is 300 emails/day. OTP codes + event confirmation emails + reminders could exceed this at scale. Upgrade Brevo plan if needed before Phase 2. |
+
+---
+
+## Go-Live Sequencing
+
+Exact order of operations from current state to Phase 1 live.
+
+### Step 1 — Infrastructure Setup (do this first, before any testing)
+
+1. Upgrade Vercel account to Pro (`mentor-software1` team)
+2. Add production domain `portal.mentorsoftware.co.uk` in Vercel project settings
+3. Add DNS CNAME record at registrar: `portal` → `cname.vercel-dns.com`
+4. Wait for DNS propagation and SSL certificate provisioning (up to 48 hours)
+5. On Render, update `PORTAL_BASE_URL` to `https://portal.mentorsoftware.co.uk`
+6. On Render, confirm `STRIPE_SECRET_KEY` is live key
+7. In Stripe live dashboard, create webhook → `https://customer-portal-znxq.onrender.com/stripe/webhook` → copy secret → update `STRIPE_WEBHOOK_SECRET` on Render
+8. Trigger a Render redeploy so env var changes take effect
+9. Visit `https://portal.mentorsoftware.co.uk` — confirm login page loads with no console errors
+10. Set up UptimeRobot (or equivalent) to ping `https://customer-portal-znxq.onrender.com/health` every 5 minutes
+
+### Step 2 — Pre-Launch Content (admin tasks before users arrive)
+
+1. Log in to admin portal → create 3+ upcoming events (published, not draft)
+2. Log in to admin portal → create 5+ upcoming Lunch & Learn sessions with Teams links
+3. Log in to admin portal → create a welcome notification (e.g. "Welcome to the Mentor Customer Portal — you're one of our first users. Let us know if you have any feedback.")
+4. Verify Simone's HubSpot scheduling page shows correct availability
+5. Confirm test HubSpot contacts for Phase 1 have correct `isLiveCustomer` property set
+
+### Step 3 — Smoke Test (Liam, logged in as a test customer)
+
+1. Log in with a real Happy Group email address via OTP
+2. Check dashboard loads — stats, notifications visible
+3. Browse events — at least one event shows, registration works
+4. Open a Lunch & Learn — add to Google Calendar
+5. Navigate to Tickets → Org Tickets → raise a test ticket
+6. Browse Knowledge Base — articles load
+7. Browse Videos — videos load
+8. Book a meeting with Simone — confirm it appears in the portal Meetings page
+9. Navigate to Profile — details load, edit and save
+10. Open Contact Us modal — form fields visible, can be filled
+
+### Step 4 — Phase 1 Invite (Happy Group)
+
+1. Send invite email to Happy Group contacts with the portal URL and login instructions
+2. Confirm at least one person logs in successfully on day 1
+3. Share feedback mechanism (spreadsheet or email)
+4. Monitor admin analytics dashboard for activity
+
+### Step 5 — Phase 1 Review & Fix
+
+1. Collect feedback over 1–2 weeks
+2. Triage issues: fix any critical bugs immediately, log non-critical for Phase 2
+3. Verify meetings sync is working (the key outstanding technical risk)
+4. Sign-off from Happy Group lead before proceeding
+
+### Step 6 — Phase 2 Prep
+
+1. Select 10 champion customers (Liam + Simone)
+2. Update HubSpot contacts to ensure `isLiveCustomer = true` for all 10
+3. Prepare personalised invite email
+4. Apply any Phase 1 fixes that affect champion experience
+5. Resolve onboarding journey tracker (wire up or remove)
+6. Decision on Invoices section (hide or "coming soon")
+
+### Step 7 — Phase 2 Invite (10 Champions)
+
+1. Send personalised invites one at a time or in small batches
+2. Monitor login success — any failures likely indicate HubSpot data issues
+3. Monitor admin analytics for engagement
+4. Collect feedback via short form or email
+
+---
+
+## Outstanding Items Before Launch
 
 | # | Item | Notes |
 |---|------|-------|
