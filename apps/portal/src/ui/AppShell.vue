@@ -812,11 +812,11 @@ onUnmounted(() => {
     <main
       id="main-content"
       class="min-h-screen md:ml-64 text-gray-900"
-      :class="isMeetingsPage ? 'pt-0 bg-page' : 'pt-20 bg-page'"
+      :class="isMeetingsPage ? 'pt-0 bg-page' : 'pt-16 bg-page'"
     >
       <div
         class="w-full"
-        :class="isMeetingsPage ? 'max-w-none' : 'mx-auto max-w-screen-xl px-6 py-6 lg:px-12'"
+        :class="isMeetingsPage ? 'max-w-none' : 'px-6 py-6 lg:px-12'"
       >
         <div v-if="globalNotifications.length && currentPath === '/app/dashboard'" class="mb-4 space-y-3">
           <div
