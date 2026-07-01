@@ -84,15 +84,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="py-8 flex flex-col items-center">
+  <div class="py-12 flex flex-col items-center">
 
     <!-- Single-step swipe area — above the bar -->
-    <div class="relative w-full h-16 overflow-hidden mb-8">
+    <div class="relative w-full h-20 overflow-hidden mb-10">
       <Transition :name="direction === 'next' ? 'swipe' : 'swipe-back'" mode="out-in">
         <div :key="currentIdx" class="absolute inset-0 flex flex-col items-center justify-center">
           <!-- Spinner -->
           <svg
-            class="w-6 h-6 mb-2.5 animate-spin"
+            class="w-10 h-10 mb-4 animate-spin"
             viewBox="0 0 24 24"
             fill="none"
           >
@@ -106,7 +106,7 @@ onUnmounted(() => {
           </svg>
 
           <!-- Step label -->
-          <p class="text-sm font-medium text-gray-700 tracking-wide">
+          <p class="text-base font-medium text-gray-700 tracking-wide">
             {{ currentLabel }}
             <span class="inline-flex ml-0.5">
               <span class="dot" style="animation-delay: 0ms">.</span>
@@ -119,7 +119,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Progress bar -->
-    <div class="w-full h-1 bg-gray-100 rounded-full overflow-hidden mb-6">
+    <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mb-6">
       <div
         class="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full transition-all duration-700 ease-out"
         :style="{ width: `${progress}%` }"
@@ -131,13 +131,13 @@ onUnmounted(() => {
       <div
         v-for="(_, i) in steps"
         :key="i"
-        class="h-1.5 rounded-full transition-all duration-500 ease-out"
+        class="h-2 rounded-full transition-all duration-500 ease-out"
         :class="
           i < currentIdx
-            ? 'w-1.5 bg-emerald-400'
+            ? 'w-2 bg-emerald-400'
             : i === currentIdx
-              ? 'w-6 bg-primary-500'
-              : 'w-1.5 bg-gray-200'
+              ? 'w-8 bg-primary-500'
+              : 'w-2 bg-gray-200'
         "
       />
     </div>

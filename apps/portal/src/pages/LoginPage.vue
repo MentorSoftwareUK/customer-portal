@@ -301,15 +301,15 @@ async function onSubmit() {
           <img src="/mentor-icon.png" alt="Mentor" class="h-12 w-auto" />
         </div>
 
-        <LoginLoadingSequence v-if="showLoadingSequence" :done="apiDone" @complete="onAnimationComplete" />
-
-        <template v-else>
-
           <div class="mb-8">
             <h1 class="text-4xl font-bold text-gray-900 mb-2">Sign in</h1>
             <p class="text-base font-semibold text-gray-900 mb-1">Welcome back</p>
             <p class="text-sm text-gray-500">Enter your work email to access your portal.</p>
           </div>
+
+        <LoginLoadingSequence v-if="showLoadingSequence" :done="apiDone" @complete="onAnimationComplete" />
+
+        <template v-else>
 
           <form class="space-y-5" @submit.prevent="onSubmit">
             <div>

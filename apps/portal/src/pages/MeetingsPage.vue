@@ -21,7 +21,7 @@ const HOSTS = [
     key: 'simone' as const,
     name: 'Simone Mills',
     team: 'Customer Success',
-    accent: 'bg-fuchsia-500/20 text-fuchsia-200 border-fuchsia-500/30',
+    accent: 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
     hasPublicCalendar: true,
     calendarSlug: 'simone-mills',
     calendarRegion: 'eu1',
@@ -30,7 +30,7 @@ const HOSTS = [
     key: 'shaun' as const,
     name: 'Shaun Ward',
     team: 'Training',
-    accent: 'bg-amber-500/20 text-amber-600 border-amber-500/30',
+    accent: 'bg-amber-100 text-amber-700 border-amber-200',
     hasPublicCalendar: false,
     calendarSlug: null,
     calendarRegion: 'eu1',
@@ -39,7 +39,7 @@ const HOSTS = [
     key: 'hope' as const,
     name: 'Hope Schindler',
     team: 'Renewals',
-    accent: 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30',
+    accent: 'bg-cyan-100 text-cyan-700 border-cyan-200',
     hasPublicCalendar: false,
     calendarSlug: null,
     calendarRegion: 'eu1',
@@ -246,9 +246,9 @@ const formatDayLabel = computed(() => {
 })
 
 const teamAccent = (team: MeetingTeam) => {
-  if (team === 'Training') return 'bg-amber-500/20 text-amber-600 border-amber-500/30'
-  if (team === 'Success Team') return 'bg-fuchsia-500/20 text-fuchsia-200 border-fuchsia-500/30'
-  return 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30'
+  if (team === 'Training') return 'bg-amber-100 text-amber-700 border-amber-200'
+  if (team === 'Success Team') return 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200'
+  return 'bg-cyan-100 text-cyan-700 border-cyan-200'
 }
 
 const goToToday = () => {
@@ -426,10 +426,6 @@ onMounted(refreshMeetings)
 
     <div v-else-if="warning" class="rounded-lg border border-amber-500/20 bg-amber-50 p-4 text-sm text-amber-600">
       {{ warning }}
-    </div>
-
-    <div class="rounded-lg border border-sky-200 bg-sky-50 p-3 text-xs text-sky-800">
-      Meeting availability and booking windows are managed in HubSpot calendars. Update availability in HubSpot, then refresh this page to sync the latest slots.
     </div>
 
     <div class="flex-1">

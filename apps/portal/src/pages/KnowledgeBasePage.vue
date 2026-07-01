@@ -276,15 +276,13 @@ function openArticle(article: KnowledgeBaseArticleDto) {
             :class="article.url ? 'hover:bg-gray-50' : 'opacity-60 cursor-default'"
             @click="openArticle(article)"
           >
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2.5">
-                <span class="text-sm font-medium text-gray-900 truncate">{{ article.title }}</span>
-                <span
-                  class="ui-pill shrink-0 !text-[10px] !px-2 !py-0"
-                  :class="categoryColor[article.category] ?? 'bg-gray-50 text-gray-500 ring-gray-200'"
-                >{{ article.category }}</span>
-              </div>
-              <div class="mt-1 text-xs text-gray-500">{{ article.readMins }} min read</div>
+            <div class="min-w-0 flex-1 flex items-center gap-2.5">
+              <span class="text-sm font-medium text-gray-900 truncate">{{ article.title }}</span>
+              <span
+                class="ui-pill shrink-0 !text-[10px]"
+                :class="categoryColor[article.category] ?? 'bg-gray-50 text-gray-500 ring-gray-200'"
+              >{{ article.category }}</span>
+              <span class="shrink-0 text-xs text-gray-400">{{ article.readMins }} min</span>
             </div>
             <svg
               class="h-4 w-4 shrink-0 text-gray-300 transition group-hover:text-gray-500 group-hover:translate-x-0.5"

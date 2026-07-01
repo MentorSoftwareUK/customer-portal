@@ -132,6 +132,85 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+const expandedLunchAndLearns = ref<string[]>([])
+
+const lunchAndLearnEvents = computed(() => {
+  if (!viewerType.value) return []
+  const now = Date.now()
+  return events.value
+    .filter((e) => {
+      const type = (e.type ?? '').toLowerCase()
+      return (
+        type === 'lunch & learn' &&
+        (e.eligibility === 'both' || e.eligibility === viewerType.value) &&
+        (e.status ?? 'upcoming') !== 'cancelled' &&
+        !e.completed &&
+        Number.isFinite(new Date(e.startAt).getTime()) &&
+        new Date(e.startAt).getTime() >= now
+      )
+    })
+    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+})
+
+function toggleLunchAndLearn(id: string) {
+  const idx = expandedLunchAndLearns.value.indexOf(id)
+  if (idx !== -1) expandedLunchAndLearns.value.splice(idx, 1)
+  else expandedLunchAndLearns.value.push(id)
+}
+
+function formatLunchAndLearnRow(e: EventDto) {
+  const start = new Date(e.startAt)
+  const end = new Date(start.getTime() + e.durationMins * 60000)
+  const date = start.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  const startTime = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })
+  const endTime = end.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })
+  return `${date} ${startTime}-${endTime}`
+}
+
+function googleCalendarUrl(e: EventDto) {
+  const start = new Date(e.startAt)
+  const end = new Date(start.getTime() + e.durationMins * 60000)
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: e.title,
+    dates: `${fmt(start)}/${fmt(end)}`,
+    details: e.description ?? '',
+    location: e.joinUrl ?? '',
+  })
+  return `https://calendar.google.com/calendar/render?${params}`
+}
+
+function downloadIcs(e: EventDto) {
+  const start = new Date(e.startAt)
+  const end = new Date(start.getTime() + e.durationMins * 60000)
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Mentor Software//Customer Portal//EN',
+    'BEGIN:VEVENT',
+    `UID:${e.id}@mentorsoftware.co.uk`,
+    `DTSTAMP:${fmt(new Date())}`,
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    `SUMMARY:${e.title}`,
+    ...(e.description ? [`DESCRIPTION:${e.description.replace(/\n/g, '\\n')}`] : []),
+    ...(e.joinUrl ? [`URL:${e.joinUrl}`, `LOCATION:${e.joinUrl}`] : []),
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ]
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${e.title.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-')}.ics`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
@@ -368,6 +447,66 @@ onMounted(async () => {
                 <p class="text-sm text-gray-500">Register for a session and it’ll appear here.</p>
               </li>
             </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lunch & Learns -->
+      <div v-if="lunchAndLearnEvents.length > 0" class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between border-b border-gray-100 p-4">
+          <div>
+            <h3 class="text-base font-semibold tracking-tight text-black">Upcoming Lunch &amp; Learns</h3>
+            <p class="mt-1 text-sm text-gray-500">Training sessions hosted by Shaun — open to your team.</p>
+          </div>
+          <span class="text-xs text-gray-400 tabular-nums">{{ lunchAndLearnEvents.length }} sessions</span>
+        </div>
+        <div class="divide-y divide-gray-100">
+          <div v-for="e in lunchAndLearnEvents" :key="e.id">
+            <button
+              type="button"
+              class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-gray-50"
+              @click="toggleLunchAndLearn(e.id)"
+            >
+              <span class="text-sm font-medium text-gray-900">{{ formatLunchAndLearnRow(e) }} | {{ displayEventTitle(e) }}</span>
+              <svg
+                class="h-4 w-4 shrink-0 text-primary-600 transition-transform duration-150"
+                :class="{ 'rotate-180': expandedLunchAndLearns.includes(e.id) }"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div v-if="expandedLunchAndLearns.includes(e.id)" class="px-4 pb-4 pt-2 space-y-3 bg-gray-50 border-t border-gray-100">
+              <p v-if="e.description" class="text-sm text-gray-600">{{ e.description }}</p>
+              <div class="flex flex-wrap gap-2">
+                <a
+                  v-if="e.joinUrl"
+                  :href="e.joinUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
+                  @click.stop
+                >
+                  Join on Teams
+                </a>
+                <a
+                  :href="googleCalendarUrl(e)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
+                  @click.stop
+                >
+                  + Google Calendar
+                </a>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
+                  @click.stop="downloadIcs(e)"
+                >
+                  + Download .ics
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
