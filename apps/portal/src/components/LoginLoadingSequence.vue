@@ -85,16 +85,9 @@ onUnmounted(() => {
 
 <template>
   <div class="py-8 flex flex-col items-center">
-    <!-- Progress bar -->
-    <div class="w-full h-1 bg-gray-100 rounded-full overflow-hidden mb-8">
-      <div
-        class="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full transition-all duration-700 ease-out"
-        :style="{ width: `${progress}%` }"
-      />
-    </div>
 
-    <!-- Single-step swipe area -->
-    <div class="relative w-full h-16 overflow-hidden">
+    <!-- Single-step swipe area — above the bar -->
+    <div class="relative w-full h-16 overflow-hidden mb-8">
       <Transition :name="direction === 'next' ? 'swipe' : 'swipe-back'" mode="out-in">
         <div :key="currentIdx" class="absolute inset-0 flex flex-col items-center justify-center">
           <!-- Spinner -->
@@ -103,7 +96,7 @@ onUnmounted(() => {
             viewBox="0 0 24 24"
             fill="none"
           >
-            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" opacity="0.1" />
+            <circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="2" />
             <path
               d="M22 12a10 10 0 0 0-10-10"
               stroke="#e7007e"
@@ -125,8 +118,16 @@ onUnmounted(() => {
       </Transition>
     </div>
 
+    <!-- Progress bar -->
+    <div class="w-full h-1 bg-gray-100 rounded-full overflow-hidden mb-6">
+      <div
+        class="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full transition-all duration-700 ease-out"
+        :style="{ width: `${progress}%` }"
+      />
+    </div>
+
     <!-- Step dots -->
-    <div class="flex items-center gap-2 mt-6">
+    <div class="flex items-center gap-2">
       <div
         v-for="(_, i) in steps"
         :key="i"
@@ -136,7 +137,7 @@ onUnmounted(() => {
             ? 'w-1.5 bg-emerald-400'
             : i === currentIdx
               ? 'w-6 bg-primary-500'
-              : 'w-1.5 bg-white/20'
+              : 'w-1.5 bg-gray-200'
         "
       />
     </div>
