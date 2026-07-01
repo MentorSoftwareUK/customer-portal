@@ -143,6 +143,45 @@ h1, h2, h3 { letter-spacing: -0.02em; }
            focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-shadow;
   }
 
+  /* ── HubSpot form overrides — force dark text on white modal background ── */
+  .hs-form fieldset,
+  .hs-form .hs-form-field,
+  .hs-form label,
+  .hs-form .hs-label,
+  .hs-form .hs-field-desc,
+  .hs-form .legal-consent-container,
+  .hs-form .hs-richtext { color: #111827 !important; }
+
+  .hs-form input[type="text"],
+  .hs-form input[type="email"],
+  .hs-form input[type="tel"],
+  .hs-form input[type="number"],
+  .hs-form input[type="password"],
+  .hs-form select,
+  .hs-form textarea {
+    color: #111827 !important;
+    background-color: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    width: 100% !important;
+    font-size: 0.875rem !important;
+  }
+
+  .hs-form input::placeholder,
+  .hs-form textarea::placeholder { color: #9ca3af !important; }
+
+  .hs-form input[type="submit"],
+  .hs-form .hs-button {
+    background-color: #e7007e !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+  }
+
   /* ── Sidebar navigation ───────────────────────────────────────────────────
      Clear visual hierarchy: section eyebrows, top-level items, nested sub-items.
      ───────────────────────────────────────────────────────────────────────── */

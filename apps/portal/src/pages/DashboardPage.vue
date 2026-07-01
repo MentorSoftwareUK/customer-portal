@@ -603,7 +603,7 @@ onMounted(async () => {
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeContactModal" />
 
         <!-- Modal panel -->
-        <div class="relative z-10 w-full max-w-lg rounded-xl bg-white border border-gray-200 shadow-2xl overflow-hidden">
+        <div class="relative z-10 w-full max-w-2xl rounded-xl bg-white border border-gray-200 shadow-2xl overflow-hidden">
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <div>
