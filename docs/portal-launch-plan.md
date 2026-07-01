@@ -4,6 +4,49 @@
 
 ---
 
+## Executive Summary
+
+**What is the portal?**  
+A private online portal where Mentor Software customers log in to access training events, support, documents, and their account information — all in one place. It replaces scattered emails and calls with a self-service hub that customers can use any time.
+
+**Where are we now?**  
+The portal is built and has been through a full testing round. It is ready to be used. It is not yet open to customers because a small number of setup tasks remain — most of which are account and configuration steps rather than development work.
+
+**What is the plan?**  
+We launch in two controlled stages before opening to everyone:
+
+- **Phase 1 — Happy Group testing** (internal): The Happy Group use the portal as if they were a customer and flag any issues. Low risk — no external customers involved.
+- **Phase 2 — 10 champion customers**: A hand-picked group of 10 existing customers get early access. We monitor how they get on and fix anything before the full rollout.
+- **General rollout**: Once Phase 2 is signed off, all live customers receive an invite.
+
+**What needs to happen before we can start Phase 1?**  
+Two things are blocking us right now:
+
+1. **The website hosting plan needs upgrading** — the service we use to host the portal (Vercel) needs to be on a paid plan before we can attach a proper web address (e.g. `portal.mentorsoftware.co.uk`). This is a straightforward subscription upgrade, approximately £15–20/month.
+2. **A small number of setup tasks** — creating some test events, setting up the contact form correctly, and confirming the meeting booking system is linked properly. These are configuration tasks, not new development.
+
+**Who needs to do what?**
+
+| Who | Action | When |
+|-----|--------|-------|
+| Liam | Upgrade Vercel hosting, set up domain, configure payment system | Before Phase 1 |
+| Simone | Set up scheduling availability in HubSpot, help select Phase 2 champions | Before Phase 1 |
+| Shaun | Create Lunch & Learn sessions in the admin portal | Before Phase 1 |
+| Liam + Simone | Select and invite 10 champion customers | Before Phase 2 |
+
+**Timeline (indicative):**
+
+| Milestone | Estimated timing |
+|-----------|-----------------|
+| Infrastructure setup complete | Week 1 |
+| Phase 1 (Happy Group) begins | Week 1–2 |
+| Phase 1 review and any fixes | Week 2–3 |
+| Phase 2 (10 champions) begins | Week 3–4 |
+| Phase 2 review | Week 5–6 |
+| General rollout | Week 6+ |
+
+---
+
 ## Overview
 
 The portal is a private SaaS platform for Mentor Software UK customers. It gives subscribers access to events and training, support tickets, meetings, the knowledge base, videos, documents, and invoices. Access is gated by HubSpot contact data.
