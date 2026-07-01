@@ -407,7 +407,7 @@ onUnmounted(() => {
     <ToastContainer />
 
     <nav class="fixed left-0 right-0 top-0 z-50 h-16 border-b border-white/10 bg-[#14192d] px-4 py-0">
-      <div class="flex flex-wrap items-center justify-between">
+      <div class="flex h-full flex-wrap items-center justify-between">
         <div class="flex items-center justify-start">
           <button
             data-drawer-target="drawer-navigation"
